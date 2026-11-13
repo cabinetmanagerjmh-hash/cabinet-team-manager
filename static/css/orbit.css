@@ -796,6 +796,12 @@ html[data-theme="light"] .kpi-chip {
 .table-premium tbody tr:nth-child(even):not(:hover) td,
 .cl-table tbody tr:nth-child(even):not(:hover) td,
 .pl-table tbody tr:nth-child(even):not(:hover) td { background: var(--row-alt); }
+/* Tableau fiscal : chaque dossier est suivi d'une ligne de détail repliée
+   (display:none), qui décale nth-child et annule l'alternance ci-dessus.
+   On alterne donc sur les seules lignes dossier visibles. */
+.table-premium tbody tr.fiscal-dossier-row:nth-child(even of .fiscal-dossier-row):not(:hover) td {
+  background: var(--row-alt);
+}
 .table-premium tbody tr:last-child td { border-bottom: none; }
 .table-premium td strong, .table-premium td .fw-semibold { color: var(--text-primary); }
 .table-premium .num, .table-premium td.text-center { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }

@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Tâches{% endblock %}
+{% block body_class %}page-taches{% endblock %}
 {% block content %}
 <div data-view-scope="taches">
 {% if current_user.role == 'manager' %}

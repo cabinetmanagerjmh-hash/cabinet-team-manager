@@ -3,13 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="color-scheme" content="dark light">
+    <meta name="color-scheme" content="{{ 'light' if (request.cookies.get('theme') or 'dark') == 'light' else 'dark' }}">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{% block title %}JMH Orbit{% endblock %} · Cabinet JMH</title>
-    <!-- Fond dès le 1er rendu : aucun flash blanc pendant le chargement des CSS -->
-    <style>html,body{background:#101010}html[data-theme="light"],html[data-theme="light"] body{background:#FFFFFF}</style>
-    <!-- Socle thème unique, synchrone : applique data-theme + data-bs-theme avant le rendu -->
+    <!-- Socle thème unique, synchrone : applique data-theme + data-bs-theme AVANT
+         le premier rendu. Placé avant le fond inline : le navigateur peint donc
+         directement la bonne couleur (plus de flash sombre sur une page claire). -->
     <script src="{{ asset('js/orbit-theme.js') }}"></script>
+    <!-- Couleur de toile posée sur <html> seul : le body reste transparent,
+         sinon il masque le fond animé (aurora) de la couche NIM. -->
+    <style>html{background:#101010}html[data-theme="light"]{background:#FFFFFF}</style>
     <!-- Dépendances front servies localement : l'interface ne dépend d'aucun CDN
          externe. Un réseau qui bloque jsdelivr / Google Fonts ne change plus le rendu. -->
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
@@ -18,15 +21,19 @@
     <!-- Composants legacy (structure) puis design system Orbit (source unique, en dernier) -->
     <link href="{{ asset('css/orbit-system.css') }}" rel="stylesheet">
     <link href="{{ asset('css/orbit.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/orbit-nim.css') }}" rel="stylesheet">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#101010">
+    <meta name="theme-color" content="{{ '#FFFFFF' if (request.cookies.get('theme') or 'dark') == 'light' else '#101010' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="JMH Orbit">
     <link rel="icon" type="image/svg+xml" href="{{ asset('img/logo-orbit.svg') }}">
     <link rel="apple-touch-icon" href="{{ asset('img/logo-orbit.png') }}">
     {% block extra_css %}{% endblock %}
 </head>
-<body class="app-shell" data-logo-orbit="{{ asset('img/logo-jmh-orbit.png') }}">
+<body class="app-shell {% block body_class %}{% endblock %}" data-logo-orbit="{{ asset('img/logo-jmh-orbit.png') }}">
+    <div class="orbit-aurora" aria-hidden="true">
+        <span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span>
+    </div>
     {% from 'includes/orbit_logo.html' import orbit_logo with context %}
     <a class="skip-link" href="#mainContent">Aller au contenu</a>
     <div id="orbitProgress" aria-hidden="true"></div>

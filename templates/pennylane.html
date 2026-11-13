@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Pennylane{% endblock %}
+{% block body_class %}page-pennylane{% endblock %}
 
 {% block content %}
 <div class="pl-page">
@@ -126,7 +127,7 @@
 {% if is_admin %}
 <div class="card-premium mb-4 animate-fade-in-up stagger-2">
     <div class="card-body-premium">
-        <h4 class="fw-semibold mb-3">📊 Déclarations TVA (session web)</h4>
+        <h4 class="fw-semibold mb-3"><i class="bi bi-bar-chart-line me-2 u-txt-orange"></i>Déclarations TVA (session web)</h4>
         {% if pl_last_sync %}
         <div class="p-2 rounded-3 mb-3 small u-pill-neutral">
             <i class="bi bi-clock-history me-1 u-txt-orange"></i>

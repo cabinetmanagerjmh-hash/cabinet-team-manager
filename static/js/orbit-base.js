@@ -136,24 +136,28 @@
         if (!toggle || !col) { return; }
 
         function mobile() { return window.matchMedia('(max-width: 991.98px)').matches; }
+        // Le repli ne vaut que sur desktop : en tiroir mobile, la classe
+        // masquerait le contenu (elle ferme complètement la barre).
         function applyCollapsed(on) {
-            document.body.classList.toggle('sidebar-collapsed', on);
+            collapsed = on;
+            document.body.classList.toggle('sidebar-collapsed', on && !mobile());
             toggle.innerHTML = on ? '<i class="bi bi-caret-right"></i>' : '<i class="bi bi-list"></i>';
+            toggle.setAttribute('aria-expanded', on ? 'false' : 'true');
         }
         function applyOpen(on) { document.body.classList.toggle('sidebar-open', on); }
         function closeDrawer() { applyOpen(false); }
 
         var saved = null;
         try { saved = localStorage.getItem('sidebarState'); } catch (e) {}
-        applyCollapsed(saved === 'icons');
+        var collapsed = saved === 'icons';
+        applyCollapsed(collapsed);
 
         toggle.addEventListener('click', function () {
             if (mobile()) {
                 applyOpen(!document.body.classList.contains('sidebar-open'));
             } else {
-                var next = !document.body.classList.contains('sidebar-collapsed');
-                applyCollapsed(next);
-                try { localStorage.setItem('sidebarState', next ? 'icons' : 'full'); } catch (e) {}
+                applyCollapsed(!collapsed);
+                try { localStorage.setItem('sidebarState', collapsed ? 'icons' : 'full'); } catch (e) {}
             }
         });
         if (scrim) { scrim.addEventListener('click', closeDrawer); }
@@ -161,7 +165,10 @@
             var a = e.target && e.target.closest ? e.target.closest('a') : null;
             if (a && mobile()) { closeDrawer(); }
         });
-        window.addEventListener('resize', function () { if (!mobile()) { closeDrawer(); } });
+        window.addEventListener('resize', function () {
+            closeDrawer();
+            applyCollapsed(collapsed);
+        });
         window.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeDrawer(); } });
     })();
 

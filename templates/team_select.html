@@ -83,7 +83,7 @@
             content: '';
             position: fixed;
             inset: -50%;
-            background: radial-gradient(ellipse at 50% 0%, rgba(255,140,0,0.05) 0%, transparent 50%);
+            background: radial-gradient(ellipse at 50% 0%, rgba(31,106,136,0.05) 0%, transparent 50%);
             animation: bgShift 25s ease-in-out infinite alternate;
             pointer-events: none;
         }
@@ -113,7 +113,7 @@
         }
         .orb-1 {
             width: 500px; height: 500px;
-            background: radial-gradient(circle, #FF8C00, transparent);
+            background: radial-gradient(circle, #1F6A88, transparent);
             top: -10%; right: -5%;
             animation: orbFloat1 25s ease-in-out infinite;
         }
@@ -189,7 +189,7 @@
         }
         .team-card:hover {
             transform: translateY(-4px);
-            border-color: rgba(255,140,0,0.2);
+            border-color: rgba(31,106,136,0.2);
             box-shadow: 0 12px 40px rgba(0,0,0,0.4);
         }
         .team-card-header {
@@ -223,7 +223,7 @@
         .enter-btn {
             font-size: 0.8rem;
             font-weight: 600;
-            color: #FF8C00;
+            color: #1F6A88;
             display: flex;
             align-items: center;
             gap: 0.4rem;
@@ -237,7 +237,7 @@
             font-size: 0.8rem;
             transition: color 0.2s;
         }
-        .back-link:hover { color: #FF8C00; }
+        .back-link:hover { color: #1F6A88; }
         @media (max-width: 768px) {
             .teams-grid { grid-template-columns: 1fr; }
             .header h1 { font-size: 1.3rem; }
@@ -261,7 +261,7 @@
         --border-color: #e3e5e9;
         --border-light: #dcdfe4;
         --border-strong: #cdd1d7;
-        --orange-subtle: rgba(255, 140, 0, 0.08);
+        --orange-subtle: rgba(31, 106, 136, 0.08);
     }
 
     /* ===== Transition dégradée du thème (équivalent local de polish.css) ===== */
@@ -291,16 +291,16 @@
     html[data-theme="light"] .header h1 { color: var(--text-primary) !important; }
     html[data-theme="light"] .header p { color: var(--text-tertiary) !important; }
     html[data-theme="light"] .team-card { background: var(--bg-card) !important; border: 1px solid var(--border-color) !important; box-shadow: 0 2px 8px -2px rgba(16,24,40,.08); transition: background-color .42s ease, border-color .2s ease, box-shadow .25s ease, transform .25s ease; }
-    html[data-theme="light"] .team-card:hover { border-color: rgba(255,122,0,.35) !important; box-shadow: 0 12px 30px -8px rgba(16,24,40,.18) !important; }
+    html[data-theme="light"] .team-card:hover { border-color: rgba(31,106,136,.35) !important; box-shadow: 0 12px 30px -8px rgba(16,24,40,.18) !important; }
     html[data-theme="light"] .team-avatar { background: var(--bg-card-hover) !important; border-color: var(--border-color) !important; color: var(--text-tertiary) !important; }
     html[data-theme="light"] .team-info h3 { color: var(--text-primary) !important; }
     html[data-theme="light"] .team-info .meta { color: var(--text-tertiary) !important; }
     html[data-theme="light"] .team-desc { color: var(--text-secondary) !important; }
     html[data-theme="light"] .team-footer { border-top: 1px solid var(--border-color) !important; }
     html[data-theme="light"] .team-footer span { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .enter-btn { color: #ff7a00 !important; }
+    html[data-theme="light"] .enter-btn { color: #1F6A88 !important; }
     html[data-theme="light"] .back-link { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .back-link:hover { color: #ff7a00 !important; }
+    html[data-theme="light"] .back-link:hover { color: #1F6A88 !important; }
     html[data-theme="light"] .teams-grid .text-center { color: var(--text-tertiary) !important; }
     </style>
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;0,600;1,400&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -350,7 +350,7 @@
             <div class="col-12 text-center py-5" style="color:#555;">
                 <i class="bi bi-people" style="font-size:2.5rem;"></i>
                 <p class="mt-3">Aucune équipe créée.</p>
-                <a href="{{ url_for('login') }}" class="btn-login d-inline-block mt-3" style="width:auto;padding:0.7rem 1.5rem;background:linear-gradient(135deg,#FF8C00,#FFA726);border:none;border-radius:10px;color:#000;font-weight:600;cursor:pointer;text-decoration:none;">Connexion admin</a>
+                <a href="{{ url_for('login') }}" class="btn-login d-inline-block mt-3" style="width:auto;padding:0.7rem 1.5rem;background:linear-gradient(135deg,#1F6A88,#67AECA);border:none;border-radius:10px;color:#000;font-weight:600;cursor:pointer;text-decoration:none;">Connexion admin</a>
             </div>
             {% endfor %}
         </div>

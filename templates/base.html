@@ -34,6 +34,7 @@
     <div class="orbit-aurora" aria-hidden="true">
         <span class="aurora-a"></span><span class="aurora-b"></span><span class="aurora-c"></span>
     </div>
+    <canvas class="orbit-stars" id="orbitStars" aria-hidden="true"></canvas>
     {% from 'includes/orbit_logo.html' import orbit_logo with context %}
     <a class="skip-link" href="#mainContent">Aller au contenu</a>
     <div id="orbitProgress" aria-hidden="true"></div>
@@ -69,7 +70,7 @@
             {% if current_equipe or all_equipes_for_switch %}
             <div class="dropdown">
                 <button class="team-context-icon" type="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                    <span class="team-icon" style="background:{{ current_equipe.couleur if current_equipe else '#C45B32' }};color:#fff;">
+                    <span class="team-icon" style="background:{{ current_equipe.couleur if current_equipe else '#1F6A88' }};color:#fff;">
                         <i class="bi {{ current_equipe.icon if current_equipe else 'bi-diagram-2' }}"></i>
                     </span>
                     <span class="team-context-name d-none d-lg-inline">{{ current_equipe.nom if current_equipe else 'Toutes les équipes' }}</span>
@@ -81,7 +82,7 @@
                     {% if current_user.role == 'admin' %}
                     <li>
                         <a class="dropdown-item {% if not current_equipe %}active{% endif %}" href="{{ url_for('toutes_equipes') }}">
-                            <span class="team-icon" style="background:#C45B32;color:#fff;"><i class="bi bi-diagram-2"></i></span>
+                            <span class="team-icon" style="background:#1F6A88;color:#fff;"><i class="bi bi-diagram-2"></i></span>
                             Toutes les équipes
                         </a>
                     </li>
@@ -89,7 +90,7 @@
                     {% for eq in all_equipes_for_switch %}
                     <li>
                         <a class="dropdown-item {% if current_equipe and current_equipe.id == eq.id %}active{% endif %}" href="{{ url_for('set_team', equipe_id=eq.id) }}">
-                            <span class="team-icon" style="background:{{ eq.couleur or '#C45B32' }};color:#fff;"><i class="bi {{ eq.icon or 'bi-people' }}"></i></span>
+                            <span class="team-icon" style="background:{{ eq.couleur or '#1F6A88' }};color:#fff;"><i class="bi {{ eq.icon or 'bi-people' }}"></i></span>
                             {{ eq.nom }}
                             {% if eq.nb_membres() > 0 %}<span class="badge badge-tertiary ms-auto">{{ eq.nb_membres() }}</span>{% endif %}
                         </a>
@@ -188,6 +189,7 @@
     <script src="{{ asset('js/assistant.js') }}" defer></script>
     {% endif %}
     <script src="{{ asset('js/orbit-base.js') }}" defer></script>
+    <script src="{{ asset('js/orbit-stars.js') }}" defer></script>
     <script src="{{ asset('js/orbit-view-toggle.js') }}" defer></script>
     {% block extra_js %}{% endblock %}
 </body>

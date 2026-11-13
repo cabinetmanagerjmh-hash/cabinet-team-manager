@@ -84,7 +84,7 @@ def build():
 
         admin = User.query.filter_by(role='admin').first()
         pole_compta = Equipe(nom='Pôle Comptable', description='Tenue, révision et fiscalité des dossiers clients.',
-                             couleur='#FF8C00', icon='bi-calculator', manager_id=admin.id if admin else None)
+                             couleur='#1F6A88', icon='bi-calculator', manager_id=admin.id if admin else None)
         pole_social = Equipe(nom='Pôle Social', description='Paie, DSN et déclarations sociales.',
                              couleur='#3B82F6', icon='bi-people', manager_id=admin.id if admin else None)
         db.session.add_all([pole_compta, pole_social])

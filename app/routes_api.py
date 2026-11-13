@@ -111,7 +111,7 @@ def api_test_mail():
         subject='✅ Test notification — Cabinet JMH',
         body=f"Bonjour {current_user.prenom}, ceci est un email de test de l'application de gestion.",
         html_content='<html><body style="font-family:Inter,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:24px;">'
-                     '<h2 style="color:#FF8C00;">✅ Email de test</h2>'
+                     '<h2 style="color:#1F6A88;">✅ Email de test</h2>'
                      f'<p>Bonjour {current_user.prenom}, la configuration mail de l\'application fonctionne.</p>'
                      '</body></html>',
     )

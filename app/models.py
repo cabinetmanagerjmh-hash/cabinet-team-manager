@@ -104,7 +104,7 @@ class User(UserMixin, db.Model):
         try:
             name = f"{self.prenom or ''} {self.nom or ''}".strip()
             encoded = name.replace(' ', '+')
-            return f"https://ui-avatars.com/api/?name={encoded}&background=FF8C00&color=fff&size=128&font-size=0.5&bold=true"
+            return f"https://ui-avatars.com/api/?name={encoded}&background=1F6A88&color=fff&size=128&font-size=0.5&bold=true"
         except Exception:
             pass
         

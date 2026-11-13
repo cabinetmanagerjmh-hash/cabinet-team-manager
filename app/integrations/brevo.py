@@ -81,11 +81,11 @@ def _email_layout(header_title, header_emoji, intro_html, rows=None, rows_html_o
     if cta_url and cta_text:
         cta_html = f'''
             <tr><td align="center" style="padding:24px 0 8px 0;">
-                <a href="{cta_url}" style="display:inline-block;background:#FF8C00;color:#000;font-weight:bold;'
+                <a href="{cta_url}" style="display:inline-block;background:#1F6A88;color:#fff;font-weight:bold;'
                 f'text-decoration:none;padding:14px 32px;border-radius:10px;font-size:14px;">{cta_text}</a>
             </td></tr>
             <tr><td align="center" style="padding:0 0 8px 0;">
-                <p style="color:#666;font-size:11px;margin:0;">Si le bouton ne fonctionne pas : <a href="{cta_url}" style="color:#FF8C00;">{cta_url}</a></p>
+                <p style="color:#666;font-size:11px;margin:0;">Si le bouton ne fonctionne pas : <a href="{cta_url}" style="color:#67AECA;">{cta_url}</a></p>
             </td></tr>'''
 
     footer_note_html = f'<p style="color:#777;font-size:12px;margin:24px 0 0 0;">{footer_note}</p>' if footer_note else ''
@@ -97,8 +97,8 @@ def _email_layout(header_title, header_emoji, intro_html, rows=None, rows_html_o
         <tr><td align="center">
             <table width="600" cellpadding="0" cellspacing="0" style="background:#131313;border:1px solid #262626;border-radius:16px;overflow:hidden;max-width:600px;">
                 <tr>
-                    <td style="background:#000;padding:10px 32px;text-align:center;border-bottom:3px solid #FF8C00;">
-                        <p style="color:#FF8C00;margin:0;font-size:15px;font-weight:bold;letter-spacing:1px;">CABINET JMH</p>
+                    <td style="background:#000;padding:10px 32px;text-align:center;border-bottom:3px solid #67AECA;">
+                        <p style="color:#67AECA;margin:0;font-size:15px;font-weight:bold;letter-spacing:1px;">CABINET JMH</p>
                         <p style="color:#555;margin:2px 0 0 0;font-size:10px;letter-spacing:2px;text-transform:uppercase;">Gestion d'équipe & comptabilité</p>
                     </td>
                 </tr>
@@ -142,13 +142,13 @@ def send_task_assigned_email_brevo(tache, assignee_id: int) -> bool:
         header_title="Nouvelle tâche assignée",
         header_emoji="📋",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{user.prenom} {user.nom}</strong>,</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{user.prenom} {user.nom}</strong>,</p>'
             f'<p style="color:#9a9a9a;font-size:13px;margin:0;">Une nouvelle tâche vous a été assignée :</p>'
         ),
         rows=[
             ('Tâche', tache.titre),
             ('Description', tache.description or '(aucune)'),
-            ('Priorité', f'<span style="color:#FF8C00;font-weight:bold;">{tache.priorite.capitalize()}</span>'),
+            ('Priorité', f'<span style="color:#67AECA;font-weight:bold;">{tache.priorite.capitalize()}</span>'),
             ('Échéance', tache.date_echeance.strftime('%d/%m/%Y') if tache.date_echeance else '—'),
         ],
         cta_url=f'{APP_URL}/taches',
@@ -185,13 +185,13 @@ def send_tache_creee_manager_email_brevo(tache, manager_id: int, auteur: str) ->
         header_title="Tâche urgente dans votre équipe",
         header_emoji="🚨",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{manager.prenom} {manager.nom}</strong>,</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{manager.prenom} {manager.nom}</strong>,</p>'
             f'<p style="color:#9a9a9a;font-size:13px;margin:0;">{auteur} a créé une tâche de priorité haute :</p>'
         ),
         rows=[
             ('Tâche', tache.titre),
             ('Assignée à', cible),
-            ('Priorité', f'<span style="color:#FF8C00;font-weight:bold;">{tache.priorite.capitalize()}</span>'),
+            ('Priorité', f'<span style="color:#67AECA;font-weight:bold;">{tache.priorite.capitalize()}</span>'),
             ('Échéance', tache.date_echeance.strftime('%d/%m/%Y') if tache.date_echeance else '—'),
         ],
         cta_url=f'{APP_URL}/taches',
@@ -223,12 +223,12 @@ def send_task_taken_email_brevo(tache, collab_nom) -> bool:
         header_title="Tâche prise en charge",
         header_emoji="✅",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{creeur.prenom} {creeur.nom}</strong>,</p>'
-            f'<p style="color:#9a9a9a;font-size:13px;margin:0;"><strong style="color:#FF8C00;">{collab_nom}</strong> a pris en charge la tâche :</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{creeur.prenom} {creeur.nom}</strong>,</p>'
+            f'<p style="color:#9a9a9a;font-size:13px;margin:0;"><strong style="color:#67AECA;">{collab_nom}</strong> a pris en charge la tâche :</p>'
         ),
         rows=[
             ('Tâche', tache.titre),
-            ('Collaborateur', f'<span style="color:#FF8C00;font-weight:bold;">{collab_nom}</span>'),
+            ('Collaborateur', f'<span style="color:#67AECA;font-weight:bold;">{collab_nom}</span>'),
             ('Début', date_prise),
         ],
         cta_url=f'{APP_URL}/taches',
@@ -259,12 +259,12 @@ def send_task_completed_email_brevo(tache, collab_nom) -> bool:
         header_title="Tâche terminée",
         header_emoji="🎉",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{creeur.prenom} {creeur.nom}</strong>,</p>'
-            f'<p style="color:#9a9a9a;font-size:13px;margin:0;"><strong style="color:#FF8C00;">{collab_nom}</strong> a terminé la tâche :</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{creeur.prenom} {creeur.nom}</strong>,</p>'
+            f'<p style="color:#9a9a9a;font-size:13px;margin:0;"><strong style="color:#67AECA;">{collab_nom}</strong> a terminé la tâche :</p>'
         ),
         rows=[
             ('Tâche', tache.titre),
-            ('Terminée par', f'<span style="color:#FF8C00;font-weight:bold;">{collab_nom}</span>'),
+            ('Terminée par', f'<span style="color:#67AECA;font-weight:bold;">{collab_nom}</span>'),
             ('Date de fin', date_fin),
         ],
         cta_url=f'{APP_URL}/taches',
@@ -294,7 +294,7 @@ def send_daily_digest_email(user, tasks, date_str=''):
         rows += (
             f'<tr style="border-bottom:1px solid #262626;">'
             f'<td style="padding:10px 0;color:#e8e8e8;font-size:13px;">{t.titre}</td>'
-            f'<td style="padding:10px 0 10px 12px;color:#FF8C00;font-size:12px;white-space:nowrap;">{dossier_nom}</td>'
+            f'<td style="padding:10px 0 10px 12px;color:#67AECA;font-size:12px;white-space:nowrap;">{dossier_nom}</td>'
             f'<td style="padding:10px 0 10px 12px;color:#9a9a9a;font-size:12px;white-space:nowrap;">{statut_label}</td>'
             f'</tr>'
         )
@@ -305,7 +305,7 @@ def send_daily_digest_email(user, tasks, date_str=''):
         header_title="Rappel des échéances du jour",
         header_emoji="⏰",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{user.prenom} {user.nom}</strong>,</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{user.prenom} {user.nom}</strong>,</p>'
             f'<p style="color:#9a9a9a;font-size:13px;margin:0;">Voici les <strong style="color:#fff;">{len(tasks)} tâche(s)</strong> à échéance {date_str} :</p>'
         ),
         rows_html_override=(
@@ -363,10 +363,10 @@ def send_pennylane_new_docs_email_brevo(dossier, nouveaux: list, destinataire_id
         header_title="Nouveaux documents Pennylane",
         header_emoji="🆕",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{user.prenom} {user.nom}</strong>,</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{user.prenom} {user.nom}</strong>,</p>'
             f'<p style="color:#9a9a9a;font-size:13px;margin:0;">'
             f'{len(nouveaux)} nouveau(x) document(s) viennent d\'être détecté(s) sur Pennylane '
-            f'pour le dossier <strong style="color:#FF8C00;">{dossier.numero_dossier}</strong> :</p>'
+            f'pour le dossier <strong style="color:#67AECA;">{dossier.numero_dossier}</strong> :</p>'
         ),
         rows=rows_detail,
         cta_url=f"{APP_URL}/pennylane/dossier/{dossier.id}",
@@ -411,7 +411,7 @@ def send_pennylane_digest_email_brevo(user, par_dossier, creneau: str) -> bool:
         header_title=f"Recapitulatif Pennylane — {creneau}",
         header_emoji="🆕",
         intro_html=(
-            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#FF8C00;">{user.prenom} {user.nom}</strong>,</p>'
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{user.prenom} {user.nom}</strong>,</p>'
             f'<p style="color:#9a9a9a;font-size:13px;margin:0;">'
             f'<strong style="color:#fff;">{total}</strong> nouveau(x) document(s) detecte(s) sur Pennylane depuis le dernier recapitulatif :</p>'
         ),

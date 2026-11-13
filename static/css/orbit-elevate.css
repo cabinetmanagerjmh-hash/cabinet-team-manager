@@ -32,11 +32,11 @@ html[data-theme="light"] {
   --rule-soft: #ece6dc;
   --rule-strong: #cfc7b8;
 
-  --amber: #ff8c00;
-  --amber-deep: #b8590a;
-  --amber-light: #ffab4d;
-  --amber-soft: rgba(255, 140, 0, .10);
-  --amber-line: rgba(255, 140, 0, .30);
+  --amber: #1F6A88;
+  --amber-deep: #1B5570;
+  --amber-light: #4E9BBB;
+  --amber-soft: rgba(31, 106, 136, .10);
+  --amber-line: rgba(31, 106, 136, .30);
 
   --ok: #1c7a4d;
   --ok-bg: #e6f3ea;
@@ -61,7 +61,7 @@ html[data-theme="light"] {
   --shadow-1: 0 1px 2px rgba(23, 26, 31, .05);
   --shadow-2: 0 1px 2px rgba(23, 26, 31, .05), 0 10px 26px -16px rgba(23, 26, 31, .18);
   --shadow-3: 0 2px 4px rgba(23, 26, 31, .06), 0 22px 48px -22px rgba(23, 26, 31, .28);
-  --halo: 0 0 0 4px rgba(255, 140, 0, .16);
+  --halo: 0 0 0 4px rgba(31, 106, 136, .16);
 
   /* ---- Alias legacy : tout le CSS existant s'accroche à ces noms ---- */
   --bg-dark: var(--paper);
@@ -90,8 +90,8 @@ html[data-theme="light"] {
   --orange-dark: var(--amber-deep);
   --orange-light: var(--amber-light);
   --orange-subtle: var(--amber-soft);
-  --orange-gradient: linear-gradient(135deg, #ff8c00 0%, #ffab4d 100%);
-  --orange-glow: 0 0 0 rgba(255, 140, 0, 0);
+  --orange-gradient: linear-gradient(135deg, #1F6A88 0%, #4E9BBB 100%);
+  --orange-glow: 0 0 0 rgba(31, 106, 136, 0);
   --success: var(--ok);
   --success-bg: var(--ok-bg);
   --warning: var(--warn);
@@ -104,7 +104,7 @@ html[data-theme="light"] {
   --shadow-md: var(--shadow-2);
   --shadow-lg: var(--shadow-3);
   --shadow-xl: 0 32px 64px -32px rgba(23, 26, 31, .34);
-  --shadow-orange: 0 8px 22px -12px rgba(255, 140, 0, .55);
+  --shadow-orange: 0 8px 22px -12px rgba(31, 106, 136, .55);
   --orbit-shadow-card: var(--shadow-2);
   --orbit-shadow-float: var(--shadow-3);
   --orbit-radius-xl: var(--r-lg);
@@ -128,9 +128,9 @@ html[data-theme="dark"] {
   --rule: #262931;
   --rule-soft: #1e2127;
   --rule-strong: #363a44;
-  --amber: #ff9422;
-  --amber-deep: #ffb464;
-  --amber-light: #ffc98b;
+  --amber: #7CC5E3;
+  --amber-deep: #A6DBF1;
+  --amber-light: #A6DBF1;
   --amber-soft: rgba(255, 148, 34, .13);
   --amber-line: rgba(255, 148, 34, .34);
   --ok: #4ec98a;
@@ -207,7 +207,7 @@ body, .table, .stat-card, .badge, td, th { font-variant-numeric: tabular-nums; }
 
 a { color: var(--amber-deep); text-underline-offset: 2px; }
 a:hover { color: var(--amber); }
-::selection { background: rgba(255, 140, 0, .22); color: var(--ink); }
+::selection { background: rgba(31, 106, 136, .22); color: var(--ink); }
 
 /* Défilement sobre */
 * { scrollbar-width: thin; scrollbar-color: var(--rule-strong) transparent; }
@@ -231,7 +231,7 @@ body::before {
   pointer-events: none;
   z-index: -2;
   background:
-    radial-gradient(760px 420px at 8% -10%, rgba(255, 140, 0, .11), transparent 62%),
+    radial-gradient(760px 420px at 8% -10%, rgba(31, 106, 136, .11), transparent 62%),
     radial-gradient(620px 380px at 96% 4%, rgba(184, 89, 10, .07), transparent 58%),
     radial-gradient(900px 620px at 46% 112%, rgba(23, 26, 31, .06), transparent 64%);
   opacity: 1;
@@ -289,7 +289,7 @@ html[data-theme="dark"] body::after { mix-blend-mode: screen; opacity: .22; }
   opacity: 1 !important;
 }
 .app-brand-icon .orbit-logo {
-  filter: drop-shadow(0 2px 8px rgba(255, 140, 0, .22));
+  filter: drop-shadow(0 2px 8px rgba(31, 106, 136, .22));
   transition: transform .45s var(--ease);
 }
 .app-brand:hover .app-brand-icon .orbit-logo { transform: rotate(-8deg) scale(1.05); }
@@ -665,7 +665,7 @@ html[data-theme="dark"] .sidebar-nav-item.active::before { display: none; }
   background: var(--amber) !important;
   border-color: var(--amber) !important;
   color: #17181c !important;
-  box-shadow: 0 8px 20px -10px rgba(255, 140, 0, .55) !important;
+  box-shadow: 0 8px 20px -10px rgba(31, 106, 136, .55) !important;
 }
 /* Balayage lumineux conservé mais plus discret */
 .btn-premium-primary::after {

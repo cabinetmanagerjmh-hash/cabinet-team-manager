@@ -72,9 +72,18 @@
 </div>
 
 {% if is_admin %}
-<div class="card-premium mb-4 animate-fade-in-up stagger-1">
-    <div class="card-body-premium">
-        <h4 class="fw-semibold mb-3"><i class="bi bi-key-fill me-2"></i>Configuration de l'API</h4>
+<details class="pl-config card-premium animate-fade-in-up stagger-1" {% if not configured %}open{% endif %}>
+    <summary class="pl-config-summary">
+        <i class="bi bi-key-fill pl-config-icon"></i>
+        <h4 class="pl-config-title">Configuration de l'API</h4>
+        {% if configured %}
+        <span class="badge badge-success">Connecté</span>
+        {% else %}
+        <span class="badge badge-tertiary">Non connecté</span>
+        {% endif %}
+        <i class="bi bi-chevron-down pl-config-chev"></i>
+    </summary>
+    <div class="pl-config-body">
         <p class="text-tertiary small mb-4">
             Renseignez votre token <strong>Company API</strong> Pennylane pour connecter votre cabinet.
             Générez-le dans Pennylane : <em>Paramètres → Intégrations → API → Créer un token</em>.
@@ -121,13 +130,27 @@
         </div>
         {% endif %}
     </div>
-</div>
+</details>
 {% endif %}
 
 {% if is_admin %}
-<div class="card-premium mb-4 animate-fade-in-up stagger-2">
-    <div class="card-body-premium">
-        <h4 class="fw-semibold mb-3"><i class="bi bi-bar-chart-line me-2 u-txt-orange"></i>Déclarations TVA (session web)</h4>
+<details class="pl-config card-premium animate-fade-in-up stagger-2">
+    <summary class="pl-config-summary">
+        <i class="bi bi-bar-chart-line pl-config-icon"></i>
+        <h4 class="pl-config-title">Déclarations TVA &amp; session web</h4>
+        {% if pl_last_sync and pl_last_sync.ok %}
+        <span class="badge badge-success">Synchro OK</span>
+        {% elif pl_last_sync %}
+        <span class="badge badge-danger">Échec</span>
+        {% else %}
+        <span class="badge badge-tertiary">Jamais lancée</span>
+        {% endif %}
+        <i class="bi bi-chevron-down pl-config-chev"></i>
+    </summary>
+    <div class="pl-config-body">
+        <p class="text-tertiary small mb-3">
+            Session Pennylane utilisée pour lire les déclarations de TVA de tous les dossiers reliés.
+        </p>
         {% if pl_last_sync %}
         <div class="p-2 rounded-3 mb-3 small u-pill-neutral">
             <i class="bi bi-clock-history me-1 u-txt-orange"></i>
@@ -207,27 +230,29 @@
             </button>
         </div>
     </div>
-</div>
+</details>
 {% endif %}
 
 <!-- Vue des dossiers par équipe (scoping manager/admin) -->
-<div class="card-premium animate-fade-in-up stagger-2">
+<div class="card-premium pl-panel animate-fade-in-up stagger-2">
     <div class="card-body-premium">
-        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
-            <h4 class="fw-semibold mb-0">
-                <i class="bi bi-folder-check me-2 text-tertiary"></i>
-                Dossiers connectés à Pennylane
-                <span class="badge badge-orange ms-1">{{ dossiers_associes|length }}/{{ total_dossiers }}</span>
-            </h4>
-            <span id="plVisibleCount" class="small text-tertiary ms-auto"></span>
+        <div class="pl-panel-head">
+            <div class="pl-panel-heading">
+                <h4 class="fw-semibold mb-1">
+                    <i class="bi bi-folder-check me-2 text-tertiary"></i>
+                    Dossiers connectés à Pennylane
+                    <span class="pl-count-badge">{{ dossiers_associes|length }}/{{ total_dossiers }}</span>
+                </h4>
+                <p class="pl-panel-sub mb-0">
+                    {% if is_admin %}
+                    Vue globale — toutes les équipes.
+                    {% else %}
+                    Vue limitée aux dossiers de vos équipes ({{ equipes_list|map(attribute='nom')|join(', ') }}).
+                    {% endif %}
+                </p>
+            </div>
+            <span id="plVisibleCount" class="pl-visible-count"></span>
         </div>
-        <p class="text-tertiary small mb-4">
-            {% if is_admin %}
-            Vue globale (toutes les équipes).
-            {% else %}
-            Vue limitée aux dossiers de vos équipes ({{ equipes_list|map(attribute='nom')|join(', ') }}).
-            {% endif %}
-        </p>
 
         <!-- Barre de recherche / filtres / tri temps réel -->
         <div class="d-flex gap-2 align-items-center mb-3 flex-wrap" id="plToolbar">
@@ -266,39 +291,50 @@
 
         <!-- Sélection pour synchro TVA ciblée (admin/manager uniquement) -->
         {% if not read_only %}
-        <div id="plTvaBar" class="d-flex gap-2 align-items-center mb-3 flex-wrap">
-            <label class="form-label-premium mb-0 small">Synchro TVA :</label>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="toggleSelectAllDossiers()">Tout sélectionner</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="clearSelectAllDossiers()">Tout désélectionner</button>
-            <span id="plSelectedCount" class="small text-tertiary">0 dossier(s) sélectionné(s)</span>
-            <button type="button" class="btn btn-sm btn-primary" onclick="syncSelectedTva()">
-                <i class="bi bi-cloud-download me-1"></i>Synchroniser les TVA sélectionnées
+        <div id="plTvaBar" class="pl-batch">
+            <label class="pl-batch-all" for="plSelectAll">
+                <input type="checkbox" id="plSelectAll" class="pl-master-check">
+                <span>Tout sélectionner</span>
+            </label>
+            <span class="pl-batch-sep" aria-hidden="true"></span>
+            <span id="plSelectedCount" class="pl-batch-count">Aucun dossier sélectionné</span>
+            <button type="button" class="btn btn-sm btn-primary pl-batch-cta" id="plBatchCta" onclick="syncSelectedTva()" disabled>
+                <i class="bi bi-cloud-download me-1"></i>Synchroniser la TVA
             </button>
         </div>
         {% endif %}
-        <div id="plTvaSyncStatus" class="mb-3"></div>
+        <div id="plTvaSyncStatus" class="mb-2"></div>
 
-        <!-- Grille : box fixe (1 ligne de 4 dossiers) + défilement interne -->
-        <div class="pl-grid-scroll" id="plGridScroll">
+        <div class="pl-list-scroll" id="plGridScroll">
             <div class="pl-grid-skeleton d-none" id="plGridSkeleton">
-                <div class="row g-2">
-                    {% for _ in range(8) %}
-                    <div class="col-md-4 col-lg-3">
-                        <div class="pl-skeleton" style="height:76px;"></div>
-                    </div>
-                    {% endfor %}
-                </div>
+                {% for _ in range(6) %}
+                <div class="pl-skeleton" style="height:46px;margin-bottom:6px;"></div>
+                {% endfor %}
             </div>
 
         {% if par_equipe %}
-            <div id="plGridGroups">
+            {% set has_statuses = nb_a_traiter or retard_ids %}
+            <div id="plGridGroups" class="{% if read_only %}pl-no-check {% endif %}{% if not has_statuses %}pl-no-status{% endif %}">
+            <div class="pl-list-head" aria-hidden="true">
+                <span></span>
+                <span>N°</span>
+                <span>Dossier</span>
+                <span>Collaborateur</span>
+                <span>{% if has_statuses %}Statut{% endif %}</span>
+                <span class="pl-head-actions">Actions</span>
+            </div>
             {% for eq_nom, dossiers_eq in par_equipe.items() %}
-            <div class="mb-4 pl-team-group" data-equipe="{{ eq_nom|lower }}">
-                <div class="pl-team-header"><span class="pl-team-title"><i class="bi bi-people-fill me-2"></i>{{ eq_nom }}</span><span class="pl-team-count">{{ dossiers_eq|length }} dossiers</span></div>
-                <div class="row g-2">
+            <section class="pl-team-group" data-equipe="{{ eq_nom|lower }}">
+                <header class="pl-group-head">
+                    <i class="bi bi-people-fill"></i>
+                    <span>{{ eq_nom }}</span>
+                    <span class="pl-group-count">{{ dossiers_eq|length }}</span>
+                    <span class="pl-group-rule" aria-hidden="true"></span>
+                </header>
+                <div class="pl-rows">
                     {% for d in dossiers_eq %}
                     {% set collab_nom = ((d.collaborateur.prenom ~ ' ' ~ d.collaborateur.nom) if d.collaborateur else '') %}
-                    <div class="col-md-4 col-lg-3 pl-dossier-card"
+                    <div class="pl-dossier-card"
                      data-id="{{ d.id }}"
                      data-collab="{{ d.collaborateur_id or '' }}"
                      data-collab-nom="{{ collab_nom|lower }}"
@@ -306,113 +342,127 @@
                      data-numero="{{ (d.numero_dossier or '')|lower }}"
                      data-intitule="{{ (d.intitule or '')|lower }}"
                      data-search="{{ (d.numero_dossier ~ ' ' ~ d.intitule ~ ' ' ~ collab_nom ~ ' ' ~ eq_nom ~ ' ' ~ (d.regime_tva or ''))|lower }}">
-                <div class="pl-dossier-top d-flex align-items-center gap-2">
-                    {% if not read_only %}
-                    <input type="checkbox" class="pl-dossier-check" value="{{ d.id }}" style="accent-color:var(--orange-primary);">
-                    {% endif %}
-                    <div class="pl-dossier-main min-width-0 d-flex align-items-center gap-1">
-                        <strong class="pl-dossier-num small">{{ d.numero_dossier }}</strong>
-                        <span class="pl-dossier-title text-truncate" title="{{ d.intitule }}">{{ d.intitule[:40] }}{% if d.intitule|length > 40 %}…{% endif %}</span>
-                        {% if collab_nom %}
-                        <span class="pl-dossier-sub small text-tertiary" title="{{ collab_nom }}">{{ collab_nom }}</span>
-                        {% endif %}
+                        <span class="pl-cell-check">
+                            {% if not read_only %}
+                            <input type="checkbox" class="pl-dossier-check" value="{{ d.id }}"
+                                   aria-label="Sélectionner le dossier {{ d.numero_dossier }}">
+                            {% endif %}
+                        </span>
+                        <span class="pl-cell-num"><span class="pl-num">{{ d.numero_dossier }}</span></span>
+                        <span class="pl-cell-name" title="{{ d.intitule }}">{{ d.intitule }}</span>
+                        <div class="pl-cell-meta">
+                            <span class="pl-cell-collab" title="{{ collab_nom or 'Non assigné' }}">{{ collab_nom or '—' }}</span>
+                            <div class="pl-dossier-status">
+                                {% if nb_a_traiter.get(d.id, 0) %}
+                                <span class="pl-badge pl-badge-todo" title="{{ nb_a_traiter[d.id] }} élément(s) Pennylane à traiter">{{ nb_a_traiter[d.id] }} à traiter</span>
+                                {% endif %}
+                                {% if d.id in retard_ids %}
+                                <span class="pl-badge pl-badge-late" title="Déclaration TVA en retard dans Pennylane">Retard</span>
+                                {% endif %}
+                                {% if d.pennylane_api_token and not d.pennylane_customer_id %}
+                                <span class="pl-badge pl-badge-api" title="Token API renseigné, company Pennylane à relier">API</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <span class="pl-cell-actions">
+                            {% if not read_only %}
+                            <button type="button" class="pl-icon-btn" title="Synchro TVA de ce dossier depuis Pennylane"
+                                    onclick="plSyncDossier({{ d.id }}, this);">
+                                <i class="bi bi-arrow-repeat"></i>
+                            </button>
+                            {% endif %}
+                            {% if nb_a_traiter.get(d.id, 0) and not read_only %}
+                            <button type="button" class="pl-icon-btn" title="Marquer les {{ nb_a_traiter[d.id] }} élément(s) comme traités"
+                                    onclick="plMarquerTraite({{ d.id }}, this);">
+                                <i class="bi bi-check2-all"></i>
+                            </button>
+                            {% endif %}
+                            {% if is_admin %}
+                            <button type="button" class="pl-icon-btn is-danger" title="Délier ce dossier de Pennylane (nettoie statuts + cases synchro)"
+                                    onclick="if(confirm('Délier {{ d.numero_dossier }} de Pennylane ? Les statuts et cases posés par la synchro seront supprimés.')) plDelier({{ d.id }});">
+                                <i class="bi bi-link-slash"></i>
+                            </button>
+                            {% endif %}
+                            <a href="{{ url_for('pennylane_dossier', dossier_id=d.id) }}" class="pl-icon-btn" title="Voir les données Pennylane">
+                                <i class="bi bi-arrow-up-right-square"></i>
+                            </a>
+                        </span>
                     </div>
-                    <div class="pl-dossier-status d-flex align-items-center gap-1">
-                        {% if nb_a_traiter.get(d.id, 0) %}
-                        <span class="pl-badge pl-badge-todo" title="{{ nb_a_traiter[d.id] }} élément(s) Pennylane à traiter">{{ nb_a_traiter[d.id] }}</span>
-                        {% endif %}
-                        {% if d.id in retard_ids %}
-                        <span class="pl-badge pl-badge-late" title="Déclaration TVA en retard dans Pennylane">Retard</span>
-                        {% endif %}
-                        {% if d.pennylane_api_token and not d.pennylane_customer_id %}
-                        <span class="badge badge-success" style="font-size:0.5rem;" title="Dossier avec token, sans customer Pennylane">Token</span>
-                        {% endif %}
-                    </div>
-                </div>
-                <div class="pl-dossier-actions d-flex gap-1">
-                    {% if not read_only %}
-                    <button type="button" class="btn-premium btn-premium-secondary btn-press pl-action-btn pl-action-btn-sm"
-                            title="Synchro TVA de ce dossier depuis Pennylane"
-                            onclick="plSyncDossier({{ d.id }}, this);">
-                        <i class="bi bi-arrow-repeat"></i>
-                    </button>
-                    {% endif %}
-                    {% if nb_a_traiter.get(d.id, 0) and not read_only %}
-                    <button type="button" class="btn-premium btn-premium-secondary btn-press pl-action-btn pl-action-btn-sm"
-                            title="Marquer les {{ nb_a_traiter[d.id] }} élément(s) comme traités"
-                            onclick="plMarquerTraite({{ d.id }}, this);">
-                        <i class="bi bi-check2-all"></i>
-                    </button>
-                    {% endif %}
-                    {% if is_admin %}
-                    <button type="button" class="btn-premium btn-premium-secondary btn-press pl-action-btn pl-action-btn-sm" title="Déslier ce dossier de Pennylane (nettoie statuts + cases synchro)"
-                            onclick="if(confirm('Déslier {{ d.numero_dossier }} de Pennylane ? Les statuts et cases posés par la synchro seront supprimés.')) plDelier({{ d.id }});">
-                        <i class="bi bi-link-slash"></i>
-                    </button>
-                    {% endif %}
-                    <a href="{{ url_for('pennylane_dossier', dossier_id=d.id) }}" class="btn-premium btn-premium-secondary btn-press pl-action-btn pl-action-btn-sm" title="Voir les données Pennylane">
-                        <i class="bi bi-box-arrow-up-right"></i>
-                    </a>
-                </div>
-            </div>
                     {% endfor %}
                 </div>
-            </div>
+            </section>
             {% endfor %}
             </div>
         {% else %}
-        <p class="text-tertiary small">
-            Aucun dossier associé pour le moment.
-            {% if is_admin and configured %}Cliquez sur « Synchroniser les dossiers » pour lancer l'association automatique.{% endif %}
-        </p>
+        <div class="pl-empty-state">
+            <i class="bi bi-link-45deg"></i>
+            <p class="mb-1">Aucun dossier relié à Pennylane pour le moment.</p>
+            {% if is_admin and configured %}
+            <p class="mb-0 small">Lance la synchro automatique depuis la configuration de l'API ci-dessus.</p>
+            {% endif %}
+        </div>
         {% endif %}
         </div>
-        <div id="plNoResults" class="pl-empty d-none">
+        <div id="plNoResults" class="pl-empty" style="display:none">
             <i class="bi bi-search me-1"></i>Aucun dossier ne correspond aux filtres.
         </div>
 
         {% if dossiers_non_associes and is_admin %}
-        <div class="mt-4 pt-3 u-border-top">
-            <h6 class="text-tertiary fw-semibold mb-2">Dossiers non associés ({{ dossiers_non_associes|length }})</h6>
-            <div class="d-flex flex-wrap gap-2 mb-3">
-                {% for d in dossiers_non_associes[:15] %}
-                <span class="badge badge-tertiary">{{ d.numero_dossier }} — {{ d.intitule[:22] }}</span>
-                {% endfor %}
-                {% if dossiers_non_associes|length > 15 %}
-                <span class="badge badge-tertiary">+{{ dossiers_non_associes|length - 15 }}…</span>
-                {% endif %}
-            </div>
-            <div class="p-3 rounded-3 pl-assoc-panel">
-                <h6 class="fw-semibold mb-2" style="font-size:0.85rem;">
-                    <i class="bi bi-link-45deg me-1"></i>Associer manuellement un dossier à une company Pennylane
-                </h6>
-                <p class="text-tertiary small mb-2">
-                    À utiliser quand l'association automatique (nom/SIRET) échoue.
-                    Le company ID se trouve dans l'URL Pennylane :
-                    <code>app.pennylane.com/companies/<b>23281030</b>/…</code>
-                </p>
-                <div class="d-flex flex-wrap gap-2 align-items-center">
-                    <select id="plAssocDossier" class="form-select form-select-sm" style="max-width:260px;">
-                        <option value="">— Choisir un dossier —</option>
-                        {% for d in dossiers_non_associes %}
-                        <option value="{{ d.id }}">{{ d.numero_dossier }} — {{ d.intitule[:30] }}{% if d.pennylane_api_token %} (API ✓){% endif %}</option>
-                        {% endfor %}
-                    </select>
-                    <input type="text" id="plAssocCompany" class="form-control form-control-sm" placeholder="Company ID (ex. 23281030)" style="max-width:200px;">
-                    <button type="button" class="btn btn-sm btn-primary" onclick="plAssocier()">
-                        <i class="bi bi-check2 me-1"></i>Relier
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-info" title="Retrouver le company ID automatiquement via l'API Pennylane (token du dossier, sinon token global)"
-                            onclick="plAutoAssocier()">
-                        <i class="bi bi-magic me-1"></i>Auto (API)
-                    </button>
+        <section class="pl-unassoc">
+            <div class="pl-unassoc-head">
+                <div>
+                    <h5 class="pl-unassoc-title">
+                        <i class="bi bi-folder-plus me-2"></i>Dossiers non associés
+                        <span class="pl-count-badge is-quiet">{{ dossiers_non_associes|length }}</span>
+                    </h5>
+                    <p class="pl-unassoc-sub mb-0">Présents dans JMH Orbit, sans company Pennylane reliée. Clique un dossier pour le relier.</p>
                 </div>
-                <p class="text-tertiary mb-0 mt-2 u-fs-xs">
-                    <i class="bi bi-info-circle me-1"></i>Auto (API) : si le dossier a un token API (champ « Token Pennylane » de la fiche dossier),
-                    l'app retrouve le company ID toute seule (match par nom, fallback /me). Sinon la synchro horaire le fera dès l'ajout du token.
-                </p>
             </div>
-        </div>
+            <div class="pl-unassoc-list">
+                {% for d in dossiers_non_associes %}
+                <button type="button" class="pl-unassoc-item" data-assoc-id="{{ d.id }}"
+                        data-assoc-num="{{ d.numero_dossier }}"
+                        title="Relier {{ d.intitule }} à une company Pennylane">
+                    <span class="pl-unassoc-num">{{ d.numero_dossier }}</span>
+                    <span class="pl-unassoc-name">{{ d.intitule }}</span>
+                    {% if d.pennylane_api_token %}<span class="pl-badge pl-badge-api" title="Token API déjà renseigné">API</span>{% endif %}
+                    <i class="bi bi-link-45deg pl-unassoc-icon"></i>
+                </button>
+                {% endfor %}
+            </div>
+
+            <details class="pl-assoc-panel" id="plAssocPanel">
+                <summary class="pl-assoc-summary">
+                    <i class="bi bi-link-45deg"></i>
+                    <span>Relier manuellement par company ID</span>
+                    <span class="pl-assoc-tag">si l'association automatique échoue</span>
+                    <i class="bi bi-chevron-down pl-config-chev"></i>
+                </summary>
+                <div class="pl-assoc-body">
+                    <div class="pl-assoc-form">
+                        <select id="plAssocDossier" class="form-select form-select-sm" aria-label="Dossier à relier">
+                            <option value="">— Choisir un dossier —</option>
+                            {% for d in dossiers_non_associes %}
+                            <option value="{{ d.id }}">{{ d.numero_dossier }} — {{ d.intitule[:34] }}{% if d.pennylane_api_token %} (API ✓){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" id="plAssocCompany" class="form-control form-control-sm"
+                               placeholder="Company ID (ex. 23281030)" inputmode="numeric" autocomplete="off">
+                        <button type="button" class="btn btn-sm btn-primary" onclick="plAssocier()">
+                            <i class="bi bi-check2 me-1"></i>Relier
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-info" title="Retrouver le company ID automatiquement via l'API Pennylane (token du dossier, sinon token global)"
+                                onclick="plAutoAssocier()">
+                            <i class="bi bi-magic me-1"></i>Auto (API)
+                        </button>
+                    </div>
+                    <p class="pl-assoc-note mb-0">
+                        Le company ID se lit dans l'URL Pennylane : <code>app.pennylane.com/companies/<b>23281030</b>/…</code>.
+                        <b>Auto (API)</b> retrouve l'identifiant seul si le dossier a un token API (match par nom, repli <code>/me</code>).
+                    </p>
+                </div>
+            </details>
+        </section>
         {% endif %}
     </div>
 </div>
@@ -431,32 +481,32 @@ function showPl(msg, ok) {
 
 function plAutoAssocier() {
     var dossierId = document.getElementById('plAssocDossier').value;
-    if (!dossierId) { showPl('Choisis un dossier dans la liste, puis clique Auto (API).', false); return; }
+    if (!dossierId) { plToast('Choisis un dossier dans la liste, puis clique Auto (API).', false); return; }
     var fd = new FormData();
     fd.append('dossier_id', dossierId);
     fetch('{{ url_for("pennylane_auto_associer_dossier") }}', { method: 'POST', body: fd })
         .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
         .then(function (res) {
-            showPl(res.j.message || 'Erreur inconnue.', res.j.ok);
+            plToast(res.j.message || 'Erreur inconnue.', res.j.ok);
             if (res.j.ok) { setTimeout(function () { location.reload(); }, 1800); }
         })
-        .catch(function (e) { showPl('Erreur réseau : ' + e, false); });
+        .catch(function (e) { plToast('Erreur réseau : ' + e, false); });
 }
 
 function plAssocier() {
     var dossierId = document.getElementById('plAssocDossier').value;
     var companyId = document.getElementById('plAssocCompany').value.trim();
-    if (!dossierId || !companyId) { showPl('Choisis un dossier et saisis le company ID Pennylane.', false); return; }
+    if (!dossierId || !companyId) { plToast('Choisis un dossier et saisis le company ID Pennylane.', false); return; }
     var fd = new FormData();
     fd.append('dossier_id', dossierId);
     fd.append('company_id', companyId);
     fetch('{{ url_for("pennylane_associer_dossier") }}', { method: 'POST', body: fd })
         .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
         .then(function (res) {
-            showPl(res.j.message || 'Erreur inconnue.', res.j.ok);
+            plToast(res.j.message || 'Erreur inconnue.', res.j.ok);
             if (res.j.ok) { setTimeout(function () { location.reload(); }, 1800); }
         })
-        .catch(function (e) { showPl('Erreur réseau : ' + e, false); });
+        .catch(function (e) { plToast('Erreur réseau : ' + e, false); });
 }
 function plDelier(dossierId) {
     var fd = new FormData();
@@ -464,10 +514,10 @@ function plDelier(dossierId) {
     fetch('/pennylane/delier_dossier', { method: 'POST', body: fd })
         .then(function (r) { return r.json().then(function (j) { return { s: r.status, j: j }; }); })
         .then(function (res) {
-            showPl(res.j.message || 'Erreur inconnue.', res.j.ok);
+            plToast(res.j.message || 'Erreur inconnue.', res.j.ok);
             if (res.j.ok) { setTimeout(function () { location.reload(); }, 1800); }
         })
-        .catch(function (e) { showPl('Erreur réseau : ' + e, false); });
+        .catch(function (e) { plToast('Erreur réseau : ' + e, false); });
 }
 function savePlConfig(e) {
     e.preventDefault();
@@ -619,16 +669,31 @@ function verifyPlTva(btn) {
 }
 
 function updatePlSelectedCount() {
-    var n = document.querySelectorAll('.pl-dossier-check:checked').length;
+    var boxes = Array.prototype.slice.call(document.querySelectorAll('.pl-dossier-check'));
+    var n = boxes.filter(function (c) { return c.checked; }).length;
     var el = document.getElementById('plSelectedCount');
-    if (el) el.textContent = n + ' dossier(s) sélectionné(s)';
+    if (el) {
+        el.textContent = n ? n + ' dossier' + (n > 1 ? 's' : '') + ' sélectionné' + (n > 1 ? 's' : '') : 'Aucun dossier sélectionné';
+        el.classList.toggle('is-active', n > 0);
+    }
+    var master = document.getElementById('plSelectAll');
+    if (master) {
+        master.checked = boxes.length > 0 && n === boxes.length;
+        master.indeterminate = n > 0 && n < boxes.length;
+    }
+    var cta = document.getElementById('plBatchCta');
+    if (cta) cta.disabled = n === 0;
+}
+function plVisibleChecks() {
+    return Array.prototype.slice.call(document.querySelectorAll('.pl-dossier-check'))
+        .filter(function (c) { var row = c.closest('.pl-dossier-card'); return !row || row.style.display !== 'none'; });
 }
 function toggleSelectAllDossiers() {
-    document.querySelectorAll('.pl-dossier-check').forEach(function(c) { c.checked = true; });
+    plVisibleChecks().forEach(function (c) { c.checked = true; });
     updatePlSelectedCount();
 }
 function clearSelectAllDossiers() {
-    document.querySelectorAll('.pl-dossier-check').forEach(function(c) { c.checked = false; });
+    plVisibleChecks().forEach(function (c) { c.checked = false; });
     updatePlSelectedCount();
 }
 function syncSelectedTva() {
@@ -790,14 +855,17 @@ function plApplyFilters() {
         g.style.display = any ? '' : 'none';
     });
     var countEl = document.getElementById('plVisibleCount');
-    if (countEl) countEl.textContent = visible + ' / ' + cards.length + ' dossier(s) affiché(s)';
+    if (countEl) {
+        countEl.textContent = visible + ' / ' + cards.length + ' affichés';
+        countEl.hidden = visible === cards.length;
+    }
     var noRes = document.getElementById('plNoResults');
     if (noRes) noRes.style.display = (cards.length > 0 && visible === 0) ? '' : 'none';
 }
 function plApplySort() {
     var sortEl = document.getElementById('plSort');
     var key = sortEl ? sortEl.value : 'numero';
-    document.querySelectorAll('#plGridGroups .row').forEach(function (row) {
+    document.querySelectorAll('#plGridGroups .pl-rows').forEach(function (row) {
         var cols = Array.prototype.slice.call(row.querySelectorAll('.pl-dossier-card'));
         cols.sort(function (a, b) {
             var va, vb;
@@ -829,7 +897,25 @@ function plApplySort() {
     });
     var refresh = document.getElementById('plRefreshBtn');
     if (refresh) refresh.addEventListener('click', function () { plRefreshData(); });
+    var master = document.getElementById('plSelectAll');
+    if (master) master.addEventListener('change', function () {
+        if (master.checked) { toggleSelectAllDossiers(); } else { clearSelectAllDossiers(); }
+    });
+    document.querySelectorAll('.pl-unassoc-item').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var sel = document.getElementById('plAssocDossier');
+            var panel = document.getElementById('plAssocPanel');
+            var input = document.getElementById('plAssocCompany');
+            if (sel) sel.value = btn.dataset.assocId;
+            if (panel) {
+                panel.open = true;
+                panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            if (input) setTimeout(function () { input.focus(); }, 250);
+        });
+    });
     plApplyFilters();
+    updatePlSelectedCount();
 })();
 
 /* ===== Sélection : compteur + shift-click pour étendre la plage ===== */
@@ -915,6 +1001,8 @@ function plRefreshData(silent) {
                         todo = document.createElement('span');
                         todo.className = 'pl-badge pl-badge-todo';
                         badgeSlot.appendChild(todo);
+                        var grp = document.getElementById('plGridGroups');
+                        if (grp) grp.classList.remove('pl-no-status');
                     }
                     todo.textContent = it.a_traiter + ' à traiter';
                     todo.title = it.a_traiter + ' élément(s) Pennylane à traiter';
@@ -927,6 +1015,8 @@ function plRefreshData(silent) {
                         late.textContent = 'Retard';
                         late.title = 'Déclaration TVA en retard dans Pennylane';
                         badgeSlot.appendChild(late);
+                        var grp2 = document.getElementById('plGridGroups');
+                        if (grp2) grp2.classList.remove('pl-no-status');
                     }
                 } else if (late) { late.remove(); }
             });
@@ -1163,16 +1253,60 @@ function plRefreshData(silent) {
 .pl-help .pl-help-body p { margin-bottom: .5rem; }
 
 /* ---- Panneau d'association manuelle ---- */
-.pl-assoc-panel { background: var(--surface-sunken); border: 1px solid var(--line); }
+.pl-assoc-panel {
+    margin-top: 0.85rem;
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+}
+.pl-assoc-summary {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem .85rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    list-style: none;
+}
+.pl-assoc-summary::-webkit-details-marker { display: none; }
+.pl-assoc-summary:hover { color: var(--text-primary); }
+.pl-assoc-summary:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.pl-assoc-tag {
+    font-size: .72rem;
+    font-weight: 500;
+    color: var(--text-tertiary);
+}
+.pl-assoc-panel[open] .pl-config-chev { transform: rotate(180deg); }
+.pl-assoc-body {
+    padding: 0 .85rem .85rem;
+    border-top: 1px solid var(--line);
+    padding-top: .75rem;
+}
+.pl-assoc-form {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(150px, .9fr) auto auto;
+    gap: .45rem;
+    align-items: center;
+}
+.pl-assoc-note {
+    margin-top: .55rem;
+    font-size: .74rem;
+    line-height: 1.5;
+    color: var(--text-tertiary);
+}
+.pl-assoc-note code { font-size: .95em; }
 
 /* Boutons Bootstrap hérités dans les zones Pennylane : même azur que le CTA
    premium, sinon la pastille « encre » du socle jure sur fond clair. */
 #plTvaBar .btn-primary,
-.pl-assoc-panel .btn-primary {
+.pl-assoc-body .btn-primary {
     background: var(--amber-deep) !important; border-color: var(--amber-deep) !important; color: var(--on-accent) !important;
 }
 #plTvaBar .btn-primary:hover,
-.pl-assoc-panel .btn-primary:hover {
+.pl-assoc-body .btn-primary:hover {
     background: var(--amber) !important; border-color: var(--amber) !important; color: var(--on-accent) !important;
 }
 
@@ -1216,8 +1350,8 @@ function plRefreshData(silent) {
 }
 #plToolbar .input-group { max-width: 320px; }
 /* Une seule rangée dès qu'il y a la place : recherche, 3 filtres puis les
-   deux actions et le compteur. En dessous de 992px, retour au wrap. */
-@media (min-width: 992px) {
+   deux actions. En dessous de 1400px, retour au wrap (libellés complets). */
+@media (min-width: 1400px) {
     #plToolbar {
         display: grid !important;
         grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(0, 1fr)) auto auto;
@@ -1258,144 +1392,219 @@ function plRefreshData(silent) {
     border-color: var(--pl-accent);
     color: #fff;
 }
-#plVisibleCount {
-    padding: 0.3em 0.75em;
+/* ---- Panel head ---- */
+.pl-panel-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: .85rem;
+    flex-wrap: wrap;
+    margin-bottom: .9rem;
+}
+.pl-panel-sub {
+    font-size: .82rem;
+    color: var(--text-tertiary);
+}
+.pl-count-badge {
+    display: inline-block;
+    margin-left: .35rem;
+    padding: .12em .55em;
+    font-size: .72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--orange-text);
     background: var(--pl-accent-soft);
     border: 1px solid var(--pl-accent-border);
     border-radius: 999px;
-    font-weight: 700;
-    color: var(--orange-dark, #1B5570);
+    vertical-align: middle;
+}
+.pl-count-badge.is-quiet {
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border-color: var(--line);
+}
+.pl-visible-count {
+    padding-top: .15rem;
+    font-size: .76rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-tertiary);
+    white-space: nowrap;
 }
 
-/* ---- Secondary bar: targeted TVA sync ---- */
-#plTvaBar {
-    gap: 0.5rem;
-    padding: 0.5rem 0.7rem;
-    font-size: 0.85rem;
-    background: var(--pl-accent-soft);
-    border: 1px dashed var(--pl-accent-border);
-    border-radius: var(--pl-radius-lg);
-}
-#plTvaBar .form-label-premium {
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    font-size: 0.7rem;
-    color: var(--orange-dark, #1B5570);
-}
-#plTvaBar .btn {
+/* ---- Barre de sélection (synchro TVA ciblée) ---- */
+.pl-batch {
+    display: flex;
+    align-items: center;
+    gap: .7rem;
+    flex-wrap: wrap;
+    padding: .38rem .7rem;
+    margin-bottom: .55rem;
+    font-size: .8rem;
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
     border-radius: 10px;
-    font-size: 0.8rem;
+}
+.pl-batch-all {
+    display: inline-flex;
+    align-items: center;
+    gap: .45rem;
+    margin: 0;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    user-select: none;
+}
+.pl-master-check {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--amber-deep);
+}
+.pl-batch-sep {
+    width: 1px;
+    height: 16px;
+    background: var(--line-strong);
+}
+.pl-batch-count {
+    color: var(--text-tertiary);
+    transition: color .15s ease;
+}
+.pl-batch-count.is-active {
+    color: var(--text-primary);
     font-weight: 600;
 }
+.pl-batch-cta {
+    margin-left: auto;
+    border-radius: 8px;
+    font-size: .78rem;
+    font-weight: 600;
+}
+.pl-batch-cta:disabled { opacity: .55; }
 
-/* ---- Grid scroll area ---- */
-.pl-grid-scroll {
-    overflow-y: auto;
-    overscroll-behavior: contain;
-    padding-right: 4px;
-    scrollbar-width: thin;
-    scrollbar-color: var(--pl-accent) transparent;
-}
-.pl-grid-scroll::-webkit-scrollbar { width: 8px; }
-.pl-grid-scroll::-webkit-scrollbar-track { background: transparent; }
-.pl-grid-scroll::-webkit-scrollbar-thumb {
-    background: var(--pl-accent);
-    border-radius: 4px;
-}
-.pl-grid-scroll::-webkit-scrollbar-thumb:hover { background: var(--orange-dark, #1B5570); }
-
-/* ---- Grid: 4 cards per row, never compressed ---- */
-#plGridGroups .row {
-    display: flex;
-    flex-wrap: wrap;
-}
-#plGridGroups .pl-dossier-card {
-    flex: 0 0 calc(25% - 0.5rem);
-    max-width: calc(25% - 0.5rem);
+/* ---- Liste des dossiers ---- */
+.pl-list-scroll {
     min-width: 0;
+    --pl-check-w: 26px;
+    --pl-num-w: 68px;
+    --pl-collab-w: 132px;
+    --pl-status-w: 122px;
+    --pl-act-w: 120px;
 }
-@media (max-width: 991.98px) {
-    #plGridGroups .pl-dossier-card {
-        flex: 0 0 calc(33.333% - 0.5rem);
-        max-width: calc(33.333% - 0.5rem);
+@media (min-width: 1200px) {
+    .pl-list-scroll {
+        --pl-collab-w: 170px;
+        --pl-status-w: 150px;
+        --pl-act-w: 132px;
     }
 }
-@media (max-width: 767.98px) {
-    #plGridGroups .pl-dossier-card {
-        flex: 0 0 100%;
-        max-width: 100%;
-    }
+.pl-no-check { --pl-check-w: 0px; }
+.pl-no-status { --pl-status-w: 0px; }
+
+/* Colonnes fixes sauf le nom : les largeurs restent identiques d'une ligne à
+   l'autre, donc les en-têtes s'alignent sur toutes les lignes. */
+.pl-list-head,
+.pl-dossier-card {
+    display: grid;
+    grid-template-columns:
+        var(--pl-check-w, 26px) var(--pl-num-w, 68px) minmax(0, 1fr)
+        minmax(0, var(--pl-collab-w, 132px)) minmax(0, var(--pl-status-w, 122px))
+        var(--pl-act-w, 120px);
+    align-items: center;
+    column-gap: .65rem;
 }
 
-/* ---- Dossier cards ---- */
-.pl-dossier-card {
+.pl-list-head {
+    padding: .1rem calc(.7rem + 1px) .45rem;
+    font-size: .64rem;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.pl-head-actions { text-align: right; }
+
+.pl-team-group + .pl-team-group { margin-top: 1.1rem; }
+
+.pl-group-head {
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    padding: .45rem .15rem .45rem;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .09em;
+    text-transform: uppercase;
+    color: var(--text-tertiary);
+}
+.pl-group-head i { font-size: .78rem; color: var(--amber-deep); }
+.pl-group-count {
+    padding: .05em .5em;
+    font-size: .66rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    font-variant-numeric: tabular-nums;
+}
+.pl-group-rule { flex: 1 1 auto; height: 1px; margin-left: .3rem; background: var(--line); }
+
+.pl-rows {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    min-height: 96px;
-    position: relative;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: 10px;
     overflow: hidden;
-    background: linear-gradient(180deg, var(--bg-elevated, #fff) 0%, var(--bg-card, #fafafb) 100%);
-    border: 1px solid var(--border-color, #e3e5e9);
-    border-radius: var(--pl-radius-md);
-    box-shadow: var(--pl-shadow-1);
-    transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.25s ease, border-color 0.25s ease;
 }
-.pl-dossier-card::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    width: 3px;
-    background: linear-gradient(180deg, var(--pl-accent), var(--pl-accent-2));
-    opacity: 0;
-    transition: opacity 0.25s ease;
+
+.pl-dossier-card {
+    padding: .5rem .7rem;
+    background: var(--surface);
+    transition: background-color .15s ease, box-shadow .15s ease;
 }
-.pl-dossier-card:hover {
-    transform: translateY(-4px);
-    border-color: var(--pl-accent-border);
-    box-shadow: var(--pl-shadow-2);
+.pl-dossier-card:hover { background: var(--bg-card-hover); }
+.pl-dossier-card:has(.pl-dossier-check:checked) {
+    background: color-mix(in srgb, var(--amber) 8%, var(--surface));
+    box-shadow: inset 3px 0 0 var(--amber-deep);
 }
-.pl-dossier-card:hover::before { opacity: 1; }
-.pl-dossier-top {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.35rem 0.5rem;
-    min-height: 72px;
-    padding: 0.5rem 0.6rem 0.25rem;
+
+.pl-cell-check { display: flex; align-items: center; justify-content: center; }
+.pl-dossier-check {
+    width: 15px;
+    height: 15px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--amber-deep);
 }
-.pl-dossier-main {
-    flex: 1 1 auto;
-    min-width: 0;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-.pl-dossier-num {
-    font-size: 0.68rem;
-    font-weight: 800;
-    color: var(--orange-dark, #1B5570);
-    white-space: nowrap;
-    padding: 0.15em 0.5em;
-    background: var(--pl-accent-soft);
-    border: 1px solid var(--pl-accent-border);
+.pl-num {
+    display: inline-block;
+    padding: .1em .45em;
+    font-size: .72rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-secondary);
+    background: var(--surface-sunken);
+    border: 1px solid var(--line);
     border-radius: 6px;
 }
-.pl-dossier-title {
-    font-size: 0.78rem;
+.pl-cell-name {
+    min-width: 0;
+    font-size: .84rem;
     font-weight: 600;
-    color: var(--text-primary, #22262b);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    color: var(--text-primary);
+    white-space: nowrap;
     overflow: hidden;
+    text-overflow: ellipsis;
 }
-.pl-dossier-sub {
-    font-size: 0.6rem;
-    color: var(--text-tertiary, #676f7c);
+.pl-cell-meta { display: contents; }
+.pl-cell-collab {
+    min-width: 0;
+    font-size: .78rem;
+    color: var(--text-tertiary);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1404,113 +1613,238 @@ function plRefreshData(silent) {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.25rem;
-    flex-shrink: 0;
+    gap: .3rem;
+    min-width: 0;
 }
-.pl-dossier-check {
-    width: 15px;
-    height: 15px;
-    cursor: pointer;
-    flex-shrink: 0;
-    accent-color: var(--pl-accent);
-}
-.pl-dossier-actions {
+.pl-cell-actions {
     display: flex;
     align-items: center;
-    gap: 0.15rem;
-    flex-wrap: wrap;
-    margin-top: auto;
-    padding: 0.3rem 0.55rem 0.45rem;
-    border-top: 1px solid var(--border-whisper, var(--border-color));
-    background: rgba(20, 22, 26, 0.015);
+    justify-content: flex-end;
+    gap: .1rem;
 }
-.pl-action-btn-sm {
-    width: 30px;
-    height: 30px;
-    font-size: 0.75rem;
-    border-radius: 8px;
-    opacity: 0.75;
-    transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.15s ease;
+.pl-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    font-size: .8rem;
+    color: var(--text-tertiary);
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 7px;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, color .15s ease, border-color .15s ease;
 }
-.pl-action-btn-sm:hover {
-    opacity: 1;
-    background: var(--pl-accent-soft);
-    color: var(--pl-accent);
-    transform: translateY(-1px);
-}
+.pl-icon-btn:hover { background: var(--surface-sunken); border-color: var(--line); color: var(--text-primary); }
+.pl-icon-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+.pl-icon-btn.is-danger:hover { color: var(--danger-ink); border-color: color-mix(in srgb, var(--danger) 35%, var(--line)); }
 
 /* ---- Status badges ---- */
 .pl-badge {
     font-size: 0.66rem;
     font-weight: 700;
-    padding: 0.28em 0.6em;
+    padding: 0.2em 0.55em;
     border-radius: 999px;
     letter-spacing: 0.02em;
     white-space: nowrap;
+    border: 1px solid transparent;
 }
 .pl-badge-todo {
-    background: rgba(31, 106, 136, 0.16);
-    color: var(--orange-dark, #1B5570);
-    border: 1px solid rgba(31, 106, 136, 0.4);
+    background: color-mix(in srgb, var(--amber) 14%, var(--surface));
+    color: var(--orange-text);
+    border-color: color-mix(in srgb, var(--amber) 40%, transparent);
 }
 .pl-badge-late {
-    background: rgba(220, 53, 69, 0.14);
-    color: #dc3545;
-    border: 1px solid rgba(220, 53, 69, 0.4);
+    background: color-mix(in srgb, var(--danger) 12%, var(--surface));
+    color: var(--danger-ink);
+    border-color: color-mix(in srgb, var(--danger) 38%, transparent);
+}
+.pl-badge-api {
+    background: var(--surface-sunken);
+    color: var(--text-secondary);
+    border-color: var(--line);
 }
 
-/* ---- Team headers ---- */
-.pl-team-header {
+/* ---- Dossiers non associés ---- */
+.pl-unassoc {
+    margin-top: 1.4rem;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+}
+.pl-unassoc-title {
+    margin-bottom: .15rem;
+    font-size: .92rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+.pl-unassoc-sub {
+    font-size: .78rem;
+    color: var(--text-tertiary);
+}
+.pl-unassoc-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .35rem;
+    max-height: 258px;
+    overflow-y: auto;
+    margin-top: .75rem;
+    padding-right: 3px;
+    scrollbar-width: thin;
+}
+.pl-unassoc-item {
     display: flex;
     align-items: center;
-    gap: 0.6rem;
-    padding: 0.5rem 0.85rem;
-    margin-bottom: 0.65rem;
-    background: linear-gradient(90deg, var(--pl-accent-soft) 0%, transparent 70%), var(--bg-card, #fafafb);
-    border: 1px solid var(--border-color, #e3e5e9);
-    border-left: 3px solid var(--pl-accent);
-    border-radius: var(--pl-radius-md);
-    box-shadow: var(--pl-shadow-1);
+    gap: .5rem;
+    width: 100%;
+    padding: .42rem .55rem;
+    font-size: .8rem;
+    text-align: left;
+    color: var(--text-secondary);
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: border-color .15s ease, background-color .15s ease, color .15s ease;
 }
-.pl-team-title {
-    display: inline-flex;
-    align-items: center;
-    font-size: 0.74rem;
-    font-weight: 800;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--text-primary, #22262b);
+.pl-unassoc-item:hover {
+    color: var(--text-primary);
+    background: var(--bg-card-hover);
+    border-color: color-mix(in srgb, var(--amber) 45%, var(--line));
 }
-.pl-team-title i { color: var(--pl-accent); }
-.pl-team-count {
-    margin-left: auto;
-    padding: 0.2em 0.7em;
-    font-size: 0.72rem;
+.pl-unassoc-item:focus-visible { outline: 2px solid var(--amber); outline-offset: 1px; }
+.pl-unassoc-num {
+    font-size: .72rem;
     font-weight: 700;
-    color: var(--orange-dark, #1B5570);
-    background: var(--pl-accent-soft);
-    border: 1px solid var(--pl-accent-border);
-    border-radius: 999px;
     font-variant-numeric: tabular-nums;
+    color: var(--text-tertiary);
 }
+.pl-unassoc-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.pl-unassoc-icon { color: var(--amber-deep); opacity: .5; transition: opacity .15s ease; }
+.pl-unassoc-item:hover .pl-unassoc-icon,
+.pl-unassoc-item:focus-visible .pl-unassoc-icon { opacity: 1; }
+
+/* ---- Cartes de configuration repliables ---- */
+.pl-config { margin-bottom: 1rem; overflow: hidden; }
+.pl-config-summary {
+    display: flex;
+    align-items: center;
+    gap: .55rem;
+    padding: .85rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+}
+.pl-config-summary::-webkit-details-marker { display: none; }
+.pl-config-summary:hover .pl-config-title { color: var(--orange-text); }
+.pl-config-summary:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.pl-config-icon { color: var(--text-tertiary); }
+.pl-config-title {
+    margin: 0;
+    font-size: .95rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    transition: color .15s ease;
+}
+.pl-config-summary .badge { font-size: .68rem; font-weight: 700; }
+.pl-config-chev {
+    margin-left: auto;
+    font-size: .72rem;
+    color: var(--text-tertiary);
+    transition: transform .2s ease;
+}
+.pl-config[open] .pl-config-chev { transform: rotate(180deg); }
+.pl-config[open] > .pl-config-summary { border-bottom: 1px solid var(--line); }
+.pl-config-body { padding: 1.1rem 1.25rem 1.25rem; }
 
 /* ---- Empty states ---- */
-.pl-empty {
-    margin-top: 0.5rem;
-    padding: 2.2rem 1.25rem;
+.pl-empty-state {
+    padding: 2rem 1rem;
     text-align: center;
-    font-size: 0.85rem;
-    color: var(--text-tertiary, #676f7c);
-    background: repeating-linear-gradient(135deg, transparent 0 12px, rgba(31, 106, 136, 0.035) 12px 24px);
-    border: 1.5px dashed var(--border-color, #e3e5e9);
-    border-radius: var(--pl-radius-lg);
+    font-size: .85rem;
+    color: var(--text-tertiary);
+    background: var(--surface-sunken);
+    border: 1.5px dashed var(--line);
+    border-radius: 12px;
 }
-.pl-empty i {
+.pl-empty-state i {
     display: block;
-    margin-bottom: 0.5rem;
-    font-size: 1.7rem;
-    color: var(--pl-accent);
-    opacity: 0.75;
+    margin-bottom: .45rem;
+    font-size: 1.6rem;
+    color: var(--text-tertiary);
+}
+.pl-empty {
+    margin-top: .6rem;
+    padding: 1.2rem 1rem;
+    text-align: center;
+    font-size: .82rem;
+    color: var(--text-tertiary);
+    background: var(--surface-sunken);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+}
+
+/* ---- Liste sur deux lignes en dessous de 992px ---- */
+@media (max-width: 991.98px) {
+    .pl-list-head { display: none; }
+    .pl-dossier-card {
+        grid-template-columns: var(--pl-check-w, 26px) auto minmax(0, 1fr) auto;
+        grid-template-areas:
+            "check num name actions"
+            "check num meta actions";
+        row-gap: .25rem;
+        padding: .5rem .6rem;
+    }
+    .pl-cell-check { grid-area: check; }
+    .pl-cell-num { grid-area: num; }
+    .pl-cell-name {
+        grid-area: name;
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+    }
+    .pl-cell-meta {
+        display: flex;
+        grid-area: meta;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .25rem .5rem;
+    }
+    .pl-cell-actions { grid-area: actions; }
+    .pl-icon-btn { width: 34px; height: 34px; font-size: .88rem; }
+}
+@media (max-width: 575.98px) {
+    .pl-panel-head { flex-direction: column; gap: .2rem; }
+    /* Libellés entiers (pas de troncature) et champs à 16px pour éviter
+       le zoom automatique iOS ; seuls les deux boutons partagent une ligne. */
+    #plToolbar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: .4rem;
+    }
+    #plToolbar .input-group,
+    #plToolbar #plFilterCollab,
+    #plToolbar #plFilterRegime,
+    #plToolbar #plSort {
+        grid-column: 1 / -1;
+        max-width: none !important;
+        width: 100%;
+    }
+    #plToolbar > .btn { width: 100%; }
+    .pl-unassoc-list { grid-template-columns: 1fr; max-height: none; }
+    .pl-assoc-form { grid-template-columns: 1fr 1fr; }
+    .pl-assoc-form select { grid-column: 1 / -1; }
+    .pl-assoc-tag { display: none; }
+    .pl-batch { gap: .5rem; }
+    .pl-batch-sep { display: none; }
+    .pl-batch-cta { width: 100%; margin-left: 0; }
 }
 
 /* ---- Loading skeletons ---- */

@@ -1,7 +1,9 @@
 """Tests de la page dashboard Pennylane : rendu, stats, filtres, endpoints."""
 MARKERS = [
     'plStatsRow',          # cartes de stats
-    'pl-grid-scroll',      # box fixe avec défilement
+    'plGridGroups',        # liste des dossiers groupée par équipe (lignes)
+    'pl-dossier-card',     # une ligne de dossier
+    'pl-batch',            # barre de sélection pour la synchro TVA ciblée
     'plSearch', 'plFilterCollab', 'plFilterRegime', 'plSort',  # toolbar
     'pl-badge-todo', 'pl-badge-late',
     'plToast', 'plGridSkeleton',

@@ -45,25 +45,35 @@
         </div>
         <div class="d-flex gap-2 align-items-center">
             {% if not read_only %}
-            <button id="btn-check-pl" class="btn btn-outline-orange" onclick="checkPennylane()">
-                <i class="bi bi-arrow-repeat me-1"></i>Vérifier maintenant
+            <button id="btn-check-pl" class="btn-premium btn-premium-secondary btn-sm btn-press" onclick="checkPennylane()">
+                <i class="bi bi-arrow-repeat"></i>Vérifier maintenant
             </button>
-            <button id="btn-sync-tva" class="btn btn-outline-primary btn-sm" onclick="syncTvaDossier()">
-                <i class="bi bi-cloud-download me-1"></i>Synchro TVA
+            <button id="btn-sync-tva" class="btn-premium btn-premium-primary btn-sm btn-press" onclick="syncTvaDossier()">
+                <i class="bi bi-cloud-download"></i>Synchro TVA
             </button>
             {% endif %}
-            <a href="{{ url_for('dossiers') }}" class="btn btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i>Retour</a>
+            <a href="{{ url_for('dossiers') }}" class="btn-premium btn-premium-outline btn-sm btn-press"><i class="bi bi-arrow-left"></i>Retour</a>
         </div>
     </div>
 </div>
 
 {% if not data.ok %}
-<div class="alert alert-warning"><i class="bi bi-exclamation-triangle me-2"></i>{{ data.message or 'Erreur de connexion à Pennylane.' }}</div>
+<div class="pl-notice pl-notice-warn">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    <div class="pl-notice-body">
+        <strong>Connexion Pennylane incomplète</strong>
+        <span>{{ data.message or 'Erreur de connexion à Pennylane.' }}</span>
+    </div>
+    <a class="pl-notice-link" href="{{ url_for('pennylane_page') }}">Configurer</a>
+</div>
 {% endif %}
 {% if data.resume_nouveaux %}
-<div class="alert alert-success d-flex align-items-center animate-fade-in-up">
-    <i class="bi bi-stars me-2 fs-5"></i>
-    <div><strong>{{ data.resume_nouveaux }} nouveau(x)</strong> détecté(s) — marquez-les comme traités après vérification.</div>
+<div class="pl-notice pl-notice-ok animate-fade-in-up">
+    <i class="bi bi-stars"></i>
+    <div class="pl-notice-body">
+        <strong>{{ data.resume_nouveaux }} nouveau(x) document(s)</strong>
+        <span>Marquez-les comme traités après vérification.</span>
+    </div>
 </div>
 {% endif %}
 
@@ -72,8 +82,8 @@
 
 <!-- ============ BARRE DE FILTRES ============ -->
 <div class="pl-filterbar animate-fade-in-up">
-    <!-- Ligne 1 : Nature (segments) à gauche · Exercice + Date à droite -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+    <!-- Ligne 1 : nature (segments) · période à droite -->
+    <div class="pl-filter-main">
         <div class="pl-segment" role="group" aria-label="Filtrer par nature">
             <button type="button" class="pl-seg active" data-nature="" onclick="setNature('')">
                 <i class="bi bi-grid-3x3-gap-fill"></i> Toutes
@@ -92,25 +102,29 @@
                 <span class="pl-seg-cnt" id="seg-banque">0</span>
             </button>
         </div>
-        <div class="d-flex align-items-center gap-2 flex-wrap">
-            <span class="pl-field-label">Exercice</span>
-            <select class="form-select form-select-sm pl-select" onchange="location.href='?nature={{ data.nature_actif }}&exercice='+this.value">
-                {% for y in [2026, 2025, 2024, 2023] %}
-                <option value="{{ y }}" {% if data.exercice_actif == y %}selected{% endif %}>{{ y }}</option>
-                {% endfor %}
-            </select>
-            <span class="pl-field-label">Date ajout</span>
-            <select id="filter-date" class="form-select form-select-sm pl-select" style="min-width:120px;">
-                <option value="">Toutes</option>
-                <option value="aujourdhui">Aujourd'hui</option>
-                <option value="7j">7 derniers jours</option>
-                <option value="30j">30 derniers jours</option>
-            </select>
-            <button class="pl-reset" onclick="resetFilters()" title="Réinitialiser les filtres"><i class="bi bi-arrow-counterclockwise"></i></button>
+        <div class="pl-filter-fields">
+            <label class="pl-field">
+                <span class="pl-field-label">Exercice</span>
+                <select class="form-select pl-select" onchange="location.href='?nature={{ data.nature_actif }}&exercice='+this.value">
+                    {% for y in [2026, 2025, 2024, 2023] %}
+                    <option value="{{ y }}" {% if data.exercice_actif == y %}selected{% endif %}>{{ y }}</option>
+                    {% endfor %}
+                </select>
+            </label>
+            <label class="pl-field">
+                <span class="pl-field-label">Date ajout</span>
+                <select id="filter-date" class="form-select pl-select">
+                    <option value="">Toutes</option>
+                    <option value="aujourdhui">Aujourd'hui</option>
+                    <option value="7j">7 derniers jours</option>
+                    <option value="30j">30 derniers jours</option>
+                </select>
+            </label>
+            <button class="pl-reset" onclick="resetFilters()" title="Réinitialiser les filtres" aria-label="Réinitialiser les filtres"><i class="bi bi-arrow-counterclockwise"></i></button>
         </div>
     </div>
-    <!-- Ligne 2 : Onglets statut à gauche · Bulk à droite -->
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-3 pt-3" style="border-top:1px solid var(--border-color);">
+    <!-- Ligne 2 : onglets statut · actions groupées -->
+    <div class="pl-filter-sub">
         <div class="pl-tabs" role="group" aria-label="Filtrer par statut">
             <button class="pl-tab active" data-ftab="" onclick="setStatutTab('')">
                 Toutes <span class="pl-tab-cnt" id="cnt-toutes">0</span>
@@ -131,9 +145,9 @@
         {% if not read_only %}
         <div id="bulk-bar" class="d-none align-items-center gap-2">
             <span class="pl-bulk-info"><strong id="bulk-count">0</strong> sélectionné(s)</span>
-            <button class="btn btn-sm btn-outline-orange" onclick="bulkSetStatut('traite')"><i class="bi bi-check-lg me-1"></i>Traiter</button>
-            <button class="btn btn-sm btn-outline-secondary" onclick="bulkSetStatut('ignore')"><i class="bi bi-dash-lg me-1"></i>Ignorer</button>
-            <button class="pl-reset" onclick="clearSelection()" title="Désélectionner"><i class="bi bi-x-lg"></i></button>
+            <button class="btn-premium btn-premium-primary btn-sm btn-press" onclick="bulkSetStatut('traite')"><i class="bi bi-check-lg"></i>Traiter</button>
+            <button class="btn-premium btn-premium-secondary btn-sm btn-press" onclick="bulkSetStatut('ignore')"><i class="bi bi-dash-lg"></i>Ignorer</button>
+            <button class="pl-reset" onclick="clearSelection()" title="Désélectionner" aria-label="Désélectionner"><i class="bi bi-x-lg"></i></button>
         </div>
         {% endif %}
     </div>
@@ -197,15 +211,54 @@
 }
 .pl-token-chip.muted { background: rgba(148,163,184,.12); color: var(--text-tertiary); }
 
+/* ================= NOTICES ================= */
+.pl-notice {
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px; margin-bottom: 16px;
+    border: 1px solid var(--border-color); border-radius: 12px;
+    background: var(--bg-card); font-size: .84rem;
+}
+.pl-notice > i { font-size: 1.05rem; flex: 0 0 auto; }
+.pl-notice-body { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.pl-notice-body strong { font-weight: 650; color: var(--text-primary); }
+.pl-notice-body span { color: var(--text-secondary); }
+.pl-notice-warn { background: var(--warning-bg); border-color: rgba(245,165,36,.35); }
+.pl-notice-warn > i, .pl-notice-warn strong { color: var(--warn-ink, #8a5a00); }
+.pl-notice-warn span { color: var(--text-secondary); }
+.pl-notice-ok { background: var(--success-bg); border-color: rgba(47,191,143,.35); }
+.pl-notice-ok > i, .pl-notice-ok strong { color: var(--success-ink, #0B6B50); }
+.pl-notice-link {
+    margin-left: auto; font-weight: 600; font-size: .8rem; text-decoration: none;
+    color: var(--orange-text); white-space: nowrap;
+}
+.pl-notice-link:hover { text-decoration: underline; }
+
 /* ================= FILTERBAR ================= */
 .pl-filterbar {
     background: var(--bg-card); border: 1px solid var(--border-color);
-    border-radius: 16px; padding: 18px 20px; margin-bottom: 1.25rem;
+    border-radius: 16px; padding: 14px 16px; margin-bottom: 1rem;
+    box-shadow: var(--shadow-1, 0 1px 2px rgba(16,24,40,.05));
+}
+.pl-filter-main {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    gap: 14px; flex-wrap: wrap;
+}
+.pl-filter-fields { display: flex; align-items: flex-end; gap: 10px; flex-wrap: wrap; }
+.pl-field { display: flex; flex-direction: column; gap: 5px; }
+.pl-field-label {
+    font-size: .66rem; font-weight: 700; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: .09em;
+}
+.pl-filter-sub {
+    display: flex; justify-content: space-between; align-items: center;
+    gap: 12px; flex-wrap: wrap;
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--border-color);
 }
 /* — Segments nature (style Pennylane) — */
 .pl-segment {
     display: inline-flex; gap: 4px; padding: 4px;
-    background: var(--bg-page, rgba(148,163,184,.08));
+    background: var(--surface-sunken, rgba(148,163,184,.08));
+    border: 1px solid var(--border-color);
     border-radius: 12px;
 }
 .pl-seg {
@@ -213,30 +266,29 @@
     padding: 7px 14px; border-radius: 9px;
     font-size: .82rem; font-weight: 500; text-decoration: none;
     color: var(--text-tertiary); transition: all .15s;
-    border: 1px solid transparent;
+    border: 1px solid transparent; background: transparent; cursor: pointer;
 }
 .pl-seg:hover { color: var(--text-primary); background: var(--bg-card-hover); }
 .pl-seg.active {
     background: var(--surface-raised); color: var(--text-primary); font-weight: 600;
     border-color: var(--border-color);
-    box-shadow: 0 1px 4px rgba(0,0,0,.12);
+    box-shadow: 0 1px 3px rgba(16,24,40,.10);
 }
 .pl-seg.active i { color: var(--orange-text); }
 .pl-seg-cnt {
     font-size: .7rem; font-weight: 700; padding: 1px 8px; border-radius: 20px;
     background: rgba(148,163,184,.15); color: var(--text-tertiary);
 }
-.pl-seg.active .pl-seg-cnt { background: rgba(31,106,136,.14); color: var(--orange-text); }
+.pl-seg.active .pl-seg-cnt { background: var(--orange-subtle); color: var(--orange-text); }
 
-/* — Champs à droite — */
-.pl-field-label { font-size: .72rem; font-weight: 600; color: var(--text-tertiary); text-transform: uppercase; letter-spacing: .4px; }
-.pl-select { min-width: 96px; border-radius: 9px; }
+/* — Champs période — */
+.pl-select { width: auto; min-width: 108px; border-radius: 9px; }
 .pl-reset {
-    border: 1px solid var(--border-color); background: transparent; color: var(--text-tertiary);
-    width: 30px; height: 30px; border-radius: 9px; cursor: pointer; transition: all .15s;
-    display: inline-flex; align-items: center; justify-content: center; font-size: .8rem;
+    border: 1px solid var(--border-color); background: var(--bg-card); color: var(--text-tertiary);
+    width: 36px; height: 36px; border-radius: 9px; cursor: pointer; transition: all .15s;
+    display: inline-flex; align-items: center; justify-content: center; font-size: .82rem;
 }
-.pl-reset:hover { color: var(--orange-text); border-color: var(--orange-primary); }
+.pl-reset:hover { color: var(--orange-text); border-color: var(--amber); background: var(--orange-subtle); }
 
 /* — Onglets statut — */
 .pl-tabs { display: inline-flex; gap: 6px; flex-wrap: wrap; }
@@ -248,18 +300,18 @@
 }
 .pl-tab:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 .pl-tab.active {
-    background: rgba(31,106,136,.08); border-color: var(--orange-primary); color: var(--orange-text); font-weight: 600;
+    background: var(--orange-subtle); border-color: color-mix(in srgb, var(--amber) 45%, transparent);
+    color: var(--orange-text); font-weight: 600;
 }
 .pl-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; }
 .pl-tab-cnt {
     font-size: .68rem; font-weight: 700; padding: 1px 8px; border-radius: 20px;
     background: rgba(148,163,184,.15); color: var(--text-tertiary);
 }
-.pl-tab-cnt.orange { background: rgba(31,106,136,.14); color: var(--orange-text); }
-.pl-tab-cnt.yellow { background: rgba(234,179,8,.14); color: #eab308; }
+.pl-tab-cnt.orange { background: var(--orange-subtle); color: var(--orange-text); }
 .pl-tab-cnt.green { background: var(--success-bg); color: var(--success); }
 .pl-tab-cnt.muted { background: rgba(148,163,184,.12); color: var(--text-tertiary); }
-.pl-tab.active .pl-tab-cnt { background: rgba(31,106,136,.18); color: var(--orange-text); }
+.pl-tab.active .pl-tab-cnt { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--orange-text); }
 
 /* — Bulk — */
 .pl-bulk-info { font-size: .8rem; color: var(--text-tertiary); }
@@ -271,26 +323,28 @@
 .pl-tablecard {
     background: var(--bg-card); border: 1px solid var(--border-color);
     border-radius: 16px; overflow: hidden;
+    box-shadow: var(--shadow-1, 0 1px 2px rgba(16,24,40,.05));
 }
 .pl-table-wrap { max-height: calc(100vh - 380px); min-height: 320px; overflow-y: auto; }
+.pl-tablecard:has(#pl-tbody:empty) .pl-table-wrap { min-height: 0; }
 .pl-table-wrap::-webkit-scrollbar { width: 7px; }
 .pl-table-wrap::-webkit-scrollbar-track { background: transparent; }
-.pl-table-wrap::-webkit-scrollbar-thumb { background: rgba(31,106,136,.45); border-radius: 8px; }
-.pl-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--orange-primary); }
+.pl-table-wrap::-webkit-scrollbar-thumb { background: rgba(31,106,136,.35); border-radius: 8px; }
+.pl-table-wrap::-webkit-scrollbar-thumb:hover { background: var(--amber); }
 
 .pl-table { width: 100%; margin: 0; border-collapse: collapse; }
 .pl-table thead th {
     position: sticky; top: 0; z-index: 5;
-    background: var(--bg-card);
-    font-size: .68rem; font-weight: 700; text-transform: uppercase; letter-spacing: .5px;
+    background: var(--surface-sunken);
+    font-size: .66rem; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
     color: var(--text-tertiary);
-    padding: 12px 14px; border-bottom: 1px solid var(--border-color);
+    padding: 11px 14px; border-bottom: 1px solid var(--line-strong);
     text-align: left; white-space: nowrap;
 }
 .pl-table tbody td { padding: 11px 14px; border-bottom: 1px solid var(--border-color); vertical-align: middle; font-size: .82rem; }
 .pl-table tbody tr:last-child td { border-bottom: none; }
 .pl-table tbody tr { transition: background .12s; }
-.pl-table tbody tr:hover { background: rgba(31,106,136,.035); }
+.pl-table tbody tr:hover { background: var(--bg-card-hover); }
 
 .pl-th-check { width: 36px; text-align: center; }
 .pl-check, #check-all { cursor: pointer; accent-color: var(--orange-primary); width: 15px; height: 15px; }
@@ -345,9 +399,9 @@
 .pl-btns .btn-ignore { color: var(--text-tertiary); }
 
 /* — Vide — */
-.pl-empty { text-align: center; padding: 4rem 1rem; }
-.pl-empty i { font-size: 2.6rem; color: var(--text-tertiary); opacity: .3; }
-.pl-empty p { margin-top: .75rem; font-weight: 600; }
+.pl-empty { text-align: center; padding: 3.25rem 1rem; }
+.pl-empty i { font-size: 2.4rem; color: var(--text-tertiary); opacity: .35; }
+.pl-empty p { margin-top: .65rem; font-weight: 650; margin-bottom: 2px; }
 .pl-empty small { color: var(--text-tertiary); }
 
 /* — Footer — */
@@ -570,9 +624,8 @@ function resetFilters() {
     setNature('');
     setStatutTab('');
 }
-{% if data.lignes %}
+// Toujours initialiser : compteurs, rendu des lignes et état vide même sans document.
 applyPlFilters();
-{% endif %}
 function syncTvaDossier() {
     const btn = document.getElementById('btn-sync-tva');
     const orig = btn.innerHTML;

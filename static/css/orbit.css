@@ -26,13 +26,13 @@
   --danger: #ef5350;
   --info: #4cc3ff;
 
-  /* Mode clair : le blanc de référence du cabinet — #FFFFFF, hairlines
-     neutres (#E4E5E7) et un seul lavis (#F7F8F8) pour les creux. Aucune
-     surface teintée : la hiérarchie vient du trait, pas d'une nuance de blanc. */
-  --paper: #FFFFFF;
+  /* Mode clair : surfaces blanches posées sur un canevas légèrement bleuté.
+     Le canevas (#F6F8FA) donne de la profondeur aux cartes sans les teinter ;
+     le lavis des creux (#F1F4F8) sépare champs, en-têtes et lignes alternées. */
+  --paper: #F6F8FA;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-sunken: #F7F8F8;
+  --surface-sunken: #F1F4F8;
   --overlay: rgba(16, 16, 16, .48);
   --scrim: rgba(16, 16, 16, .62);
 
@@ -41,15 +41,15 @@
   --ink-3: #565C62;
   --ink-4: #606870;
 
-  --line: #E4E5E7;
-  --line-strong: #D6D9DB;
+  --line: #E2E7ED;
+  --line-strong: #CBD5DF;
 
   --bg-dark: var(--paper);
   --bg-card: var(--surface);
-  --bg-card-hover: #F7F8F8;
-  /* Lignes de tableau alternées : blanc / gris très doux (≈3 % d'encre).
-     Assez pour séparer les rangées, trop peu pour concurrencer les hairlines. */
-  --row-alt: #F6F7F8;
+  --bg-card-hover: #F3F8FB;
+  /* Lignes de tableau alternées : un lavis bleu-gris (≈5 % d'encre) assez
+     marqué pour suivre une ligne d'un œil, assez doux pour rester un fond. */
+  --row-alt: #F1F5F9;
   --bg-elevated: var(--surface-raised);
   --border-color: var(--line);
   --text-primary: var(--ink-1);
@@ -87,8 +87,8 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --shadow-1: 0 1px 2px rgba(16, 19, 26, .06), 0 4px 14px -6px rgba(16, 19, 26, .10);
-  --shadow-2: 0 2px 6px rgba(16, 19, 26, .08), 0 16px 40px -18px rgba(16, 19, 26, .22);
+  --shadow-1: 0 1px 2px rgba(16, 24, 40, .05), 0 10px 26px -20px rgba(16, 24, 40, .28);
+  --shadow-2: 0 2px 8px rgba(16, 24, 40, .07), 0 28px 56px -28px rgba(16, 24, 40, .32);
   --shadow-glow: 0 0 0 1px rgba(31, 106, 136, .28), 0 8px 30px -10px rgba(31, 106, 136, .45);
 
   --topbar-h: 60px;
@@ -215,6 +215,27 @@ a { color: var(--orange-text); text-decoration: none; }
 a:hover { color: var(--amber-bright); }
 .text-tertiary { color: var(--text-tertiary) !important; }
 .text-secondary { color: var(--text-secondary) !important; }
+/* Utilitaires hérités des anciens templates (statuts Pennylane, compteurs) :
+   sans définition depuis la refonte Orbit, ils retombaient sur le style natif. */
+.u-txt-ok { color: var(--success-ink) !important; }
+.u-txt-bad { color: var(--danger-ink) !important; }
+.u-txt-orange { color: var(--orange-text) !important; }
+.u-txt-warn { color: var(--warn-ink) !important; }
+.u-fs-xs { font-size: .72rem; }
+.u-border-top { border-top: 1px solid var(--line); }
+.u-pill-ok, .u-pill-bad, .u-pill-neutral {
+  border: 1px solid var(--line);
+  background: var(--surface-sunken);
+  color: var(--text-secondary);
+}
+.u-pill-ok {
+  border-color: color-mix(in srgb, var(--success) 42%, transparent);
+  background: color-mix(in srgb, var(--success) 10%, var(--surface));
+}
+.u-pill-bad {
+  border-color: color-mix(in srgb, var(--danger) 42%, transparent);
+  background: color-mix(in srgb, var(--danger) 9%, var(--surface));
+}
 small, .small { font-size: .82em; }
 ::selection { background: rgba(31, 106, 136, .32); }
 
@@ -350,7 +371,9 @@ small, .small { font-size: .82em; }
   position: sticky; top: var(--topbar-h);
   height: calc(100vh - var(--topbar-h));
   border-right: 1px solid var(--line);
-  background: color-mix(in srgb, var(--surface) 60%, transparent);
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
   transition: width .2s ease, flex-basis .2s ease;
   overflow: hidden;
 }
@@ -376,8 +399,9 @@ small, .small { font-size: .82em; }
 .sidebar-nav-item i { font-size: 1.02rem; width: 20px; text-align: center; flex: 0 0 auto; }
 .sidebar-nav-item:hover { background: var(--bg-card-hover); color: var(--text-primary); }
 .sidebar-nav-item.active {
-  background: var(--orange-subtle); color: var(--orange-text);
-  border-color: color-mix(in srgb, var(--amber) 30%, transparent);
+  background: color-mix(in srgb, var(--amber) 10%, transparent);
+  color: var(--orange-text);
+  border-color: color-mix(in srgb, var(--amber) 26%, transparent);
   font-weight: 600;
 }
 .sidebar-nav-item.active::before {
@@ -595,6 +619,8 @@ main#mainContent { view-transition-name: none !important; }
   background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
 }
 .card-header-premium h5, .card-header-premium h6 { margin: 0; font-size: .98rem; font-weight: 650; display: flex; align-items: center; }
+/* En clair, l'en-tête se détache par un lavis (le blanc sur blanc ne suffit pas). */
+html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, var(--surface-sunken) 60%, transparent); }
 .card-body-premium { padding: var(--space-4); }
 .card-footer-premium { padding: var(--space-3) var(--space-4); border-top: 1px solid var(--line); background: color-mix(in srgb, var(--surface-sunken) 55%, transparent); }
 
@@ -823,6 +849,25 @@ html[data-theme="light"] .kpi-chip {
   color: var(--orange-text);
   border-color: color-mix(in srgb, var(--amber) 26%, transparent);
 }
+/* Anneau de progression (tableaux de bord) : ses styles vivaient dans
+   style.css, retiré du chargement — sans eux, l'anneau était invisible.
+   Le parent doit être positionné, sinon le libellé central part au milieu
+   de la carte. */
+.progress-ring { position: relative; width: 100px; height: 100px; transform: rotate(-90deg); }
+.progress-ring circle { fill: transparent; stroke-linecap: round; }
+.progress-ring .progress-ring-bg { stroke: var(--line); stroke-width: 6; }
+.progress-ring .progress-ring-progress {
+  stroke: var(--amber); stroke-width: 6;
+  stroke-dasharray: 251.3;
+  stroke-dashoffset: calc(251.3 - (251.3 * var(--progress, 0)) / 100);
+  transition: stroke-dashoffset .6s ease;
+}
+.progress-ring-text {
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%, -50%) rotate(90deg); text-align: center;
+}
+.progress-ring-text .value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
+.progress-ring-text .label { font-size: .65rem; color: var(--text-tertiary); }
 
 .empty-state { text-align: center; padding: var(--space-6) var(--space-4); color: var(--text-tertiary); }
 .empty-state-icon { width: 56px; height: 56px; opacity: .5; margin-bottom: var(--space-3); }

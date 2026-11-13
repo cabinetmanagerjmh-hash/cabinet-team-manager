@@ -32,7 +32,7 @@
                     <div class="pl-stat-label">Dossiers connectés</div>
                     <div class="pl-stat-value" id="plStatConnectes">{{ stats.connectes }}<span class="pl-stat-total">/{{ stats.total }}</span></div>
                 </div>
-                <div class="pl-stat-icon" style="background:rgba(31,106,136,.15);color:var(--orange-primary,#1F6A88);"><i class="bi bi-folder-check"></i></div>
+                <div class="pl-stat-icon is-accent"><i class="bi bi-folder-check"></i></div>
             </div>
         </div>
     </div>
@@ -43,7 +43,7 @@
                     <div class="pl-stat-label">À traiter</div>
                     <div class="pl-stat-value" id="plStatAtraiter">{{ stats.a_traiter }}</div>
                 </div>
-                <div class="pl-stat-icon" style="background:rgba(13,110,253,.15);color:#0d6efd;"><i class="bi bi-hourglass-split"></i></div>
+                <div class="pl-stat-icon is-info"><i class="bi bi-hourglass-split"></i></div>
             </div>
         </div>
     </div>
@@ -54,7 +54,7 @@
                     <div class="pl-stat-label">En retard TVA</div>
                     <div class="pl-stat-value" id="plStatRetard">{{ stats.en_retard }}</div>
                 </div>
-                <div class="pl-stat-icon" style="background:rgba(220,53,69,.15);color:#dc3545;"><i class="bi bi-exclamation-triangle"></i></div>
+                <div class="pl-stat-icon is-danger"><i class="bi bi-exclamation-triangle"></i></div>
             </div>
         </div>
     </div>
@@ -65,7 +65,7 @@
                     <div class="pl-stat-label">Sync OK</div>
                     <div class="pl-stat-value" id="plStatSync">{{ stats.sync_ok }}</div>
                 </div>
-                <div class="pl-stat-icon" style="background:rgba(25,135,84,.15);color:#198754;"><i class="bi bi-arrow-repeat"></i></div>
+                <div class="pl-stat-icon is-ok"><i class="bi bi-arrow-repeat"></i></div>
             </div>
         </div>
     </div>
@@ -146,22 +146,33 @@
             <strong>Synchro automatique active</strong> (toutes les heures) — aucun passage enregistré pour le moment.
         </div>
         {% endif %}
-        <p class="text-tertiary small mb-3">
-            Lit les statuts des déclarations de TVA dans l'espace comptable Pennylane (page
-            <em>Fiscalité → Déclarations</em>) pour <strong>tous</strong> les dossiers reliés.
-            <strong>Une seule session suffit</strong> : c'est la session de TON compte comptable
-            Pennylane, qui a accès à tous les dossiers du cabinet. Pas besoin de coller des cookies
-            dossier par dossier — tu les colles une fois ici, et la synchro boucle automatiquement
-            sur les {{ dossiers_associes|length }} dossiers reliés.
-            Les statuts s'affichent ensuite dans la <strong>grille checklist</strong>
-            (Checklist → Fiscale → Déclarations récurrentes → CA3 Mensuelle) : pastille bleue
-            = statut lu dans Pennylane, au survol : statut, échéance, montant.
-            <br><strong class="text-warning">Important :</strong> les déclarations faites via
-            impots.gouv (ACD) n'apparaissent pas comme « faites » dans Pennylane — la pastille
-            bleue te montre quand même ce que PL en sait (statut, échéance, montant saisi).
-            Pour les dossiers reliés, la synchro Pennylane fait foi sur les cases
-            (déclarée/payée) ; ton clic manuel reste pris en compte jusqu'à la prochaine synchro.
-        </p>
+        <details class="pl-help">
+            <summary>
+                <i class="bi bi-info-circle"></i>
+                Comment fonctionne la synchro TVA ?
+                <i class="bi bi-chevron-down pl-help-chev ms-auto"></i>
+            </summary>
+            <div class="pl-help-body">
+                <p>
+                    Lit les déclarations de TVA dans l'espace comptable Pennylane
+                    (<em>Fiscalité → Déclarations</em>) pour <strong>tous</strong> les dossiers reliés.
+                    <strong>Une seule session suffit</strong> : c'est celle de TON compte Pennylane, qui voit
+                    tous les dossiers du cabinet — pas besoin de coller des cookies dossier par dossier.
+                    La synchro boucle ensuite sur les {{ dossiers_associes|length }} dossiers reliés.
+                </p>
+                <p>
+                    Les statuts remontent dans la <strong>grille checklist</strong>
+                    (Checklist → Fiscale → Déclarations récurrentes → CA3 Mensuelle) :
+                    pastille bleue = statut lu dans Pennylane, détail au survol (statut, échéance, montant).
+                </p>
+                <p class="mb-0">
+                    <strong class="u-txt-warn">À savoir :</strong> les déclarations déposées sur impots.gouv (ACD)
+                    n'apparaissent pas comme « faites » dans Pennylane — la pastille montre quand même ce que
+                    PL en sait. Pour les dossiers reliés, la synchro fait foi sur les cases déclarée/payée ;
+                    un clic manuel reste valable jusqu'au passage suivant.
+                </p>
+            </div>
+        </details>
         <div id="plTvaStatus" class="mb-3"></div>
         <div class="mb-3">
             <label class="form-label-premium d-flex align-items-center gap-2">
@@ -202,11 +213,14 @@
 <!-- Vue des dossiers par équipe (scoping manager/admin) -->
 <div class="card-premium animate-fade-in-up stagger-2">
     <div class="card-body-premium">
-        <h4 class="fw-semibold mb-2">
-            <i class="bi bi-folder-check me-2 text-tertiary"></i>
-            Dossiers connectés à Pennylane
-            <span class="badge badge-orange ms-2">{{ dossiers_associes|length }}/{{ total_dossiers }}</span>
-        </h4>
+        <div class="d-flex align-items-center gap-2 flex-wrap mb-2">
+            <h4 class="fw-semibold mb-0">
+                <i class="bi bi-folder-check me-2 text-tertiary"></i>
+                Dossiers connectés à Pennylane
+                <span class="badge badge-orange ms-1">{{ dossiers_associes|length }}/{{ total_dossiers }}</span>
+            </h4>
+            <span id="plVisibleCount" class="small text-tertiary ms-auto"></span>
+        </div>
         <p class="text-tertiary small mb-4">
             {% if is_admin %}
             Vue globale (toutes les équipes).
@@ -248,7 +262,6 @@
                     title="Rafraîchir les stats et badges sans recharger la page">
                 <i class="bi bi-arrow-clockwise me-1"></i>Rafraîchir
             </button>
-            <span id="plVisibleCount" class="small text-tertiary ms-auto"></span>
         </div>
 
         <!-- Sélection pour synchro TVA ciblée (admin/manager uniquement) -->
@@ -369,7 +382,7 @@
                 <span class="badge badge-tertiary">+{{ dossiers_non_associes|length - 15 }}…</span>
                 {% endif %}
             </div>
-            <div class="p-3 rounded-3" style="background:var(--bg-secondary, #1a1a1a); border:1px solid var(--border-color);">
+            <div class="p-3 rounded-3 pl-assoc-panel">
                 <h6 class="fw-semibold mb-2" style="font-size:0.85rem;">
                     <i class="bi bi-link-45deg me-1"></i>Associer manuellement un dossier à une company Pennylane
                 </h6>
@@ -1110,6 +1123,58 @@ function plRefreshData(silent) {
     flex-shrink: 0;
     box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
+/* Tuiles de stats : NIM impose un fond transparent + filet ; on ne rétablit
+   que la teinte sémantique du glyphe et du liseré (contraste + sens). */
+.page-pennylane .pl-stat-icon.is-accent { color: var(--orange-text) !important; border-color: color-mix(in srgb, var(--amber) 32%, var(--line)) !important; }
+.page-pennylane .pl-stat-icon.is-info { color: var(--info-ink, #075C86) !important; border-color: color-mix(in srgb, var(--info, #4cc3ff) 34%, var(--line)) !important; }
+.page-pennylane .pl-stat-icon.is-danger { color: var(--danger-ink) !important; border-color: color-mix(in srgb, var(--danger) 34%, var(--line)) !important; }
+.page-pennylane .pl-stat-icon.is-ok { color: var(--success-ink) !important; border-color: color-mix(in srgb, var(--success) 34%, var(--line)) !important; }
+
+/* ---- Aide repliable (progressive disclosure) ---- */
+.pl-help {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--surface-sunken);
+    margin-bottom: 1rem;
+}
+.pl-help > summary {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    padding: .6rem .85rem;
+    font-size: .8rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    cursor: pointer;
+    list-style: none;
+    border-radius: 10px;
+}
+.pl-help > summary::-webkit-details-marker { display: none; }
+.pl-help > summary:hover { color: var(--text-primary); }
+.pl-help > summary:focus-visible { outline: 2px solid var(--amber); outline-offset: -2px; }
+.pl-help .pl-help-chev { font-size: .7rem; transition: transform .2s ease; }
+.pl-help[open] > summary .pl-help-chev { transform: rotate(180deg); }
+.pl-help .pl-help-body {
+    padding: 0 .85rem .8rem;
+    font-size: .8rem;
+    line-height: 1.55;
+    color: var(--text-tertiary);
+}
+.pl-help .pl-help-body p { margin-bottom: .5rem; }
+
+/* ---- Panneau d'association manuelle ---- */
+.pl-assoc-panel { background: var(--surface-sunken); border: 1px solid var(--line); }
+
+/* Boutons Bootstrap hérités dans les zones Pennylane : même azur que le CTA
+   premium, sinon la pastille « encre » du socle jure sur fond clair. */
+#plTvaBar .btn-primary,
+.pl-assoc-panel .btn-primary {
+    background: var(--amber-deep) !important; border-color: var(--amber-deep) !important; color: var(--on-accent) !important;
+}
+#plTvaBar .btn-primary:hover,
+.pl-assoc-panel .btn-primary:hover {
+    background: var(--amber) !important; border-color: var(--amber) !important; color: var(--on-accent) !important;
+}
 
 /* ---- Premium cards & forms (page refinements) ---- */
 .card-premium {
@@ -1150,6 +1215,18 @@ function plRefreshData(silent) {
     box-shadow: var(--pl-shadow-1);
 }
 #plToolbar .input-group { max-width: 320px; }
+/* Une seule rangée dès qu'il y a la place : recherche, 3 filtres puis les
+   deux actions et le compteur. En dessous de 992px, retour au wrap. */
+@media (min-width: 992px) {
+    #plToolbar {
+        display: grid !important;
+        grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(0, 1fr)) auto auto;
+        align-items: center;
+    }
+    #plToolbar .input-group,
+    #plToolbar .form-select { max-width: none !important; width: 100% !important; }
+    #plToolbar > .btn { white-space: nowrap; }
+}
 #plToolbar .input-group-text {
     border: none;
     background: linear-gradient(135deg, var(--pl-accent), var(--pl-accent-2)) !important;
@@ -1515,6 +1592,12 @@ function plRefreshData(silent) {
         align-items: flex-start !important;
         gap: 0.85rem;
     }
+    /* Deux tuiles par ligne : quatre cartes empilées repoussaient la config
+       et la synchro très loin sous la ligne de flottaison. */
+    .page-pennylane #plStatsRow > div { flex: 0 0 50%; max-width: 50%; }
+    .page-pennylane .pl-stat-card { padding: 0.85rem 0.9rem; }
+    .page-pennylane .pl-stat-icon { width: 32px; height: 32px; font-size: 1rem; }
+    .page-pennylane .pl-stat-value { font-size: 1.45rem; }
 }
 
 /* ---- Reduced motion ---- */

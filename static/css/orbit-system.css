@@ -1319,15 +1319,19 @@ body::before {
   transform: translateX(-120%); transition: transform .6s var(--orbit-ease);
 }
 .btn-premium:hover::after { transform: translateX(120%); }
-.btn-premium-primary {
-  background: linear-gradient(135deg, #16475D 0%, #2E7F9F 100%) !important; color: var(--on-accent) !important; border: none !important;
+/* CTA principal : azur de marque dans les deux thèmes. La règle générique
+   « ink » plus bas vise .btn-primary (Bootstrap legacy) ; ici la spécificité
+   du sélecteur de thème la neutralise pour les boutons premium. */
+html[data-theme="light"] .btn-premium-primary {
+  background: linear-gradient(135deg, #1B5570 0%, #24708E 100%) !important; color: #FFFFFF !important; border: none !important;
   box-shadow: 0 6px 20px -8px rgba(31,106,136,.55) !important;
 }
 html[data-theme="dark"] .btn-premium-primary {
   background: linear-gradient(135deg, #4E9BBB 0%, #8FD0EA 100%) !important; color: #0B1520 !important;
   box-shadow: 0 6px 20px -8px rgba(124,197,227,.40) !important;
 }
-.btn-premium-primary:hover { box-shadow: 0 10px 28px -10px rgba(31,106,136,.65) !important; }
+html[data-theme="light"] .btn-premium-primary:hover { background: linear-gradient(135deg, #17475D 0%, #1F6480 100%) !important; box-shadow: 0 10px 28px -10px rgba(31,106,136,.65) !important; }
+html[data-theme="dark"] .btn-premium-primary:hover { background: linear-gradient(135deg, #58A6C6 0%, #9AD7EF 100%) !important; }
 .btn-premium:focus-visible { outline: 2px solid #1F6A88; outline-offset: 2px; box-shadow: 0 0 0 4px rgba(31,106,136,.18); }
 /* --- Inputs : focus glow --- */
 .input-premium, .select-premium, .form-control {
@@ -2852,6 +2856,11 @@ label.form-label {
 }
 .form-control::placeholder,
 .input-premium::placeholder { color: var(--ink-4) !important; opacity: 1; }
+/* Les champs de recherche (dossiers, fiscal) placent une icône en
+   surimpression : leur ps-5/py-3 Bootstrap doit survivre au padding
+   par défaut ci-dessus, sinon le placeholder passe sous l'icône. */
+.input-premium.ps-5, .form-control.ps-5, .form-select.ps-5 { padding-left: 3rem !important; }
+.input-premium.py-3, .form-control.py-3, .form-select.py-3 { padding-top: 1rem !important; padding-bottom: 1rem !important; }
 .input-premium:focus,
 .select-premium:focus,
 .form-control:focus,

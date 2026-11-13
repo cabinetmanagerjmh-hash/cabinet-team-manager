@@ -24,7 +24,7 @@
     root.setAttribute('data-bs-theme', t);
     window.ORBIT_THEME = t;
     var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) { meta.setAttribute('content', t === 'light' ? '#FFFFFF' : '#101010'); }
+    if (meta) { meta.setAttribute('content', t === 'light' ? '#F6F8FA' : '#101010'); }
     // La couleur de toile choisie par le navigateur avant le CSS suit ce meta :
     // s'il reste sur l'ancien thème, la navigation inter-pages flashe.
     var scheme = document.querySelector('meta[name="color-scheme"]');
@@ -55,7 +55,7 @@
       veil.className = 'orbit-theme-veil';
       document.body.appendChild(veil);
     }
-    veil.style.background = theme === 'light' ? '#FFFFFF' : '#101010';
+    veil.style.background = theme === 'light' ? '#F6F8FA' : '#101010';
     veil.classList.remove('orbit-theme-veil--out');
     void veil.offsetWidth;
     veil.classList.add('orbit-theme-veil--out');

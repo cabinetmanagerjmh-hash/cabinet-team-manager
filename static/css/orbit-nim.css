@@ -11,13 +11,13 @@
    -------------------------------------------------------------------------- */
 :root,
 html[data-theme="light"] {
-  --nim-border: #E4E5E7;
+  --nim-border: var(--line, #E2E7ED);
   --nim-border-hover: rgba(31, 106, 136, .45);
-  --nim-card-bg: #FFFFFF;
-  --nim-accent: #1B5570;
-  --nim-sheen: linear-gradient(180deg, rgba(31, 106, 136, .05), rgba(31, 106, 136, 0) 150px);
+  --nim-card-bg: var(--surface, #FFFFFF);
+  --nim-accent: var(--amber-ink, #16475D);
+  --nim-sheen: linear-gradient(180deg, rgba(31, 106, 136, .045), rgba(31, 106, 136, 0) 150px);
   --nim-glow: 0 0 0 1px rgba(31, 106, 136, .16), 0 18px 38px -30px rgba(22, 71, 93, .40);
-  --nim-tile-shadow: 0 1px 2px rgba(16, 19, 26, .04);
+  --nim-tile-shadow: 0 1px 2px rgba(16, 24, 40, .05);
   --nim-aurora-a: rgba(103, 174, 202, .20);
   --nim-aurora-b: rgba(31, 106, 136, .12);
   --nim-aurora-c: rgba(124, 197, 227, .15);

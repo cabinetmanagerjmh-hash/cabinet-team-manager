@@ -100,11 +100,20 @@ class User(UserMixin, db.Model):
         except Exception:
             pass
         
-        # Fallback : avatar généré avec les initiales
+        # Fallback : initiales rendues en local (aucun appel tiers, pas d'image
+        # cassee hors ligne ni de requete par page).
         try:
-            name = f"{self.prenom or ''} {self.nom or ''}".strip()
-            encoded = name.replace(' ', '+')
-            return f"https://ui-avatars.com/api/?name={encoded}&background=1F6A88&color=fff&size=128&font-size=0.5&bold=true"
+            from urllib.parse import quote
+            from xml.sax.saxutils import escape
+            initials = escape(((self.prenom or ' ')[:1] + (self.nom or ' ')[:1]).strip().upper() or '?')
+            svg = (
+                '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128">'
+                '<rect width="128" height="128" rx="64" fill="#1F6A88"/>'
+                '<text x="64" y="64" dy=".35em" text-anchor="middle" fill="#FFFFFF"'
+                ' font-family="Inter,Segoe UI,Arial,sans-serif" font-size="52"'
+                f' font-weight="600">{initials}</text></svg>'
+            )
+            return 'data:image/svg+xml;charset=utf-8,' + quote(svg)
         except Exception:
             pass
         

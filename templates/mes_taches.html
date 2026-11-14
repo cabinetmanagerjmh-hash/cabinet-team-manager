@@ -64,7 +64,7 @@ function loadMesTaches() {
         .then(data => {
             const container = document.getElementById('mesTachesList');
             if (!data.ok || !data.taches.length) {
-                container.innerHTML = '<div class="empty-state"><img src="{{ url_for("static", filename="img/logo-jmh-orbit.png") }}" alt="" class="empty-state-icon"><h4 class="empty-state-title">Aucune tâche pour le moment</h4><p class="empty-state-desc">Vos tâches apparaîtront ici quand elles vous seront assignées.</p></div>';
+                container.innerHTML = '<div class="empty-state"><i class="bi bi-check2-circle empty-state-icon" aria-hidden="true"></i><h4 class="empty-state-title">Aucune tâche pour le moment</h4><p class="empty-state-desc">Vos tâches apparaîtront ici quand elles vous seront assignées.</p></div>';
                 return;
             }
 

@@ -57,9 +57,6 @@
 
 {% block scripts %}
 <script>
-// Logo URL for empty state (pre-computed by Jinja2)
-const LOGO_URL = "{{ logo_url }}";
-
 document.getElementById('processMailbox').addEventListener('click', async function() {
     const btn = this;
     const resultDiv = document.createElement('div');
@@ -113,7 +110,7 @@ document.getElementById('listMailbox').addEventListener('click', async function(
         }
 
         if (!samples.length) {
-            resultDiv.innerHTML = '<div class="empty-state"><img src="' + LOGO_URL + '" class="empty-state-icon" alt="Logo JMH"><h5 class="empty-state-title">Aucun email trouvé</h5><p class="empty-state-desc">Aucun email n\'a été détecté dans la boîte mail.</p></div>';
+            resultDiv.innerHTML = '<div class="empty-state"><i class="bi bi-envelope empty-state-icon" aria-hidden="true"></i><h5 class="empty-state-title">Aucun email trouvé</h5><p class="empty-state-desc">Aucun email n\'a été détecté dans la boîte mail.</p></div>';
             window.showToast('Aucun email trouvé', 'info');
             return;
         }

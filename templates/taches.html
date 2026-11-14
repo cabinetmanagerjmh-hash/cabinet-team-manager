@@ -50,9 +50,9 @@
 <div class="card-premium mb-3 animate-fade-in-up avm-bar">
     <div class="card-body-premium py-2">
         <div class="d-flex flex-wrap align-items-center gap-1 avm-iconbar">
-            <button type="button" class="filter-btn avm-fico" data-filter="all" title="Toutes les taches" onclick="applyFilter('all')"><i class="bi bi-collection"></i></button>
-            <button type="button" class="filter-btn avm-fico" data-filter="fiscal" title="Fiscalite" onclick="applyFilter('fiscal')"><i class="bi bi-percent"></i></button>
-            <button type="button" class="filter-btn avm-fico" data-filter="regular" title="Generales" onclick="applyFilter('regular')"><i class="bi bi-card-checklist"></i></button>
+            <button type="button" class="filter-btn avm-fico" data-filter="all" title="Toutes les tâches" onclick="applyFilter('all')"><i class="bi bi-collection"></i></button>
+            <button type="button" class="filter-btn avm-fico" data-filter="fiscal" title="Fiscalité" onclick="applyFilter('fiscal')"><i class="bi bi-percent"></i></button>
+            <button type="button" class="filter-btn avm-fico" data-filter="regular" title="Générales" onclick="applyFilter('regular')"><i class="bi bi-card-checklist"></i></button>
             <span class="avm-fsep"></span>
             <label class="avm-select" id="icoNature" title="Nature — toutes">
                 <i class="bi bi-tags"></i>
@@ -69,7 +69,7 @@
             </label>
             <button type="button" class="avm-fico" id="icoAf" title="À faire" onclick="toggleTaskStatut('a_faire')"><i class="bi bi-hourglass"></i></button>
             <button type="button" class="avm-fico" id="icoEc" title="En cours" onclick="toggleTaskStatut('en_cours')"><i class="bi bi-arrow-repeat"></i></button>
-            <button type="button" class="avm-fico" id="icoDone" title="Terminee" onclick="toggleTaskStatut('terminee')"><i class="bi bi-check2"></i></button>
+            <button type="button" class="avm-fico" id="icoDone" title="Terminée" onclick="toggleTaskStatut('terminee')"><i class="bi bi-check2"></i></button>
             <span class="avm-fsep"></span>
             <label class="avm-select" id="icoMembre" title="Membre — tous">
                 <i class="bi bi-person"></i>
@@ -87,12 +87,12 @@
                 </select>
                 <i class="bi bi-chevron-down avm-caret"></i>
             </label>
-            <button type="button" class="avm-fico" id="icoDates" title="Periode" onclick="tglDates()"><i class="bi bi-calendar-range"></i></button>
+            <button type="button" class="avm-fico" id="icoDates" title="Période" onclick="tglDates()"><i class="bi bi-calendar-range"></i></button>
             <input type="date" class="input-premium avm-search" id="filterDateDebut" onchange="applyFilter()" style="display:none;width:132px;">
             <input type="date" class="input-premium avm-search" id="filterDateFin" onchange="applyFilter()" style="display:none;width:132px;">
             <button type="button" class="avm-fico" id="icoSearch" title="Rechercher" onclick="tglSearch()"><i class="bi bi-search"></i></button>
             <input type="text" class="input-premium avm-search" id="filterSearch" placeholder="…" oninput="applyFilter()" style="display:none;width:150px;">
-            <button type="button" class="avm-fico" title="Reinitialiser les filtres" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button type="button" class="avm-fico" title="Réinitialiser les filtres" onclick="resetFilters()"><i class="bi bi-arrow-counterclockwise"></i></button>
             <span class="avm-fcount ms-auto" id="orbitTaskCount"></span>
         </div>
         </div>
@@ -138,24 +138,24 @@
     <div class="kpi-chip" style="--accent: var(--warning);">
         <div class="kpi-label"><i class="bi bi-hourglass-split"></i> À faire</div>
         <div class="kpi-value">{{ tns.af }}</div>
-        <div class="kpi-sub">en attente</div>
+        <div class="kpi-sub">{{ ((tns.af / tns.total * 100)|round(1) if tns.total else 0)|pct }} du total</div>
     </div>
     <div class="kpi-chip" style="--accent: var(--info);">
         <div class="kpi-label"><i class="bi bi-arrow-repeat"></i> En cours</div>
         <div class="kpi-value">{{ tns.ec }}</div>
-        <div class="kpi-sub">travaux actifs</div>
+        <div class="kpi-sub">{{ ((tns.ec / tns.total * 100)|round(1) if tns.total else 0)|pct }} du total</div>
     </div>
     <div class="kpi-chip" style="--accent: var(--success);">
         <div class="kpi-label"><i class="bi bi-check2-circle"></i> Terminées</div>
         <div class="kpi-value">{{ tns.done }}</div>
-        <div class="kpi-sub">{{ ((tns.done / tns.total * 100)|round(1) if tns.total else 0)|pct }} terminées</div>
+        <div class="kpi-sub">{{ ((tns.done / tns.total * 100)|round(1) if tns.total else 0)|pct }} du total</div>
     </div>
 </div>
 
 <!-- Barre d'outils Phase 4 : compteur, filtres actifs, densité, recherche -->
 <div class="orbit-toolbar" data-orbit-toolbar data-orbit-unit="tâches affichées">
     <span class="orbit-toolbar-count" data-orbit-count>—</span>
-    <button type="button" class="orbit-tool-btn" id="orbitUrgBtn" style="display:none;color:var(--danger-ink);border-color:rgba(209,67,67,.35);" onclick="orbitShowUrgent()" title="N'afficher que les tâches en retard"><i class="bi bi-exclamation-triangle-fill"></i> <strong>0</strong> en retard</button>
+    <button type="button" class="orbit-tool-btn" id="orbitUrgBtn" style="display:none;color:var(--danger-ink);" onclick="orbitShowUrgent()" title="N'afficher que les tâches en retard"><i class="bi bi-exclamation-triangle-fill"></i> <strong>0</strong> en retard</button>
     <span class="d-flex flex-wrap gap-1" data-orbit-chips></span>
     <span class="orbit-toolbar-spacer"></span>
     <button type="button" class="orbit-tool-btn" data-orbit-density title="Densité d'affichage (touche d)">

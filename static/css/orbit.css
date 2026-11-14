@@ -1065,3 +1065,294 @@ html[data-theme="dark"] .text-muted { color: var(--text-tertiary) !important; }
 .task-card .task-card-body { padding: .5rem 1rem .85rem; }
 /* Les boutons clonés dans la vue tableau restent nus également */
 .table-premium .btn-task { min-width: 30px; min-height: 30px; }
+/* ==========================================================================
+   16. UNSLOP — direction « grand livre »
+   Le cabinet travaille sur des échéances et des chiffres : le chrome reste
+   calme (neutres azurés, filets), l'azur du logo marque seulement l'action,
+   la sélection et le chiffre qui compte. Les surfaces ne portent plus ni
+   dégradés teintés, ni halos, ni pastilles décoratives.
+   ========================================================================== */
+
+/* --- Échelle et profondeur ------------------------------------------------ */
+:root, html[data-theme="light"], html[data-theme="dark"] {
+  --r-sm: 8px;
+  --r-md: 12px;
+  --r-lg: 14px;
+  --r-xl: 18px;
+  --shadow-glow: none;
+}
+
+/* --- Navigation : l'état actif est un pas de surface, pas un bloc d'encre --- */
+.sidebar-nav-item { padding: 8px 10px; }
+.sidebar-nav-item.active {
+  background: var(--surface-sunken) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--line) !important;
+  box-shadow: inset 2px 0 0 var(--amber) !important;
+}
+.sidebar-nav-item.active i { color: var(--amber-deep) !important; }
+html[data-theme="dark"] .sidebar-nav-item.active {
+  background: var(--surface-raised) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--line) !important;
+}
+html[data-theme="dark"] .sidebar-nav-item.active i { color: var(--amber) !important; }
+.sidebar-nav-item.active::before { display: none !important; }
+.sidebar-badge {
+  border-radius: 6px !important;
+  font-weight: 500 !important;
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--text-tertiary) !important;
+  padding: 0 !important;
+  min-width: 0 !important;
+}
+
+/* --- En-tête de page : titre lisible, icône discrète ----------------------- */
+.page-head { margin-bottom: 24px; align-items: center; }
+.page-head-icon {
+  width: auto; height: auto; padding: 0; margin-right: 2px;
+  border: 0 !important; background: transparent !important;
+  color: var(--text-tertiary) !important; box-shadow: none !important;
+}
+.page-head-icon i { font-size: 1.1rem; }
+.page-head-titles h1, .page-head-titles h2 {
+  font-weight: 600 !important;
+  letter-spacing: -.012em !important;
+}
+
+/* --- Surfaces ------------------------------------------------------------- */
+.card-premium { border-radius: 14px !important; }
+.today-band { border-radius: 14px !important; background: var(--bg-card) !important; }
+.today-band::before { display: none; }
+.today-hello { font-weight: 600; letter-spacing: 0; }
+
+/* --- Cartes de chiffres : le nombre, son libellé, rien d'autre ------------- */
+.stat-card { padding: 16px; gap: 0; border-radius: 14px; }
+.stat-card::before { display: none; }
+.stat-card-icon,
+.stat-card-trend i,
+.stat-mini { display: none; }
+.stat-card-label { color: var(--text-secondary) !important; font-weight: 500 !important; }
+.stat-card-value { font-weight: 600 !important; }
+.stat-card-trend { margin-top: 8px; color: var(--text-tertiary); }
+.stat-card-trend.up, .stat-card-trend.down { color: var(--text-tertiary); }
+
+/* --- Pastilles : texte calme, filet ; la couleur reste au statut ----------- */
+.badge { border-radius: 6px; font-weight: 500; }
+.badge::before { display: none; }
+.today-chip { border-radius: 8px; box-shadow: none !important; font-weight: 500; }
+.today-chip strong { font-weight: 600; }
+/* Tuiles de chiffres : même forme sur toutes les pages (le socle les
+   dessinait en pilule, les pages attendaient une tuile). */
+.kpi-band > .kpi-chip, .kpi-chip {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+  height: 100%;
+  padding: 16px !important;
+  border-radius: 14px !important;
+  background: var(--surface) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+  text-align: left;
+}
+html[data-theme="dark"] .kpi-chip { background: var(--surface-raised) !important; }
+.kpi-chip:hover { transform: none !important; background: var(--surface) !important; }
+html[data-theme="dark"] .kpi-chip:hover { background: var(--surface-raised) !important; }
+.kpi-chip .kpi-value { font-family: var(--font-primary) !important; font-size: 1.65rem !important; font-weight: 600 !important; letter-spacing: -.02em; }
+.kpi-chip .kpi-sub { margin-top: auto; padding-top: 6px; }
+
+/* --- Actions : aplat d'azur, aucun halo ---------------------------------- */
+.btn-premium-primary, .btn-primary {
+  background: var(--amber-deep) !important;
+  background-image: none !important;
+  color: #FFFFFF !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+.btn-premium-primary:hover, .btn-primary:hover {
+  background: var(--amber-ink) !important;
+  color: #FFFFFF !important;
+  filter: none !important;
+  box-shadow: none !important;
+}
+html[data-theme="dark"] .btn-premium-primary, html[data-theme="dark"] .btn-primary {
+  background: var(--amber) !important;
+  color: #0B1520 !important;
+}
+html[data-theme="dark"] .btn-premium-primary:hover, html[data-theme="dark"] .btn-primary:hover {
+  background: var(--amber-bright) !important;
+  color: #0B1520 !important;
+}
+.btn-premium-secondary:hover { border-color: var(--line-strong) !important; }
+
+/* --- Tableaux : rythme de lignes plus serré, en-têtes au même poids ------- */
+.table-premium thead th { padding: 10px 14px; font-weight: 500 !important; }
+.table-premium tbody td { padding: 10px 14px; }
+
+/* --- Mouvement : une seule courbe, pas d'effet sur le chrome -------------- */
+#orbitProgress {
+  background: var(--amber);
+  box-shadow: none;
+}
+.qa-btn:hover i { transform: none; }
+@keyframes orbit-fade-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* --- Actions rapides : grille qui respire, libellé qui ne touche plus le bord */
+.quick-actions { padding: 14px 14px 16px; }
+.quick-actions-head { margin-bottom: 10px; }
+.quick-actions .qa-btn { padding: 10px 12px; border-radius: 10px; }
+.quick-actions .qa-btn:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  background: var(--surface-sunken) !important;
+}
+.quick-actions .qa-btn i { color: var(--text-tertiary); font-size: 1rem; }
+.quick-actions .qa-btn:hover i { color: var(--amber-deep); }
+html[data-theme="dark"] .quick-actions .qa-btn:hover i { color: var(--amber); }
+
+/* --- Tableaux denses : en-têtes en casse naturelle, colonnes plus serrées -- */
+.table-premium thead th {
+  font-size: .74rem !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--text-secondary) !important;
+}
+#tableDossiers { font-size: .82rem; }
+#tableDossiers thead th, #tableDossiers tbody td { padding: 9px; }
+
+/* --- Bouton ASTRO : seul aplat d'azur flottant de la coque ---------------- */
+#assistantFab {
+  background: var(--amber-deep) !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 10px 24px -16px rgba(23, 26, 31, .45) !important;
+}
+#assistantFab:hover { background: var(--amber-ink) !important; }
+#assistantFab.is-open { background: var(--ink) !important; color: var(--paper) !important; }
+html[data-theme="dark"] #assistantFab {
+  background: var(--amber) !important;
+  color: #0B1520 !important;
+  box-shadow: none !important;
+}
+html[data-theme="dark"] #assistantFab:hover { background: var(--amber-bright) !important; }
+
+/* --- Tuiles de chiffres : le nombre parle, l'icône décorative s'efface ----- */
+.kpi-chip .kpi-label i { display: none; }
+.kpi-chip .kpi-value { font-weight: 600 !important; }
+
+/* --- Actions destructives : discrètes jusqu'au survol --------------------- */
+.btn-task-danger { color: var(--text-tertiary) !important; }
+.btn-task-danger:hover { color: var(--danger-ink) !important; }
+
+/* --- En-tête de carte : icône et titre restent groupés -------------------- */
+.card-header-premium > i:first-child { flex: 0 0 auto; color: var(--text-tertiary); }
+.card-header-premium > i:first-child + h5,
+.card-header-premium > i:first-child + h6 { margin-right: auto; }
+
+/* --- Action destructive : contour neutre, danger seulement au survol ------ */
+.btn-premium-danger {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
+  border-color: var(--line) !important;
+}
+.btn-premium-danger:hover { background: transparent !important; color: var(--danger-ink) !important; border-color: color-mix(in srgb, var(--danger) 40%, transparent) !important; }
+
+/* --- Étiquettes : le mot suffit, pas de pastille pleine ------------------- */
+.badge { background: transparent !important; box-shadow: none !important; }
+.badge-tertiary, .badge-secondary { background: transparent !important; border-color: var(--line) !important; }
+.badge-success { color: var(--success-ink) !important; border-color: color-mix(in srgb, var(--success) 28%, transparent) !important; }
+.badge-danger { color: var(--danger-ink) !important; border-color: color-mix(in srgb, var(--danger) 28%, transparent) !important; }
+.badge-warning { color: var(--warn-ink) !important; border-color: color-mix(in srgb, var(--warning) 30%, transparent) !important; }
+.badge-info { color: var(--info-ink) !important; border-color: color-mix(in srgb, var(--info) 28%, transparent) !important; }
+.badge-primary, .badge-orange { background: transparent !important; color: var(--orange-text) !important; border-color: color-mix(in srgb, var(--amber) 28%, transparent) !important; }
+
+/* --- Sélecteurs en ligne dans les tableaux : jamais tronqués ------------- */
+.table-premium select.select-premium { min-width: 116px; }
+
+/* --- Filtres : l'état actif est un palier de surface, pas un halo --------- */
+.filter-btn.active, .avm-fico.on, .sugg-filter-on {
+  background: var(--surface-sunken) !important;
+  border-color: var(--line-strong) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+html[data-theme="dark"] .filter-btn.active,
+html[data-theme="dark"] .avm-fico.on,
+html[data-theme="dark"] .sugg-filter-on {
+  background: var(--surface-raised) !important;
+  border-color: var(--line-strong) !important;
+}
+
+/* --- Bande de chiffres courte : tuiles bornées, alignées à gauche --------- */
+.kpi-band--fixed { grid-template-columns: repeat(auto-fit, minmax(0, 280px)) !important; justify-content: start; }
+
+/* --- État vide : une icône de la série, pas le logo en réduction ---------- */
+.empty-state .empty-state-icon {
+  display: block;
+  margin: 0 auto var(--space-3);
+  width: auto; height: auto;
+  font-size: 2rem; line-height: 1;
+  color: var(--text-tertiary);
+  opacity: 1;
+}
+
+/* --- Barre de filtres dense : un seul cadre pour tous les boutons --------- */
+.avm-iconbar .avm-fico,
+.avm-iconbar .avm-select { border-color: var(--line) !important; }
+.avm-iconbar .avm-fico:hover,
+.avm-iconbar .avm-select:hover { border-color: var(--line-strong) !important; background: var(--surface-sunken) !important; }
+
+/* --- Pastilles de tableau : jamais coupées sur deux lignes ---------------- */
+.table-premium .badge { white-space: nowrap; }
+
+/* --- Jauge simple : le chiffre puis la barre, pas un anneau décoratif ----- */
+.orbit-meter-value {
+  font-family: var(--font-primary);
+  font-size: 2.1rem; font-weight: 600; letter-spacing: -.02em;
+  color: var(--text-primary); font-variant-numeric: tabular-nums;
+}
+.orbit-meter {
+  height: 8px; border-radius: 3px; overflow: hidden;
+  background: var(--surface-sunken);
+  margin: 10px 0 12px;
+}
+.orbit-meter > span { display: block; height: 100%; background: var(--amber-deep); border-radius: 3px; }
+html[data-theme="dark"] .orbit-meter > span { background: var(--amber); }
+
+/* --- Champ de recherche : icône sur surface calme, pas un bouton accent -- */
+.pl-search .input-group-text {
+  background: var(--surface-sunken);
+  border-color: var(--line);
+  color: var(--text-tertiary);
+}
+.pl-search .form-control { border-color: var(--line); }
+.pl-search .form-control:focus { border-color: var(--line-strong); box-shadow: none; }
+
+/* --- État vide : bloc calme, pleine largeur, sans cadre pointillé ---------- */
+.task-empty, .empty-state, .orbit-empty {
+  grid-column: 1 / -1;
+  width: 100%;
+  border: 0 !important;
+  background: none !important;
+  padding: 3rem 1rem !important;
+}
+.task-empty i, .empty-state i, .orbit-empty-icon i {
+  animation: none !important;
+  color: var(--text-tertiary) !important;
+  opacity: 1 !important;
+  margin-bottom: var(--space-2);
+}
+
+/* --- Mobile : filtres empilés deux par ligne, libellés lisibles ---------- */
+@media (max-width: 575.98px) {
+  .avm-bar .avm-iconbar { gap: 6px; }
+  .avm-bar .avm-select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .avm-bar .avm-select select { max-width: 100%; width: 100%; }
+  .avm-bar .d-flex.gap-2 > .btn-premium { flex: 1 1 auto; }
+}

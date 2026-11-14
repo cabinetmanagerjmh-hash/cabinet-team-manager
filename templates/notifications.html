@@ -2,38 +2,26 @@
 {% block title %}Notifications{% endblock %}
 {% block content %}
 {% from 'includes/orbit_ui.html' import page_head with context %}
-{{ page_head('bi-bell', 'Notifications', 'Activité de vos équipes et alertes') }}
+{% set actions %}
+    <button class="btn-premium btn-premium-outline btn-sm btn-press" id="markAllReadBtn">
+        <i class="bi bi-check-all me-1"></i>Marquer tout comme lu
+    </button>
+{% endset %}
+{{ page_head('bi-bell', 'Notifications', 'Activité de vos équipes et alertes', actions=actions) }}
 
-<!-- Stats -->
-<div class="row mb-4 g-3">
-    <div class="col-md-3">
-        <div class="card-premium text-center animate-fade-in-up stagger-1">
-            <div class="card-body-premium">
-                <h3 class="mb-0" id="totalCount" style="color:var(--text-primary);">0</h3>
-                <p class="text-tertiary small mb-0">Total</p>
-            </div>
-        </div>
+<!-- Chiffres -->
+<div class="kpi-band mb-4 animate-fade-in-up">
+    <div class="kpi-chip">
+        <div class="kpi-label">Total</div>
+        <div class="kpi-value" id="totalCount">0</div>
     </div>
-    <div class="col-md-3">
-        <div class="card-premium text-center animate-fade-in-up stagger-2">
-            <div class="card-body-premium">
-                <h3 class="mb-0 text-danger" id="unreadCount">0</h3>
-                <p class="text-tertiary small mb-0">Non lues</p>
-            </div>
-        </div>
+    <div class="kpi-chip">
+        <div class="kpi-label">Non lues</div>
+        <div class="kpi-value" id="unreadCount">0</div>
     </div>
-    <div class="col-md-3">
-        <div class="card-premium text-center animate-fade-in-up stagger-3">
-            <div class="card-body-premium">
-                <h3 class="mb-0 text-success" id="readCount">0</h3>
-                <p class="text-tertiary small mb-0">Lues</p>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3 d-flex align-items-center">
-        <button class="btn-premium btn-premium-primary w-100 btn-press" id="markAllReadBtn">
-            <i class="bi bi-check-all me-1"></i>Marquer tout comme lu
-        </button>
+    <div class="kpi-chip">
+        <div class="kpi-label">Lues</div>
+        <div class="kpi-value" id="readCount">0</div>
     </div>
 </div>
 

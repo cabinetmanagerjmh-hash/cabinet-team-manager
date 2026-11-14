@@ -12,22 +12,20 @@
     </div>
 </div>
 
+{% set st = request.args.get('status', 'en_attente') %}
 <div class="stagger-inner">
-    <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in-up stagger-1">
-        <h2 class="fw-semibold mb-0"><i class="bi bi-lightbulb me-2" style="color: var(--orange-text)"></i>Suggestions de tâches</h2>
-    </div>
     <p class="text-tertiary mb-4">Validez ou rejetez les suggestions générées automatiquement à partir des emails.</p>
 
     <div class="d-flex flex-wrap gap-2 mb-4 animate-fade-in-up stagger-2">
-        <a href="{{ url_for('api_suggestions') }}?status=en_attente" class="btn-premium btn-premium-outline btn-premium-secondary btn-sm">En attente</a>
-        <a href="{{ url_for('api_suggestions') }}?status=validee" class="btn-premium btn-premium-outline btn-premium-success btn-sm">Validées</a>
-        <a href="{{ url_for('api_suggestions') }}?status=rejetee" class="btn-premium btn-premium-outline btn-premium-danger btn-sm">Rejetées</a>
+        <a href="{{ url_for('api_suggestions') }}?status=en_attente" class="btn-premium btn-premium-outline btn-sm{% if st == 'en_attente' %} sugg-filter-on{% endif %}">En attente</a>
+        <a href="{{ url_for('api_suggestions') }}?status=validee" class="btn-premium btn-premium-outline btn-sm{% if st == 'validee' %} sugg-filter-on{% endif %}">Validées</a>
+        <a href="{{ url_for('api_suggestions') }}?status=rejetee" class="btn-premium btn-premium-outline btn-sm{% if st == 'rejetee' %} sugg-filter-on{% endif %}">Rejetées</a>
         {% if current_user.is_authenticated and current_user.role in ['manager', 'admin'] %}
-        <button class="btn-premium btn-premium-outline btn-premium-info btn-sm" id="refreshMailboxBtn" onclick="refreshMailbox()">
-            <i class="bi bi-envelope-arrow-up"></i> Scanne la mailbox
+        <button class="btn-premium btn-premium-outline btn-sm" id="refreshMailboxBtn" onclick="refreshMailbox()">
+            <i class="bi bi-envelope-arrow-up"></i> Scanner la boîte mail
         </button>
         {% endif %}
-        <button class="btn-premium btn-premium-outline btn-premium-warning btn-sm ms-auto" id="resetBtn" onclick="resetSuggestions()">
+        <button class="btn-premium btn-premium-outline btn-sm ms-auto" id="resetBtn" onclick="resetSuggestions()">
             <i class="bi bi-arrow-clockwise"></i> Réinitialiser
         </button>
     </div>
@@ -119,7 +117,7 @@ function loadSuggestions() {
         .then(data => {
             const container = document.getElementById('suggestionsList');
             if (!data.ok || !data.suggestions.length) {
-                container.innerHTML = '<div class="empty-state"><img src="{{ url_for("static", filename="img/logo-jmh-orbit.png") }}" alt="" class="empty-state-icon"><h4 class="empty-state-title">Aucune suggestion pour le moment</h4><p class="empty-state-desc">Les suggestions apparaîtront automatiquement quand des emails avec des deadlines seront détectés.</p></div>';
+                container.innerHTML = '<div class="orbit-empty"><div class="orbit-empty-icon"><i class="bi bi-inbox"></i></div><h4>Aucune suggestion pour le moment</h4><p>Les suggestions apparaîtront automatiquement quand des emails avec des échéances seront détectés.</p></div>';
                 return;
             }
 
@@ -258,10 +256,10 @@ function refreshMailbox() {
         .then(r => r.json())
         .then(res => {
             if (res.ok) {
-                showToast(res.message || 'Mailbox analysée !', 'success');
+                showToast(res.message || 'Boîte mail analysée', 'success');
                 loadSuggestions();
             } else {
-                showToast('Erreur: ' + (res.message || 'Impossible d\'analyser la mailbox'), 'danger');
+                showToast(res.message || 'Impossible d\'analyser la boîte mail', 'danger');
             }
         })
         .catch(err => {
@@ -271,7 +269,7 @@ function refreshMailbox() {
         .finally(() => {
             // Restore button
             btn.disabled = false;
-            btn.innerHTML = '<i class="bi bi-envelope-arrow-up"></i> Scanne la mailbox';
+            btn.innerHTML = '<i class="bi bi-envelope-arrow-up"></i> Scanner la boîte mail';
         });
 }
 

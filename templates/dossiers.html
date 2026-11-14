@@ -19,7 +19,7 @@
         </form>
         <form method="POST" action="{{ url_for('enrichir_tous_dossiers') }}" class="d-inline" onsubmit="return enrichirToutConfirm(this)">
             <button type="submit" class="btn-premium btn-premium-secondary btn-press" id="btnEnrichirTout" title="Compléter les infos entreprise via le SIREN">
-                <i class="bi bi-stars me-1"></i>Enrichir (SIREN)
+                <i class="bi bi-building-add me-1"></i>Enrichir (SIREN)
             </button>
         </form>
     </div>
@@ -58,7 +58,7 @@
                 </span>
                 <input type="text" id="rechercheDossier" class="input-premium ps-5 py-3" placeholder="Rechercher un dossier par n°, intitulé, collaborateur...">
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap" style="min-width:0;">
                 <button class="btn-premium btn-premium-primary btn-press" data-bs-toggle="modal" data-bs-target="#modalDossier">
                     <i class="bi bi-plus-lg me-1"></i>Nouveau dossier
                 </button>
@@ -187,10 +187,10 @@
         <div class="filter-panel d-none" id="panelRegime">
             <div class="d-flex flex-wrap gap-2 pt-3 mt-2 u-border-top">
                 <button type="button" class="btn-filter-option" data-value="all" onclick="setRegimeFilter('all');"><i class="bi bi-check2-all me-1"></i>Tous</button>
-                <button type="button" class="btn-filter-option" data-value="ca3_mensuelle" onclick="setRegimeFilter('ca3_mensuelle');"><i class="bi bi-calendar-month me-1"></i>CA3 Mensuelle</button>
-                <button type="button" class="btn-filter-option" data-value="ca3_trimestrielle" onclick="setRegimeFilter('ca3_trimestrielle');"><i class="bi bi-calendar-range me-1"></i>CA3 Trimestrielle</button>
-                <button type="button" class="btn-filter-option" data-value="ca12_annuel" onclick="setRegimeFilter('ca12_annuel');"><i class="bi bi-calendar2 me-1"></i>CA12 Annuel</button>
-                <button type="button" class="btn-filter-option" data-value="exonere" onclick="setRegimeFilter('exonere');"><i class="bi bi-shield-check me-1"></i>Exonéré</button>
+                <button type="button" class="btn-filter-option" data-value="ca3_mensuelle" onclick="setRegimeFilter('ca3_mensuelle');">CA3 Mensuelle</button>
+                <button type="button" class="btn-filter-option" data-value="ca3_trimestrielle" onclick="setRegimeFilter('ca3_trimestrielle');">CA3 Trimestrielle</button>
+                <button type="button" class="btn-filter-option" data-value="ca12_annuel" onclick="setRegimeFilter('ca12_annuel');">CA12 Annuel</button>
+                <button type="button" class="btn-filter-option" data-value="exonere" onclick="setRegimeFilter('exonere');">Exonéré</button>
             </div>
         </div>
         <!-- Panneau Date limite -->
@@ -198,7 +198,7 @@
             <div class="d-flex flex-wrap gap-2 pt-3 mt-2" style="border-top:1px solid var(--border-color);align-items:center;">
                 <button type="button" class="btn-filter-option" data-value="all" onclick="setDateFilter('all');"><i class="bi bi-check2-all me-1"></i>Toutes</button>
                 <button type="button" class="btn-filter-option" data-value="today" onclick="setDateFilter('today');"><i class="bi bi-calendar-day me-1"></i>Aujourd'hui</button>
-                <button type="button" class="btn-filter-option" data-value="month" onclick="setDateFilter('month');"><i class="bi bi-calendar-month me-1"></i>Ce mois</button>
+                <button type="button" class="btn-filter-option" data-value="month" onclick="setDateFilter('month');">Ce mois</button>
                 <button type="button" class="btn-filter-option" data-value="late" onclick="setDateFilter('late');"><i class="bi bi-exclamation-triangle me-1"></i>En retard</button>
                 <input type="date" class="input-premium" style="width:auto;display:inline-block;padding:0.4rem 0.75rem;font-size:0.8rem;" id="inputDateExact" onchange="setDateFilter('exact', this.value)" placeholder="Date exacte">
             </div>
@@ -249,15 +249,15 @@ function orbitChips() {
                     <tr>
                         <th class="u-w36"><input type="checkbox" id="selectAllDossiers" class="select-all-checkbox" aria-label="Sélectionner tous les dossiers"></th>
                         <th>N°</th>
-                        <th>INTITULÉ</th>
-                        <th>COLLABORATEUR</th>
-                        <th>ÉQUIPE</th>
-                        <th>RÉGIME TVA</th>
-                        <th>DATE LIMITE</th>
-                        <th>DÉLAI RESTANT</th>
-                        <th>TÂCHES TVA</th>
-                        <th>TÂCHES REST.</th>
-                        <th>SIREN / INFO</th>
+                        <th>Intitulé</th>
+                        <th>Collaborateur</th>
+                        <th>Équipe</th>
+                        <th>Régime TVA</th>
+                        <th>Date limite</th>
+                        <th>Délai restant</th>
+                        <th>Tâches TVA</th>
+                        <th>Tâches rest.</th>
+                        <th>SIREN / info</th>
                         <th class="text-end">Actions</th>
                     </tr>
                 </thead>
@@ -296,13 +296,13 @@ function orbitChips() {
                                 <td>
                                     {% set rc = d._regime_combo %}
                                     {% if rc == 'ca3_mensuelle' %}
-                                    <span class="badge badge-info"><i class="bi bi-calendar-month me-1"></i>CA3 Mensuelle</span>
+                                    <span class="badge badge-info">CA3 Mensuelle</span>
                                     {% elif rc == 'ca3_trimestrielle' %}
-                                    <span class="badge badge-warning"><i class="bi bi-calendar-range me-1"></i>CA3 Trimestrielle</span>
+                                    <span class="badge badge-warning">CA3 Trimestrielle</span>
                                     {% elif rc == 'ca12_annuel' %}
-                                    <span class="badge badge-primary"><i class="bi bi-calendar2 me-1"></i>CA12 Annuel</span>
+                                    <span class="badge badge-primary">CA12 Annuel</span>
                                     {% elif rc == 'exonere' %}
-                                    <span class="badge badge-success"><i class="bi bi-shield-check me-1"></i>Exonéré</span>
+                                    <span class="badge badge-success">Exonéré</span>
                                     {% else %}
                                     <span class="badge badge-tertiary">-</span>
                                     {% endif %}
@@ -366,7 +366,7 @@ function orbitChips() {
                                     {% endif %}
                                     <li><a class="dropdown-item" href="{{ url_for('pennylane_dossier', dossier_id=d.id) }}"><i class="bi bi-link-45deg me-2"></i>Pennylane{% if d.pennylane_customer_id %} <span class="badge badge-success ms-1"><i class="bi bi-check-lg"></i></span>{% endif %}</a></li>
                                     {% if d.siren %}
-                                    <li><a class="dropdown-item" href="#" onclick="enrichirDossier({{ d.id }}, this);return false;"><i class="bi bi-stars me-2"></i>Enrichir via SIREN</a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="enrichirDossier({{ d.id }}, this);return false;"><i class="bi bi-building-add me-2"></i>Enrichir via SIREN</a></li>
                                     {% endif %}
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
@@ -460,7 +460,7 @@ function orbitChips() {
                             <label class="form-label-premium"><i class="bi bi-search me-1 u-txt-orange"></i>SIREN — extraction automatique <small class="text-tertiary">(INSEE / Infogreffe)</small></label>
                             <div class="d-flex gap-2">
                                 <input type="text" name="siren" id="newSiren" class="input-premium u-maxw200" inputmode="numeric" maxlength="9" placeholder="9 chiffres" autocomplete="off">
-                                <button type="button" class="btn-premium btn-premium-secondary" id="btnExtractSiren" onclick="extraireSiren('new')"><i class="bi bi-magic me-1"></i>Extraire</button>
+                                <button type="button" class="btn-premium btn-premium-secondary" id="btnExtractSiren" onclick="extraireSiren('new')"><i class="bi bi-upc-scan me-1"></i>Extraire</button>
                             </div>
                             <div id="sirenResult" class="small mt-2"></div>
                         </div>
@@ -622,7 +622,7 @@ function orbitChips() {
                             <label class="form-label-premium"><i class="bi bi-search me-1 u-txt-orange"></i>SIREN <small class="text-tertiary">(extraction auto : raison sociale, forme juridique, secteur, TVA intracommunautaire…)</small></label>
                             <div class="d-flex gap-2 align-items-center flex-wrap">
                                 <input type="text" name="siren" id="editSiren" class="input-premium u-maxw200" inputmode="numeric" maxlength="9" placeholder="9 chiffres" autocomplete="off">
-                                <button type="button" class="btn-premium btn-premium-secondary" id="btnExtractSirenEdit" onclick="extraireSiren('edit')"><i class="bi bi-magic me-1"></i>Extraire</button>
+                                <button type="button" class="btn-premium btn-premium-secondary" id="btnExtractSirenEdit" onclick="extraireSiren('edit')"><i class="bi bi-upc-scan me-1"></i>Extraire</button>
                             </div>
                             <div id="sirenResultEdit" class="small mt-2"></div>
                         </div>

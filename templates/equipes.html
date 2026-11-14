@@ -87,8 +87,8 @@
                     <span class="text-tertiary">Pas d'email dédié</span>
                     {% endif %}
                 </div>
-                <div class="mt-3 d-flex gap-2">
-                    <a href="{{ url_for('team_select') }}" class="btn-premium btn-premium-outline btn-premium-primary btn-sm">Voir</a>
+                <div class="mt-3 d-flex flex-wrap gap-2">
+                    <a href="{{ url_for('team_select') }}" class="btn-premium btn-premium-primary btn-sm">Voir</a>
                     {% if current_user.role == 'admin' %}
                     <button class="btn-premium btn-premium-outline btn-sm" data-bs-toggle="modal" data-bs-target="#modalMailEquipe{{ e.id }}">
                         <i class="bi bi-envelope"></i> Email équipe
@@ -109,7 +109,7 @@
     {% else %}
     <div class="col-12">
         <div class="empty-state">
-            <img src="{{ asset('img/logo-jmh-orbit.png') }}" alt="" class="empty-state-icon">
+            <i class="bi bi-people empty-state-icon" aria-hidden="true"></i>
             <h4 class="empty-state-title">Aucune équipe pour le moment</h4>
             <p class="empty-state-desc">Créez votre première équipe pour commencer à organiser votre structure.</p>
         </div>

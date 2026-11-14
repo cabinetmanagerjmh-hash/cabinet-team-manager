@@ -8,7 +8,7 @@
 <div class="card-premium today-band animate-fade-in-up mb-4">
     <div class="today-head">
         <div>
-            <div class="today-hello">Bonjour {{ current_user.prenom }} <span aria-hidden="true">&#128075;</span></div>
+            <div class="today-hello">Tableau de bord</div>
             <div class="today-date" id="todayDateLabel">Voici votre journée</div>
         </div>
         <div class="today-stats">
@@ -29,14 +29,14 @@
         {% endfor %}
     </div>
     {% else %}
-    <div class="today-empty"><i class="bi bi-check2-circle"></i> Aucune tâche prévue aujourd'hui — bon moment pour anticiper.</div>
+    <div class="today-empty"><i class="bi bi-check2-circle"></i> Aucune échéance aujourd'hui.</div>
     {% endif %}
 </div>
 
 {# ============ ACTIONS RAPIDES ============ #}
 <div class="quick-actions animate-fade-in-up mb-4">
     <div class="quick-actions-head">
-        <span class="qa-title"><i class="bi bi-lightning-charge-fill me-1"></i>Actions rapides</span>
+        <span class="qa-title">Actions rapides</span>
     </div>
     <div class="quick-actions-grid">
         <a href="{{ url_for('dossiers') }}" class="qa-btn"><i class="bi bi-folder-plus"></i><span>Nouveau dossier</span></a>
@@ -55,7 +55,6 @@
         <div class="stat-card-content">
             <div class="stat-card-label">Membres actifs</div>
             <div class="stat-card-value">{{ kpi.membres_actifs }}</div>
-            <div class="stat-card-trend up"><i class="bi bi-people-fill"></i><span>Équipe complète</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -63,7 +62,6 @@
         <div class="stat-card-content">
             <div class="stat-card-label">Dossiers en cours</div>
             <div class="stat-card-value">{{ kpi.dossiers_en_cours }}</div>
-            <div class="stat-card-trend"><i class="bi bi-archive"></i><span>Suivi actif</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -74,7 +72,7 @@
             {% if kpi.total_taches %}
             <div class="stat-mini"><div class="stat-mini-fill" style="width: {{ ((kpi.taches_retard / kpi.total_taches * 100)|round(0)|int) }}%; background: var(--danger);"></div></div>
             {% endif %}
-            <div class="stat-card-trend down"><i class="bi bi-arrow-down"></i><span>Attention requise</span></div>
+            <div class="stat-card-trend"><span>sur {{ kpi.total_taches }} tâche{{ kpi.total_taches|plur }}</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -85,7 +83,7 @@
             {% if kpi.total_taches %}
             <div class="stat-mini"><div class="stat-mini-fill" style="width: {{ ((kpi.taches_haute_priorite / kpi.total_taches * 100)|round(0)|int) }}%; background: var(--warning);"></div></div>
             {% endif %}
-            <div class="stat-card-trend"><i class="bi bi-flag"></i><span>Urgence</span></div>
+            <div class="stat-card-trend"><span>à traiter en priorité</span></div>
         </div>
     </div>
     <div class="stat-card">
@@ -94,7 +92,7 @@
             <div class="stat-card-label">Taux de complétion</div>
             <div class="stat-card-value">{{ (kpi.taux_completion or 0)|pct }}</div>
             <div class="stat-mini"><div class="stat-mini-fill" style="width: {{ (kpi.taux_completion or 0)|round(0)|int }}%; background: var(--success);"></div></div>
-            <div class="stat-card-trend up"><i class="bi bi-check2-circle"></i><span>{{ kpi.total_taches }} tâche{{ kpi.total_taches|plur }} sur 3 mois</span></div>
+            <div class="stat-card-trend"><span>sur {{ kpi.total_taches }} tâche{{ kpi.total_taches|plur }} du trimestre</span></div>
         </div>
     </div>
 </div>
@@ -250,7 +248,7 @@
                     {% endfor %}
                 {% else %}
                     <div class="empty-state">
-                        <img src="{{ asset('img/logo-jmh-orbit.png') }}" alt="" class="empty-state-icon">
+                        <i class="bi bi-check2-circle empty-state-icon" aria-hidden="true"></i>
                         <h4 class="empty-state-title">Aucune tâche pour aujourd'hui</h4>
                         <p class="empty-state-desc">Aucune tâche planifiée aujourd'hui pour l'équipe.</p>
                     </div>
@@ -266,19 +264,9 @@
                 <h5 class="mb-0"><i class="bi bi-speedometer2 me-2" style="color: var(--orange-text);"></i>Avancement de l'équipe</h5>
             </div>
             <div class="card-body-premium">
-                <div class="d-flex justify-content-center mb-3">
-                    <div class="progress-ring text-center">
-                        <svg width="100" height="100">
-                            <circle class="progress-ring-bg" cx="50" cy="50" r="40" fill="transparent"></circle>
-                            <circle class="progress-ring-progress" cx="50" cy="50" r="40" fill="transparent" style="--progress: {{ kpi.taux_completion or 0 }}"></circle>
-                        </svg>
-                        <div class="progress-ring-text">
-                            <div class="value">{{ (kpi.taux_completion or 0)|pct }}</div>
-                            <div class="label">Complété</div>
-                        </div>
-                    </div>
-                </div>
-                <p class="text-tertiary small">Sur {{ kpi.total_taches or 0 }} tâches au total</p>
+                <div class="orbit-meter-value">{{ (kpi.taux_completion or 0)|pct }}</div>
+                <div class="orbit-meter"><span style="width: {{ kpi.taux_completion or 0 }}%"></span></div>
+                <p class="text-tertiary small mb-0">{{ kpi.total_taches or 0 }} tâches au trimestre</p>
             </div>
         </div>
 
@@ -297,9 +285,9 @@
                     {% endfor %}
                 {% else %}
                     <div class="empty-state">
-                        <img src="{{ asset('img/logo-jmh-orbit.png') }}" alt="" class="empty-state-icon">
+                        <i class="bi bi-check2-circle empty-state-icon" aria-hidden="true"></i>
                         <h4 class="empty-state-title">Aucune tâche cette semaine</h4>
-                        <p class="empty-state-desc">Toutes les tâches de la semaine sont à jour. Parfait travail !</p>
+                        <p class="empty-state-desc">Toutes les tâches de la semaine sont à jour.</p>
                     </div>
                 {% endif %}
             </div>

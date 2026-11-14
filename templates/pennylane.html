@@ -6,8 +6,8 @@
 <div class="pl-page">
 <div class="pl-hero d-flex justify-content-between align-items-center mb-4 animate-fade-in-up stagger-1">
     <div>
-        <div class="pl-eyebrow"><i class="bi bi-stars me-2"></i>Connecteur comptable</div>
-        <h1 class="pl-hero-title text-gradient-animated"><i class="bi bi-link-45deg me-3"></i>Intégration Pennylane</h1>
+        <div class="pl-eyebrow">Connecteur comptable</div>
+        <h1 class="pl-hero-title"><i class="bi bi-link-45deg me-3"></i>Intégration Pennylane</h1>
         <p class="pl-hero-sub">Synchronisation automatisée de la TVA, triage intelligent et relances proactives.</p>
     </div>
     {% if not configured %}
@@ -255,25 +255,25 @@
         </div>
 
         <!-- Barre de recherche / filtres / tri temps réel -->
-        <div class="d-flex gap-2 align-items-center mb-3 flex-wrap" id="plToolbar">
-            <div class="input-group" style="max-width:300px;">
-                <span class="input-group-text bg-orange text-white"><i class="bi bi-search"></i></span>
+        <div class="d-flex gap-2 align-items-center mb-3 flex-wrap w-100" id="plToolbar">
+            <div class="input-group pl-search" style="flex:1 1 200px; max-width:260px;">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
                 <input type="text" id="plSearch" class="form-control form-control-sm"
                        placeholder="Rechercher un dossier..." autocomplete="off">
             </div>
-            <select id="plFilterCollab" class="form-select form-select-sm" style="max-width:210px;">
-                <option value="">Collaborateur (tous)</option>
+            <select id="plFilterCollab" class="form-select form-select-sm" style="flex:0 1 190px; max-width:190px;">
+                <option value="">Collaborateur</option>
                 {% for cid, cnom in collaborateurs.items() %}
                 <option value="{{ cid }}">{{ cnom }}</option>
                 {% endfor %}
             </select>
-            <select id="plFilterRegime" class="form-select form-select-sm" style="max-width:180px;">
-                <option value="">Régime d'impôt (tous)</option>
+            <select id="plFilterRegime" class="form-select form-select-sm" style="flex:0 1 170px; max-width:180px;">
+                <option value="">Régime d'impôt</option>
                 {% for r in regimes %}
                 <option value="{{ r|lower }}">{{ r|upper }}</option>
                 {% endfor %}
             </select>
-            <select id="plSort" class="form-select form-select-sm" style="max-width:170px;">
+            <select id="plSort" class="form-select form-select-sm" style="flex:0 1 150px; max-width:150px;">
                 <option value="numero">Tri : N° dossier</option>
                 <option value="intitule">Tri : Intitulé</option>
                 <option value="collab">Tri : Collaborateur</option>
@@ -453,7 +453,7 @@
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-info" title="Retrouver le company ID automatiquement via l'API Pennylane (token du dossier, sinon token global)"
                                 onclick="plAutoAssocier()">
-                            <i class="bi bi-magic me-1"></i>Auto (API)
+                            <i class="bi bi-link-45deg me-1"></i>Auto (API)
                         </button>
                     </div>
                     <p class="pl-assoc-note mb-0">
@@ -1343,28 +1343,20 @@ function plRefreshData(silent) {
 #plToolbar {
     gap: 0.5rem;
     padding: 0.55rem 0.7rem;
-    background: linear-gradient(180deg, var(--bg-card, #fafafb) 0%, var(--bg-darker, #eaecf0) 100%);
+    background: var(--bg-card, #fafafb);
     border: 1px solid var(--border-color, #e3e5e9);
     border-radius: var(--pl-radius-lg);
-    box-shadow: var(--pl-shadow-1);
+    box-shadow: none;
 }
-#plToolbar .input-group { max-width: 320px; }
-/* Une seule rangée dès qu'il y a la place : recherche, 3 filtres puis les
-   deux actions. En dessous de 1400px, retour au wrap (libellés complets). */
-@media (min-width: 1400px) {
-    #plToolbar {
-        display: grid !important;
-        grid-template-columns: minmax(240px, 1.6fr) repeat(3, minmax(0, 1fr)) auto auto;
-        align-items: center;
-    }
-    #plToolbar .input-group,
-    #plToolbar .form-select { max-width: none !important; width: 100% !important; }
-    #plToolbar > .btn { white-space: nowrap; }
-}
+/* Une rangée tant que la largeur le permet, sinon passage à la ligne. */
+#plToolbar .input-group { flex: 1 1 200px; max-width: 260px; }
+#plToolbar .form-select { flex: 0 1 auto; }
+#plToolbar > .btn { white-space: nowrap; }
 #plToolbar .input-group-text {
-    border: none;
-    background: linear-gradient(135deg, var(--pl-accent), var(--pl-accent-2)) !important;
-    color: #fff !important;
+    border: 1px solid var(--border-color, #e3e5e9);
+    border-right: none;
+    background: var(--surface-sunken) !important;
+    color: var(--text-tertiary) !important;
     border-radius: 10px 0 0 10px !important;
 }
 #plToolbar .form-control,
@@ -1380,7 +1372,7 @@ function plRefreshData(silent) {
 #plToolbar .btn {
     border-radius: 10px;
     font-size: 0.8rem;
-    font-weight: 600;
+    font-weight: 500;
     transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
 #plToolbar .btn-outline-primary {
@@ -1388,9 +1380,9 @@ function plRefreshData(silent) {
     color: var(--orange-dark, #1B5570);
 }
 #plToolbar .btn-outline-primary:hover {
-    background: var(--pl-accent);
-    border-color: var(--pl-accent);
-    color: #fff;
+    background: var(--surface-sunken);
+    border-color: var(--line-strong);
+    color: var(--text-primary);
 }
 /* ---- Panel head ---- */
 .pl-panel-head {

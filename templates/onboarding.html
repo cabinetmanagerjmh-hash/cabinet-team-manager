@@ -6,7 +6,7 @@
         <span class="page-head-icon"><i class="bi bi-rocket-takeoff"></i></span>
         <div class="page-head-titles">
             <h2>Suivi des nouveaux dossiers</h2>
-            <p class="page-head-sub">Onboarding Création / Reprise / Revision · dossiers partis · mails automatiques</p>
+            <p class="page-head-sub">Création, reprise et révision — rappels automatiques par mail</p>
         </div>
     </div>
     <div class="page-head-actions">
@@ -28,15 +28,15 @@
 </div>
 
 <style>
-.ob-tabs { display: flex; gap: 0; border-bottom: 2px solid var(--border-color); margin-bottom: 1.25rem; }
-.ob-tabs a { padding: .7rem 1.4rem; font-size: .92rem; font-weight: 600; color: var(--text-tertiary);
-    text-decoration: none; border-bottom: 3px solid transparent; margin-bottom: -2px; }
+.ob-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--line); margin-bottom: 1.25rem; }
+.ob-tabs a { padding: .7rem 1.4rem; font-size: .92rem; font-weight: 500; color: var(--text-tertiary);
+    text-decoration: none; border-bottom: 2px solid transparent; margin-bottom: -1px; }
 .ob-tabs a:hover { color: var(--orange-text); }
 .ob-tabs a.active { color: var(--orange-text); border-bottom-color: var(--orange-primary); }
 .ob-tabs a .badge { margin-left: 6px; }
 .ob-progress { display: flex; align-items: center; gap: 8px; min-width: 150px; }
-.ob-progress .bar { flex: 1; height: 6px; border-radius: 99px; background: var(--surface-sunken); overflow: hidden; }
-.ob-progress .bar span { display: block; height: 100%; background: var(--orange-primary); border-radius: 99px; }
+.ob-progress .bar { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-sunken); overflow: hidden; }
+.ob-progress .bar span { display: block; height: 100%; background: var(--orange-primary); border-radius: 3px; }
 .ob-progress .pct { font-family: var(--font-mono); font-size: .74rem; color: var(--text-secondary); min-width: 3em; text-align: right; }
 .ob-phases { display: inline-flex; gap: 4px; }
 .ob-phase-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--surface-sunken);
@@ -44,14 +44,13 @@
 .ob-phase-dot.done { background: var(--orange-primary); border-color: var(--orange-primary); }
 .ob-phase-dot.started { background: color-mix(in srgb, var(--orange-primary) 45%, transparent);
     border-color: var(--orange-primary); }
-.ob-badge-type { font-size: .68rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-    padding: .18rem .55rem; border-radius: 99px; background: var(--orange-subtle);
-    color: var(--orange-text); border: 1px solid var(--amber-line); }
-.ob-attente { font-family: var(--font-mono); font-size: .74rem; padding: .15rem .55rem;
-    border-radius: 99px; background: var(--surface-sunken); color: var(--text-secondary); }
-.ob-attente.bloque { background: rgba(239,83,80,.15); color: var(--danger-ink); }
+.ob-badge-type { font-size: .78rem; font-weight: 500; letter-spacing: 0; text-transform: none;
+    padding: 0; border: 0; border-radius: 0; background: transparent; color: var(--text-secondary); }
+.ob-attente { font-family: var(--font-mono); font-size: .74rem; padding: 0;
+    border-radius: 0; background: transparent; color: var(--text-secondary); }
+.ob-attente.bloque { background: transparent; color: var(--danger-ink); }
 .ob-etape-suivante { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.ob-kpis { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 1.25rem; }
+.ob-kpis { margin-bottom: 1.25rem; }
 .ob-sortie-pastilles { display: inline-flex; gap: 4px; }
 .ob-sortie-pastilles i { font-size: .95rem; color: var(--ink-4); }
 .ob-sortie-pastilles i.fait { color: var(--orange-text); }
@@ -67,11 +66,25 @@
 </div>
 
 {% if tab != 'partis' %}
-<div class="ob-kpis">
-    <span class="kpi-chip"><i class="bi bi-hourglass"></i> {{ kpis.en_cours }} en cours</span>
-    <span class="kpi-chip"><i class="bi bi-check2-circle"></i> {{ kpis.termines }} terminés</span>
-    <span class="kpi-chip"><i class="bi bi-exclamation-triangle"></i> {{ kpis.bloques }} en attente &gt; {{ seuil_rappel }} j</span>
-    <span class="kpi-chip"><i class="bi bi-cash"></i> {{ '{:,.0f}'.format(kpis.honoraires).replace(',', ' ') }} € HT /an</span>
+<div class="kpi-band ob-kpis">
+    <div class="kpi-chip">
+        <div class="kpi-label">En cours</div>
+        <div class="kpi-value">{{ kpis.en_cours }}</div>
+    </div>
+    <div class="kpi-chip">
+        <div class="kpi-label">Terminés</div>
+        <div class="kpi-value">{{ kpis.termines }}</div>
+    </div>
+    <div class="kpi-chip">
+        <div class="kpi-label">En attente</div>
+        <div class="kpi-value">{{ kpis.bloques }}</div>
+        <div class="kpi-sub">depuis plus de {{ seuil_rappel }} j</div>
+    </div>
+    <div class="kpi-chip">
+        <div class="kpi-label">Honoraires annuels</div>
+        <div class="kpi-value">{{ '{:,.0f}'.format(kpis.honoraires).replace(',', ' ') }} € HT</div>
+        <div class="kpi-sub">sur les dossiers suivis</div>
+    </div>
 </div>
 
 <div class="card-premium mb-3">
@@ -165,9 +178,15 @@
 
 {% else %}
 
-<div class="ob-kpis">
-    <span class="kpi-chip"><i class="bi bi-door-open"></i> {{ kpis_partis.total }} dossiers partis</span>
-    <span class="kpi-chip"><i class="bi bi-calendar-month"></i> {{ kpis_partis.ce_mois }} ce mois</span>
+<div class="kpi-band kpi-band--fixed ob-kpis">
+    <div class="kpi-chip">
+        <div class="kpi-label">Dossiers partis</div>
+        <div class="kpi-value">{{ kpis_partis.total }}</div>
+    </div>
+    <div class="kpi-chip">
+        <div class="kpi-label">Ce mois</div>
+        <div class="kpi-value">{{ kpis_partis.ce_mois }}</div>
+    </div>
 </div>
 
 <div class="d-flex justify-content-end mb-3">

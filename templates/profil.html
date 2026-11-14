@@ -22,7 +22,6 @@
                 <div class="text-center mb-4">
                     <div class="position-relative d-inline-block">
                         {% set photo_src = current_user.photo_display_src() %}
-                        <!-- DEBUG: photo_src={{ photo_src }}, email={{ current_user.email }} -->
                         {% if not photo_src and current_user.email == 'admin@cabinet-jmh.com' %}
                           {% set photo_src = url_for('static', filename='uploads/admin.png') %}
                         {% endif %}
@@ -58,7 +57,7 @@
                                 <input type="file" id="photoInput" name="photo" accept="image/png,image/jpeg,image/gif" style="display: none;">
                                 <span class="text-tertiary small" id="fileNameDisplay">Aucun fichier</span>
                             </div>
-                            <button type="submit" class="btn-premium btn-premium-primary btn-sm w-100">
+                            <button type="submit" class="btn-premium btn-premium-outline btn-sm w-100">
                                 <i class="bi bi-cloud-upload me-1"></i>Enregistrer la photo
                             </button>
                         </form>

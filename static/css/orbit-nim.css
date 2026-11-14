@@ -224,14 +224,14 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
 }
 .page-taches .task-card:hover {
   border-color: var(--nim-border-hover);
-  box-shadow: var(--nim-glow);
+  box-shadow: none;
   background-color: var(--nim-card-bg);
 }
 .page-taches .task-card:hover::after { opacity: 1; }
 .page-taches .task-card:focus-visible {
   outline: 2px solid var(--amber);
   outline-offset: 2px;
-  box-shadow: var(--nim-glow);
+  box-shadow: none;
 }
 .page-taches .task-card.task-overdue {
   border-left: 2px solid var(--danger);
@@ -240,11 +240,11 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
 .page-taches .task-priority,
 .page-taches .task-status {
   border-radius: 6px;
-  font-size: .62rem;
-  font-weight: 650;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  padding: .22rem .5rem;
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  padding: .18rem .45rem;
 }
 .page-taches .task-card-body { padding: .55rem 1rem .8rem; }
 .page-taches .task-title {
@@ -297,8 +297,9 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
 .page-pennylane .pl-hero-title i { color: var(--nim-accent); opacity: 1; }
 .page-pennylane .pl-eyebrow {
   border-radius: 6px;
-  font-size: .62rem;
-  letter-spacing: .14em;
+  font-size: .68rem;
+  letter-spacing: 0;
+  text-transform: none;
   border-color: var(--nim-border);
   background: transparent;
   color: var(--nim-accent);
@@ -314,16 +315,16 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
   /* La tuile reste en place : le survol allume le trait, il ne déplace rien. */
   transform: none;
   border-color: var(--nim-border-hover);
-  box-shadow: var(--nim-glow);
+  box-shadow: none;
 }
 /* Le trait de 3 px du composant d'origine cède la place au liseré de 1 px. */
 .page-pennylane .pl-stat-card::before { display: none; }
 .page-pennylane .pl-stat-card:hover::after { opacity: 1; }
 .page-pennylane .pl-stat-label {
-  font-size: .63rem;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  color: var(--text-tertiary);
+  font-size: .74rem;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--text-secondary);
 }
 .page-pennylane .pl-stat-value {
   font-size: 1.9rem;
@@ -331,6 +332,7 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
   line-height: 1.15;
 }
 .page-pennylane .pl-stat-icon {
+  display: none;
   width: 38px; height: 38px;
   border-radius: 10px;
   border: 1px solid var(--nim-border);

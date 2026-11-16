@@ -18,9 +18,11 @@ html[data-theme="light"] {
   --nim-sheen: linear-gradient(180deg, rgba(31, 106, 136, .045), rgba(31, 106, 136, 0) 150px);
   --nim-glow: 0 0 0 1px rgba(31, 106, 136, .16), 0 18px 38px -30px rgba(22, 71, 93, .40);
   --nim-tile-shadow: 0 1px 2px rgba(16, 24, 40, .05);
-  --nim-aurora-a: rgba(103, 174, 202, .20);
-  --nim-aurora-b: rgba(31, 106, 136, .12);
-  --nim-aurora-c: rgba(124, 197, 227, .15);
+  /* Bureau azur : halos resserrés — le canevas bleu-gris doit rester franc,
+     l'animation se devine sans brouiller les feuilles blanches. */
+  --nim-aurora-a: rgba(103, 174, 202, .13);
+  --nim-aurora-b: rgba(31, 106, 136, .08);
+  --nim-aurora-c: rgba(124, 197, 227, .10);
 }
 
 html[data-theme="dark"] {
@@ -78,7 +80,7 @@ body.app-shell::before { display: none !important; }
   background: radial-gradient(circle at 50% 50%, var(--nim-aurora-c), transparent 66%);
   animation: orbitAuroraC 26s ease-in-out infinite alternate;
 }
-html[data-theme="light"] .orbit-aurora { opacity: .95; }
+html[data-theme="light"] .orbit-aurora { opacity: .85; }
 
 /* Poussière d'azur : canvas plein écran derrière tout le contenu, au-dessus
    des halos. Même plan (z-index:-1) : il suffit qu'il vienne après dans le DOM. */

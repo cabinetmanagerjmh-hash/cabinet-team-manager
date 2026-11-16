@@ -27,30 +27,30 @@
   --info: #4cc3ff;
 
   /* Mode clair : surfaces blanches posées sur un canevas bleuté assez profond
-     (#F1F4F8) pour que le blanc des cartes ne éblouisse pas ; l'encre est
+     (#E7EDF4) pour que le blanc des cartes ne éblouisse pas ; l'encre est
      descendue d'un cran (≈ 9:1 pour le secondaire, ≈ 8:1 pour le tertiaire)
      pour que la lecture ne demande aucun effort. */
-  --paper: #F1F4F8;
+  --paper: #E7EDF4;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-sunken: #EAEFF5;
+  --surface-sunken: #DCE4EE;
   --overlay: rgba(16, 16, 16, .48);
   --scrim: rgba(16, 16, 16, .62);
 
-  --ink-1: #14181C;
-  --ink-2: #363C42;
-  --ink-3: #484F56;
-  --ink-4: #565D65;
+  --ink-1: #101418;
+  --ink-2: #2E353C;
+  --ink-3: #414950;
+  --ink-4: #4F5760;
 
-  --line: #DFE5EC;
-  --line-strong: #C6D0DB;
+  --line: #D3DCE6;
+  --line-strong: #B9C6D4;
 
   --bg-dark: var(--paper);
   --bg-card: var(--surface);
-  --bg-card-hover: #EEF3F8;
+  --bg-card-hover: #F2F6FA;
   /* Lignes de tableau alternées : un lavis bleu-gris (≈5 % d'encre) assez
      marqué pour suivre une ligne d'un œil, assez doux pour rester un fond. */
-  --row-alt: #F1F5F9;
+  --row-alt: #F3F7FB;
   --bg-elevated: var(--surface-raised);
   --border-color: var(--line);
   --text-primary: var(--ink-1);
@@ -111,8 +111,11 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  --shadow-1: 0 1px 2px rgba(16, 24, 40, .05), 0 10px 26px -20px rgba(16, 24, 40, .28);
-  --shadow-2: 0 2px 8px rgba(16, 24, 40, .07), 0 28px 56px -28px rgba(16, 24, 40, .32);
+  /* Bureau azur : la profondeur vient des filets. Les ombres ne restent que
+     pour les couches flottantes (modales, menus) qui survolent vraiment la
+     page — posées sur la toile, les cartes n'en ont pas besoin. */
+  --shadow-1: none;
+  --shadow-2: 0 12px 32px -16px rgba(21, 36, 48, .22);
   --shadow-glow: 0 0 0 1px rgba(31, 106, 136, .28), 0 8px 30px -10px rgba(31, 106, 136, .45);
 
   --topbar-h: 60px;
@@ -1438,4 +1441,54 @@ html[data-theme="dark"] .orbit-meter > span { background: var(--amber); }
   .avm-bar .avm-select { flex: 1 1 100%; min-width: 0; }
   .avm-bar .avm-select select { max-width: 100%; width: 100%; }
   .avm-bar .d-flex.gap-2 > .btn-premium { flex: 1 1 auto; }
+}
+
+/* ==========================================================================
+   17. BUREAU AZUR (thème clair) — le chrome vit sur le canevas
+   Topbar et sidebar ne sont plus des dalles blanches : elles laissent voir
+   la toile bleu-gris, comme la sidebar sombre laisse voir l'obsidienne.
+   L'état actif de navigation devient une feuille blanche à filet, et le
+   liseré azur (signature des tuiles NIM du sombre) descend sur les
+   en-têtes de page du clair.
+   ========================================================================== */
+@media (min-width: 992px) {
+  html[data-theme="light"] .app-topbar {
+    background: color-mix(in srgb, var(--paper) 78%, transparent);
+  }
+  html[data-theme="light"] .app-sidebar { background: transparent; }
+}
+html[data-theme="light"] .sidebar-nav-item.active {
+  background: var(--surface) !important;
+  border-color: var(--line-strong) !important;
+  color: var(--amber-ink) !important;
+}
+html[data-theme="light"] .sidebar-nav-item.active i { color: var(--amber-deep) !important; }
+
+/* Liseré azur : trait de 2 px au-dessus du titre de page — l'en-tête de
+   papier à lettre du cabinet. Court, calme, présent sur toutes les pages. */
+html[data-theme="light"] .page-head-titles {
+  position: relative;
+  padding-top: 9px;
+}
+html[data-theme="light"] .page-head-titles::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 30px; height: 2px;
+  border-radius: 2px;
+  background: var(--amber-deep);
+}
+/* Le tableau de bord n'a pas de .page-head : son titre vit dans la bande
+   « aujourd'hui » — le liseré le suit pour garder la même signature. */
+html[data-theme="light"] .today-hello {
+  position: relative;
+  padding-top: 9px;
+}
+html[data-theme="light"] .today-hello::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0;
+  width: 30px; height: 2px;
+  border-radius: 2px;
+  background: var(--amber-deep);
 }

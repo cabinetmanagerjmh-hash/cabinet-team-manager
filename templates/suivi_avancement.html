@@ -246,6 +246,9 @@
     [data-theme="light"] .cal-tab .count, [data-theme="light"] .cal-tab:not(.active) .count { background: var(--bg-hover); color: var(--text-muted); }
     [data-theme="light"] .cal-mod-comptable { background: var(--bg-hover); }
     /* Fenêtre détail membre */
+    /* Le voile était noir à 85 % dans les deux thèmes : sur le canevas clair, la
+       page paraissait éteinte derrière la fenêtre. */
+    [data-theme="light"] .avm-modal { background: var(--overlay); }
     [data-theme="light"] .avm-modal .modal-content { background: var(--bg-elevated); border: 1px solid var(--border-color); box-shadow: var(--shadow-xl); }
     [data-theme="light"] .avm-modal .modal-header { border-bottom: 1px solid var(--border-color); }
     [data-theme="light"] .avm-modal .table-premium thead th { background: var(--bg-elevated); border-bottom: 1px solid var(--border-color); }
@@ -253,8 +256,8 @@
     [data-theme="light"] .avm-modal .table-premium tbody tr:hover, [data-theme="light"] .cal-table tbody tr:hover { background: var(--bg-hover); }
     [data-theme="light"] .avm-modal #ajoutBox { background: var(--bg-dark); border: 1px solid var(--border-color); box-shadow: none; }
     [data-theme="light"] .avm-modal .select-premium, [data-theme="light"] .avm-modal .input-premium { background: var(--bg-dark) !important; border: 1px solid var(--border-light) !important; }
-    [data-theme="light"] .avm-modal .btn-premium-outline { background: var(--bg-hover) !important; border: 1px solid var(--border-color) !important; }
-    [data-theme="light"] .avm-modal .btn-premium-outline:hover { background: var(--bg-card-hover) !important; color: var(--text-primary) !important; }
+    [data-theme="light"] .avm-modal .btn-premium-outline { background: transparent !important; border: 1px solid var(--border-strong) !important; color: var(--text-secondary) !important; }
+    [data-theme="light"] .avm-modal .btn-premium-outline:hover { background: var(--bg-card-hover) !important; border-color: var(--border-strong) !important; color: var(--text-primary) !important; }
     /* Échéancier survol */
     [data-theme="light"] .cal-table tbody tr:hover td { background: transparent; }
 
@@ -269,9 +272,6 @@
     .avm-modal .task-status { border-radius: 6px !important; }
     .avm-modal .table-premium thead th { text-transform: none; letter-spacing: 0; font-size: .72rem; }
     .avm-modal #ajoutBox label { text-transform: none; letter-spacing: 0; font-size: .74rem; }
-    .avm-modal .btn-premium { background: var(--amber-deep) !important; color: #FFFFFF !important; box-shadow: none !important; }
-    .avm-modal .btn-premium:hover { background: var(--amber-ink) !important; }
-    html[data-theme="dark"] .avm-modal .btn-premium { background: var(--amber) !important; color: #0B1520 !important; }
     .avm-stack { border-radius: 3px; }
     .avm-grid { align-items: start; }
     /* member-progress-wrap porte un flex-basis prévu pour une ligne : en colonne il creusait un vide. */

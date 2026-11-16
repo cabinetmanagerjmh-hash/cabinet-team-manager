@@ -17,6 +17,13 @@
          externe. Un réseau qui bloque jsdelivr / Google Fonts ne change plus le rendu. -->
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('vendor/bootstrap-icons/bootstrap-icons.css') }}">
+    <!-- Figtree auto-hébergée : précharger les trois graisses réellement
+         utilisées (400, 500, 600) évite le passage en police système.
+         URL sans version : elle doit être identique à celle demandée par
+         figtree.css, sinon le fichier serait téléchargé deux fois. -->
+    <link rel="preload" href="{{ url_for('static', filename='vendor/figtree/fonts/figtree-4.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ url_for('static', filename='vendor/figtree/fonts/figtree-6.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="{{ url_for('static', filename='vendor/figtree/fonts/figtree-8.woff2') }}" as="font" type="font/woff2" crossorigin>
     <link href="{{ asset('vendor/figtree/figtree.css') }}" rel="stylesheet">
     <!-- Composants legacy (structure) puis design system Orbit (source unique, en dernier) -->
     <link href="{{ asset('css/orbit-system.css') }}" rel="stylesheet">

@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="dark">
     <title>Erreur — Cabinet JMH</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Figtree:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <link href="{{ url_for('static', filename='vendor/figtree/figtree.css') }}" rel="stylesheet">
     <style>
         :root {
             --bg: #07080c;
@@ -49,22 +49,22 @@
         }
         .err-logo { display: flex; justify-content: center; margin-bottom: 14px; }
         .err-code {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .72rem; font-weight: 600;
-            letter-spacing: .18em; text-transform: uppercase;
+            font-family: 'Figtree', sans-serif;
+            font-size: .75rem; font-weight: 500;
+            letter-spacing: .12em; text-transform: none;
             color: var(--orange-primary);
             margin: 0 0 6px;
         }
         .err-title {
-            font-family: 'Instrument Serif', serif;
-            font-size: 2.1rem; font-weight: 600;
-            letter-spacing: -.01em;
+            font-family: 'Figtree', sans-serif;
+            font-size: 1.75rem; font-weight: 600;
+            letter-spacing: -.022em; line-height: 1.2;
             margin: 0 0 10px;
         }
-        .err-msg { color: var(--text-tertiary); font-size: .95rem; line-height: 1.55; margin: 0; }
+        .err-msg { color: var(--text-tertiary); font-size: .9375rem; line-height: 1.55; margin: 0; }
         .err-ref {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: .72rem; color: var(--text-tertiary);
+            font-family: 'Figtree', sans-serif;
+            font-size: .8125rem; color: var(--text-tertiary);
             background: rgba(255,255,255,.04);
             border: 1px solid var(--line);
             border-radius: 8px;
@@ -72,6 +72,7 @@
             display: inline-block;
             margin-top: 16px;
             word-break: break-all;
+            font-variant-numeric: tabular-nums;
         }
         .btn-home {
             margin-top: 26px;
@@ -80,13 +81,13 @@
             border-radius: 12px;
             background: linear-gradient(135deg, #FFA733, #FF8C00);
             color: #14161a;
-            font-weight: 700;
-            font-size: .9rem;
+            font-weight: 500;
+            font-size: .875rem;
             text-decoration: none;
             display: inline-block;
             transition: transform .2s ease, box-shadow .2s ease;
-            text-transform: uppercase;
-            letter-spacing: .06em;
+            text-transform: none;
+            letter-spacing: 0;
         }
         .btn-home:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(255, 140, 0, .35); color: #14161a; }
     </style>

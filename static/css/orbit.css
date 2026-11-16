@@ -66,12 +66,33 @@
   --danger-ink: #A82D36;
   --info-ink: #075C86;
 
-  /* Typo — UNE seule famille (Figtree) partout. orbit-system.css force des
-     mono/serif en !important mais consomme ces variables : redéfinir les
-     tokens ici unifie toute l'app sans toucher la couche legacy. */
+  /* Typo — UNE seule famille (Figtree, auto-hébergée) partout. orbit-system.css
+     force des mono/serif en !important mais consomme ces variables : redéfinir
+     les tokens ici unifie toute l'app sans toucher la couche legacy.
+     Les chiffres se distinguent par le chiffrage tabulaire, pas par une
+     seconde famille : moins de fichiers à charger, même rythme de colonnes. */
   --font-primary: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-mono: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Échelle typographique (rem) — huit pas, pas de valeurs opportunistes.
+     base 15px · libellés 13 · tableaux 14 · chiffres clés 24 · titre 28 */
+  --fs-2xs: 0.75rem;
+  --fs-xs: 0.8125rem;
+  --fs-sm: 0.875rem;
+  --fs-md: 0.9375rem;
+  --fs-lg: 1rem;
+  --fs-xl: 1.125rem;
+  --fs-2xl: 1.5rem;
+  --fs-3xl: 1.75rem;
+
+  --lh-tight: 1.2;
+  --lh-snug: 1.4;
+  --lh-base: 1.55;
+
+  --tracking-display: -0.022em;
+  --tracking-title: -0.014em;
+  --measure: 68ch;
 
   /* Échelle */
   --r-xs: 6px;
@@ -176,10 +197,12 @@ body.app-shell {
   font-family: var(--font-primary);
   background: var(--paper);
   color: var(--text-primary);
-  font-size: 14.5px;
-  line-height: 1.55;
+  font-size: var(--fs-md);
+  line-height: var(--lh-base);
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  font-synthesis: none;
+  font-variant-numeric: proportional-nums;
   min-height: 100vh;
 }
 
@@ -210,7 +233,14 @@ html[data-theme="dark"] body.app-shell::before {
   background-size: auto, auto, auto, auto, auto, auto, 44px 44px, 44px 44px;
 }
 
-h1, h2, h3, h4, h5, h6 { color: var(--text-primary); font-weight: 650; letter-spacing: -.01em; }
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-title);
+  text-wrap: balance;
+}
+p { text-wrap: pretty; }
 a { color: var(--orange-text); text-decoration: none; }
 a:hover { color: var(--amber-bright); }
 .text-tertiary { color: var(--text-tertiary) !important; }
@@ -294,7 +324,7 @@ small, .small { font-size: .82em; }
 .app-brand-icon { display: grid; place-items: center; width: 32px; height: 32px; }
 .app-brand-icon svg, .app-brand-icon img { width: 100%; height: 100%; }
 .app-brand-text {
-  font-family: var(--font-display); font-size: 1.22rem; letter-spacing: .01em;
+  font-family: var(--font-display); font-size: var(--fs-xl); letter-spacing: var(--tracking-title);
   font-weight: 600; white-space: nowrap;
 }
 .app-topbar-toggle {
@@ -308,15 +338,16 @@ small, .small { font-size: .82em; }
   display: flex; align-items: center; gap: 8px;
   background: var(--surface-sunken); border: 1px solid var(--line);
   color: var(--text-tertiary); border-radius: var(--r-sm);
-  padding: 7px 12px; font-size: .85rem; cursor: pointer;
+  padding: 7px 12px; font-size: var(--fs-sm); cursor: pointer;
   transition: border-color .15s ease, color .15s ease;
 }
 .orbit-search-btn:hover { border-color: var(--line-strong); color: var(--text-primary); }
 .orbit-kbd {
-  font-family: var(--font-mono); font-size: .68rem;
+  font-family: var(--font-mono); font-size: var(--fs-2xs);
   border: 1px solid var(--line); border-bottom-width: 2px;
   border-radius: 5px; padding: 1px 5px; color: var(--text-tertiary);
   background: var(--surface);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .app-topbar .icon-btn {
   position: relative; display: grid; place-items: center;
@@ -329,8 +360,9 @@ small, .small { font-size: .82em; }
   position: absolute; top: 3px; right: 3px;
   min-width: 16px; height: 16px; padding: 0 4px;
   border-radius: 9px; background: var(--danger); color: #fff;
-  font-size: .62rem; font-weight: 700; line-height: 16px; text-align: center;
+  font-size: 0.6875rem; font-weight: 600; line-height: 16px; text-align: center;
   font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .app-user-toggle {
   display: inline-flex; align-items: center; gap: 8px;
@@ -385,14 +417,14 @@ small, .small { font-size: .82em; }
 .sidebar-brand { padding: var(--space-4) var(--space-4) var(--space-3); display: flex; align-items: center; }
 .sidebar-menu { flex: 1 1 auto; overflow-y: auto; overflow-x: hidden; padding: 0 var(--space-3) var(--space-3); }
 .sidebar-section-title {
-  font-family: var(--font-mono); font-size: .64rem; font-weight: 600;
-  letter-spacing: .14em; text-transform: uppercase;
+  font-family: var(--font-primary); font-size: var(--fs-2xs); font-weight: 500;
+  letter-spacing: .02em; text-transform: none;
   color: var(--text-tertiary); padding: var(--space-4) var(--space-2) var(--space-2);
 }
 .sidebar-nav-item {
   display: flex; align-items: center; gap: 11px;
   padding: 9px 12px; margin: 2px 0; border-radius: var(--r-sm);
-  color: var(--text-secondary); font-size: .9rem; font-weight: 500;
+  color: var(--text-secondary); font-size: var(--fs-md); font-weight: 500;
   border: 1px solid transparent; position: relative;
   transition: background .15s ease, color .15s ease;
 }
@@ -402,15 +434,16 @@ small, .small { font-size: .82em; }
   background: color-mix(in srgb, var(--amber) 10%, transparent);
   color: var(--orange-text);
   border-color: color-mix(in srgb, var(--amber) 26%, transparent);
-  font-weight: 600;
+  font-weight: 500;
 }
 .sidebar-nav-item.active::before {
   content: ""; position: absolute; left: -12px; top: 20%; bottom: 20%;
   width: 3px; border-radius: 3px; background: var(--amber);
 }
 .sidebar-badge {
-  margin-left: auto; font-family: var(--font-mono); font-size: .66rem; font-weight: 600;
+  margin-left: auto; font-family: var(--font-primary); font-size: var(--fs-2xs); font-weight: 500;
   background: var(--orange-subtle); color: var(--orange-text); border-radius: 9px; padding: 1px 7px;
+  font-variant-numeric: tabular-nums lining-nums;
 }
 .sidebar-footer { border-top: 1px solid var(--line); padding: var(--space-3); }
 .sidebar-user { display: flex; align-items: center; gap: 10px; }
@@ -422,8 +455,8 @@ small, .small { font-size: .82em; }
 }
 .sidebar-user-img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
 .sidebar-user-info { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
-.sidebar-user-name { font-size: .85rem; font-weight: 600; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.sidebar-user-role { font-size: .7rem; color: var(--text-tertiary); font-family: var(--font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.sidebar-user-name { font-size: var(--fs-sm); font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sidebar-user-role { font-size: var(--fs-2xs); color: var(--text-tertiary); font-family: var(--font-primary); text-transform: none; letter-spacing: 0; }
 .sidebar-logout { margin-left: auto; color: var(--text-tertiary); width: 32px; height: 32px; display: grid; place-items: center; border-radius: var(--r-sm); }
 .sidebar-logout:hover { color: var(--danger); background: var(--bg-card-hover); }
 
@@ -593,12 +626,13 @@ main#mainContent { view-transition-name: none !important; }
 }
 .page-head-titles { min-width: 0; }
 .page-head-titles h1, .page-head-titles h2 {
-  font-family: var(--font-display); font-weight: 600; font-size: 1.75rem;
-  margin: 0; line-height: 1.15; letter-spacing: 0;
+  font-family: var(--font-display); font-weight: 600; font-size: var(--fs-3xl);
+  margin: 0; line-height: 1.15; letter-spacing: var(--tracking-display);
 }
 .page-head-sub {
-  font-family: var(--font-mono); font-size: .68rem; letter-spacing: .16em;
-  text-transform: uppercase; color: var(--text-tertiary); margin-top: 3px;
+  font-family: var(--font-primary); font-size: var(--fs-xs); letter-spacing: 0;
+  text-transform: none; color: var(--text-tertiary); margin-top: 4px;
+  max-width: var(--measure);
 }
 
 /* --------------------------------------------------------------------------
@@ -618,7 +652,7 @@ main#mainContent { view-transition-name: none !important; }
   border-bottom: 1px solid var(--line);
   background: color-mix(in srgb, var(--surface-raised) 55%, transparent);
 }
-.card-header-premium h5, .card-header-premium h6 { margin: 0; font-size: .98rem; font-weight: 650; display: flex; align-items: center; }
+.card-header-premium h5, .card-header-premium h6 { margin: 0; font-size: var(--fs-lg); font-weight: 600; letter-spacing: var(--tracking-title); display: flex; align-items: center; }
 /* En clair, l'en-tête se détache par un lavis (le blanc sur blanc ne suffit pas). */
 html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, var(--surface-sunken) 60%, transparent); }
 .card-body-premium { padding: var(--space-4); }
@@ -629,14 +663,15 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
    -------------------------------------------------------------------------- */
 .btn-premium {
   display: inline-flex; align-items: center; justify-content: center; gap: 8px;
-  font-family: var(--font-primary); font-weight: 600; font-size: .88rem;
+  font-family: var(--font-primary); font-weight: 500; font-size: var(--fs-sm);
   padding: 9px 16px; border-radius: var(--r-sm);
   border: 1px solid transparent; cursor: pointer; line-height: 1.3;
+  letter-spacing: 0;
   transition: transform .12s ease, box-shadow .18s ease, background .15s ease, border-color .15s ease, color .15s ease;
   text-decoration: none; white-space: nowrap;
 }
 .btn-premium:active { transform: translateY(1px) scale(.99); }
-.btn-premium.btn-sm { padding: 6px 12px; font-size: .8rem; }
+.btn-premium.btn-sm { padding: 6px 12px; font-size: var(--fs-xs); }
 .btn-premium-primary {
   background: linear-gradient(135deg, var(--amber), var(--amber-bright));
   color: #10131a; box-shadow: var(--shadow-glow);
@@ -664,7 +699,7 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
   display: inline-flex; align-items: center; gap: 6px;
   padding: 8px 14px; border: none; background: transparent;
   color: var(--text-secondary); font-family: var(--font-primary);
-  font-size: .82rem; font-weight: 600; cursor: pointer;
+  font-size: var(--fs-xs); font-weight: 500; cursor: pointer;
   transition: background .15s ease, color .15s ease;
 }
 .orbit-view-toggle button + button { border-left: 1px solid var(--line); }
@@ -678,14 +713,14 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
    7. FORMULAIRES
    -------------------------------------------------------------------------- */
 .form-label-premium, .form-label {
-  display: block; font-size: .78rem; font-weight: 600; letter-spacing: .02em;
+  display: block; font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0;
   color: var(--text-secondary); margin-bottom: 6px;
 }
 .input-premium, .select-premium, .form-control, .form-select {
   width: 100%; background: var(--surface-sunken);
   border: 1px solid var(--line-strong); border-radius: var(--r-sm);
-  color: var(--text-primary); padding: 9px 12px; font-size: .9rem;
-  font-family: var(--font-primary);
+  color: var(--text-primary); padding: 9px 12px; font-size: var(--fs-md);
+  font-family: var(--font-primary); line-height: 1.45;
   transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
 }
 .input-premium::placeholder, .form-control::placeholder { color: var(--text-tertiary); }
@@ -705,8 +740,8 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
    -------------------------------------------------------------------------- */
 .badge {
   display: inline-flex; align-items: center; gap: 6px;
-  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
-  letter-spacing: .04em; padding: 3px 9px; border-radius: 999px;
+  font-family: var(--font-primary); font-size: var(--fs-2xs); font-weight: 500;
+  letter-spacing: 0; padding: 3px 9px; border-radius: 999px;
   border: 1px solid transparent; line-height: 1.5;
 }
 .badge::before { content: ""; width: 5px; height: 5px; border-radius: 50%; background: currentColor; flex: 0 0 auto; }
@@ -721,6 +756,12 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
    9. KPI / STAT CARDS
    -------------------------------------------------------------------------- */
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-5); }
+/* Mobile : deux chiffres par ligne, comme les autres pages — la pile à une
+   colonne transformait cinq tuiles en un écran entier de défilement. */
+@media (max-width: 575.98px) {
+  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--space-3); }
+  .avm-bar .avm-select { flex: 1 1 100%; }
+}
 .stat-card {
   display: flex; gap: var(--space-3); align-items: flex-start;
   background: var(--bg-card); border: 1px solid var(--line);
@@ -767,34 +808,40 @@ html[data-theme="light"] .card-header-premium { background: color-mix(in srgb, v
 .task-dot.is-a-faire { background: color-mix(in srgb, var(--amber) 16%, transparent); color: var(--amber); }
 .task-dot.is-en-cours { background: color-mix(in srgb, var(--info) 16%, transparent); color: var(--info); }
 .task-dot.is-terminee { background: color-mix(in srgb, var(--success) 16%, transparent); color: var(--success); }
-.task-row-title { font-weight: 600; font-size: .86rem; color: var(--text-primary); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.task-row-meta { font-size: .73rem; color: var(--text-tertiary); }
-.task-row .badge { flex: 0 0 auto; font-size: .62rem; }
+.task-row-title { font-weight: 500; font-size: var(--fs-sm); color: var(--text-primary); line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.task-row-meta { font-size: var(--fs-2xs); color: var(--text-tertiary); }
+.task-row .badge { flex: 0 0 auto; font-size: 0.6875rem; }
 .stat-card-content { min-width: 0; flex: 1; }
 .stat-card-label {
-  font-family: var(--font-mono); font-size: .64rem; font-weight: 600;
-  letter-spacing: .12em; text-transform: uppercase; color: var(--text-tertiary);
+  font-family: var(--font-primary); font-size: var(--fs-xs); font-weight: 500;
+  letter-spacing: 0; text-transform: none; color: var(--text-tertiary);
 }
 .stat-card-value {
-  font-family: var(--font-mono); font-size: 1.9rem; font-weight: 600;
-  line-height: 1.15; color: var(--text-primary); letter-spacing: -.02em;
-  font-variant-numeric: tabular-nums;
+  font-family: var(--font-primary); font-size: var(--fs-2xl); font-weight: 600;
+  line-height: 1.1; color: var(--text-primary); letter-spacing: var(--tracking-display);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
 }
-.stat-card-trend { display: flex; align-items: center; gap: 6px; font-size: .74rem; color: var(--text-tertiary); margin-top: 4px; }
+.stat-card-trend { display: flex; align-items: center; gap: 6px; font-size: var(--fs-2xs); color: var(--text-tertiary); margin-top: 4px; font-variant-numeric: tabular-nums lining-nums; }
 .stat-card-trend.up { color: var(--success-ink); }
 .stat-card-trend.down { color: var(--danger-ink); }
 .stat-mini { height: 4px; border-radius: 4px; background: var(--surface-sunken); overflow: hidden; margin-top: 8px; }
 .stat-mini-fill { height: 100%; border-radius: 4px; background: var(--amber); }
 
-.kpi-label { font-family: var(--font-mono); font-size: .64rem; letter-spacing: .12em; text-transform: uppercase; color: var(--text-tertiary); }
-.kpi-value { font-family: var(--font-mono); font-size: 1.7rem; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
-.kpi-sub { font-size: .76rem; color: var(--text-tertiary); }
+.kpi-label { font-family: var(--font-primary); font-size: var(--fs-xs); font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--text-tertiary); }
+.kpi-value {
+  font-family: var(--font-primary); font-size: var(--fs-2xl); font-weight: 600;
+  line-height: 1.1; letter-spacing: var(--tracking-display); color: var(--text-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.kpi-sub { font-size: var(--fs-2xs); color: var(--text-tertiary); }
 .kpi-chip {
   display: inline-flex; align-items: center; gap: 7px;
   background: var(--surface-sunken); border: 1px solid var(--line);
-  border-radius: 999px; padding: 5px 12px; font-size: .78rem; color: var(--text-secondary);
+  border-radius: 999px; padding: 5px 12px; font-size: var(--fs-xs); color: var(--text-secondary);
 }
-.kpi-chip strong { font-family: var(--font-mono); color: var(--text-primary); }
+.kpi-chip strong { font-family: var(--font-primary); color: var(--text-primary); font-weight: 600; font-variant-numeric: tabular-nums lining-nums; }
 /* Mode clair : pas de pastille grise sur le blanc — le trait sépare. */
 html[data-theme="light"] .kpi-chip {
   background: var(--surface);
@@ -806,15 +853,15 @@ html[data-theme="light"] .kpi-chip {
    10. TABLES
    -------------------------------------------------------------------------- */
 .table-responsive { overflow-x: auto; border-radius: var(--r-md); }
-.table-premium { width: 100%; border-collapse: collapse; font-size: .87rem; }
+.table-premium { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }
 .table-premium thead th {
-  font-family: var(--font-mono); font-size: .64rem; font-weight: 600;
-  letter-spacing: .1em; text-transform: uppercase; color: var(--text-tertiary);
+  font-family: var(--font-primary); font-size: var(--fs-2xs); font-weight: 500;
+  letter-spacing: .01em; text-transform: none; color: var(--text-tertiary);
   text-align: left; padding: 11px 14px;
   background: var(--surface-sunken); border-bottom: 1px solid var(--line-strong);
   position: sticky; top: 0; z-index: 2; white-space: nowrap;
 }
-.table-premium tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--text-secondary); vertical-align: middle; }
+.table-premium tbody td { padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--text-secondary); vertical-align: middle; line-height: 1.45; }
 .table-premium tbody tr { transition: background .12s ease; }
 .table-premium tbody tr:hover { background: var(--bg-card-hover); }
 /* Lignes alternées : un lavis gris sur une rangée sur deux. Le survol garde
@@ -830,7 +877,11 @@ html[data-theme="light"] .kpi-chip {
 }
 .table-premium tbody tr:last-child td { border-bottom: none; }
 .table-premium td strong, .table-premium td .fw-semibold { color: var(--text-primary); }
-.table-premium .num, .table-premium td.text-center { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.table-premium .num, .table-premium td.text-center, .table-premium td.text-end {
+  font-family: var(--font-primary);
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
 
 /* --------------------------------------------------------------------------
    11. DIVERS COMPOSANTS RÉCURRENTS
@@ -839,7 +890,8 @@ html[data-theme="light"] .kpi-chip {
   width: 30px; height: 30px; border-radius: 50%; flex: 0 0 auto;
   display: inline-grid; place-items: center; overflow: hidden;
   background: var(--orange-subtle); color: var(--orange-text);
-  font-family: var(--font-mono); font-size: .68rem; font-weight: 600;
+  font-family: var(--font-primary); font-size: var(--fs-xs); font-weight: 500;
+  letter-spacing: .01em;
   border: 1px solid color-mix(in srgb, var(--amber) 26%, transparent);
 }
 /* Badges d'initiales : même style quel que soit le rôle (le rôle reste visible
@@ -866,13 +918,13 @@ html[data-theme="light"] .kpi-chip {
   position: absolute; top: 50%; left: 50%;
   transform: translate(-50%, -50%) rotate(90deg); text-align: center;
 }
-.progress-ring-text .value { font-size: 1.5rem; font-weight: 700; color: var(--text-primary); }
-.progress-ring-text .label { font-size: .65rem; color: var(--text-tertiary); }
+.progress-ring-text .value { font-size: var(--fs-2xl); font-weight: 600; letter-spacing: var(--tracking-display); color: var(--text-primary); font-variant-numeric: tabular-nums lining-nums; }
+.progress-ring-text .label { font-size: var(--fs-2xs); color: var(--text-tertiary); }
 
 .empty-state { text-align: center; padding: var(--space-6) var(--space-4); color: var(--text-tertiary); }
 .empty-state-icon { width: 56px; height: 56px; opacity: .5; margin-bottom: var(--space-3); }
-.empty-state-title { font-size: 1rem; font-weight: 650; color: var(--text-secondary); margin-bottom: 6px; }
-.empty-state-desc { font-size: .84rem; max-width: 420px; margin: 0 auto; }
+.empty-state-title { font-size: var(--fs-lg); font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; }
+.empty-state-desc { font-size: var(--fs-sm); line-height: var(--lh-base); max-width: var(--measure); margin: 0 auto; }
 
 .skeleton-stat, .skeleton {
   border-radius: var(--r-lg); background: linear-gradient(100deg, var(--surface) 40%, var(--bg-card-hover) 50%, var(--surface) 60%);
@@ -893,7 +945,7 @@ html[data-theme="light"] .kpi-chip {
   overflow: hidden; min-width: 300px;
 }
 .toast-header { background: transparent; border-bottom: 1px solid var(--line); color: var(--text-primary); padding: 9px 12px; }
-.toast-body { padding: 11px 12px; font-size: .87rem; }
+.toast-body { padding: 11px 12px; font-size: var(--fs-sm); }
 .toast-success { border-left: 3px solid var(--success); }
 .toast-danger { border-left: 3px solid var(--danger); }
 .toast-warning { border-left: 3px solid var(--warning); }
@@ -904,7 +956,7 @@ html[data-theme="light"] .kpi-chip {
   background: var(--surface-raised); border: 1px solid var(--line-strong);
   border-radius: var(--r-md); box-shadow: var(--shadow-2); padding: 6px;
 }
-.dropdown-item { color: var(--text-secondary); border-radius: var(--r-sm); padding: 8px 10px; font-size: .87rem; }
+.dropdown-item { color: var(--text-secondary); border-radius: var(--r-sm); padding: 8px 10px; font-size: var(--fs-sm); }
 .dropdown-item:hover, .dropdown-item:focus { background: var(--bg-card-hover); color: var(--text-primary); }
 .dropdown-item.active { background: var(--orange-subtle); color: var(--orange-text); }
 .dropdown-divider { border-color: var(--line); }
@@ -940,67 +992,100 @@ html[data-theme="dark"] .text-muted { color: var(--text-tertiary) !important; }
 .border, .border-top, .border-bottom { border-color: var(--line) !important; }
 
 /* --------------------------------------------------------------------------
-   13. SIMPLIFICATION TYPO — une famille (Figtree), hiérarchie par graisse et
-   taille uniquement. Fin des micro-labels uppercase très espacés hérités de
-   orbit-system.css (règles !important : on re-force ici, orbit.css étant
-   chargé en dernier). Les statuts restent la seule couleur porteuse de sens.
+   13. TYPOGRAPHIE — une famille (Figtree, auto-hébergée), huit tailles, deux
+   graisses de travail (400 / 500) et 600 réservé aux titres et aux chiffres
+   clés. La hiérarchie vient de la taille et de la couleur, pas de la graisse.
+   Les micro-labels uppercase très espacés hérités de orbit-system.css passent
+   en casse de phrase : un libellé se lit, il ne se crie pas.
+
+   Les règles !important de cette section neutralisent la couche legacy, qui
+   impose ses propres tailles et casses ailleurs dans la cascade.
    -------------------------------------------------------------------------- */
-.stat-card-label, .stat-card-title, .kpi-label {
-  font-size: .8rem !important;
+.page-head-titles h1, .page-head-titles h2 {
+  font-size: var(--fs-3xl) !important;
   font-weight: 600 !important;
-  letter-spacing: .01em !important;
-  text-transform: none;
+  line-height: 1.15 !important;
+  letter-spacing: var(--tracking-display) !important;
+}
+.page-head-sub {
+  font-size: var(--fs-xs) !important;
+  font-weight: 400 !important;
+  line-height: var(--lh-snug) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--text-tertiary) !important;
+}
+.stat-card-label, .stat-card-title, .kpi-label {
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--text-tertiary);
   opacity: 1;
 }
-.stat-card-value, .kpi-value {
-  font-size: 1.55rem !important;
-  font-weight: 700 !important;
-  letter-spacing: -.01em !important;
-}
-.stat-card-trend, .kpi-chip strong, .sidebar-badge, .page-head-count,
-.orbit-filter-count, .orbit-filter-count strong, .user-icon-badge,
-.notif-badge, .mono, .data-mono, .orbit-kbd { font-family: var(--font-primary); }
-.page-head-sub {
-  font-size: .82rem !important;
-  letter-spacing: .01em !important;
-  text-transform: none;
-}
-.page-head-titles h1, .page-head-titles h2 {
-  font-size: 1.5rem !important;
-  font-weight: 700 !important;
-  letter-spacing: -.015em !important;
-}
-.form-label, label.form-label {
-  font-size: .78rem !important;
+.stat-card-value, .kpi-value, .kpi-chip .kpi-value {
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-2xl) !important;
   font-weight: 600 !important;
-  letter-spacing: .01em !important;
-  text-transform: none;
+  line-height: 1.1 !important;
+  letter-spacing: var(--tracking-display) !important;
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+.kpi-chip .kpi-sub { font-size: var(--fs-2xs) !important; }
+.form-label, label.form-label, .form-label-premium {
+  font-size: var(--fs-xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 .badge, .st {
-  font-size: .72rem !important;
-  font-weight: 600 !important;
-  letter-spacing: .01em !important;
-  text-transform: none;
+  font-size: var(--fs-2xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 .table thead th, .table-premium thead th {
-  font-size: .74rem !important;
-  font-weight: 600 !important;
-  letter-spacing: .02em !important;
-  text-transform: none;
+  font-size: var(--fs-2xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+  color: var(--text-tertiary) !important;
 }
 .sidebar-section-title, .sidebar-group-title {
-  font-size: .72rem !important;
-  font-weight: 600 !important;
-  letter-spacing: .02em !important;
-  text-transform: none;
+  font-size: var(--fs-2xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
 }
 .sidebar-user-role {
-  font-family: var(--font-primary); font-size: .72rem;
-  letter-spacing: .01em; text-transform: none;
+  font-family: var(--font-primary) !important;
+  font-size: var(--fs-2xs) !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
 }
 .eyebrow, .section-label, .orbit-filter-reset, .qa-title {
-  font-size: .72rem; font-weight: 600;
-  letter-spacing: .02em; text-transform: none;
+  font-size: var(--fs-2xs) !important;
+  font-weight: 500 !important;
+  letter-spacing: .01em !important;
+  text-transform: none !important;
+}
+/* Prose : une mesure de lecture, jamais une ligne de 1 400 px. */
+.card-body-premium > p,
+.offcanvas-body > p,
+.modal-body > p { max-width: var(--measure); }
+/* Chiffres : colonnes alignées, hauteurs de ligne stables. */
+.stat-card-value, .kpi-value, .kpi-chip strong, .sidebar-badge,
+.table td.num, .table .money, .amount, .num,
+time, [data-num] {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings: "tnum" 1, "lnum" 1;
+}
+/* Petits écrans : le titre et les chiffres descendent d'un pas, la graisse
+   ne change pas — sinon la page paraît plus lourde sur mobile que sur bureau. */
+@media (max-width: 767.98px) {
+  :root { --fs-3xl: 1.5rem; --fs-2xl: 1.375rem; }
 }
 /* Pastilles de statut (.st-*) : texte lisible sur les 2 thèmes, teinte =
    sémantique uniquement. */
@@ -1008,11 +1093,6 @@ html[data-theme="dark"] .text-muted { color: var(--text-tertiary) !important; }
 .st-done { color: var(--success-ink) !important; }
 .st-late { color: var(--danger-ink) !important; }
 .st-soon { color: var(--info-ink) !important; }
-/* Chiffres : toujours alignés verticalement, même en Figtree */
-.stat-card-value, .kpi-value, .table td.num, .table .money, .amount {
-  font-variant-numeric: tabular-nums;
-  font-feature-settings: "tnum" 1;
-}
 
 /* =============================================================
    14. CARTES TÂCHES — boutons nus + répartition de l'espace
@@ -1161,7 +1241,7 @@ html[data-theme="dark"] .sidebar-nav-item.active i { color: var(--amber) !import
 html[data-theme="dark"] .kpi-chip { background: var(--surface-raised) !important; }
 .kpi-chip:hover { transform: none !important; background: var(--surface) !important; }
 html[data-theme="dark"] .kpi-chip:hover { background: var(--surface-raised) !important; }
-.kpi-chip .kpi-value { font-family: var(--font-primary) !important; font-size: 1.65rem !important; font-weight: 600 !important; letter-spacing: -.02em; }
+.kpi-chip .kpi-value { font-family: var(--font-primary) !important; font-size: var(--fs-2xl) !important; font-weight: 600 !important; letter-spacing: var(--tracking-display); }
 .kpi-chip .kpi-sub { margin-top: auto; padding-top: 6px; }
 
 /* --- Actions : aplat d'azur, aucun halo ---------------------------------- */
@@ -1218,13 +1298,13 @@ html[data-theme="dark"] .quick-actions .qa-btn:hover i { color: var(--amber); }
 
 /* --- Tableaux denses : en-têtes en casse naturelle, colonnes plus serrées -- */
 .table-premium thead th {
-  font-size: .74rem !important;
+  font-size: var(--fs-2xs) !important;
   font-weight: 500 !important;
-  letter-spacing: 0 !important;
+  letter-spacing: .01em !important;
   text-transform: none !important;
-  color: var(--text-secondary) !important;
+  color: var(--text-tertiary) !important;
 }
-#tableDossiers { font-size: .82rem; }
+#tableDossiers { font-size: var(--fs-sm); }
 #tableDossiers thead th, #tableDossiers tbody td { padding: 9px; }
 
 /* --- Bouton ASTRO : seul aplat d'azur flottant de la coque ---------------- */
@@ -1314,8 +1394,8 @@ html[data-theme="dark"] .sugg-filter-on {
 /* --- Jauge simple : le chiffre puis la barre, pas un anneau décoratif ----- */
 .orbit-meter-value {
   font-family: var(--font-primary);
-  font-size: 2.1rem; font-weight: 600; letter-spacing: -.02em;
-  color: var(--text-primary); font-variant-numeric: tabular-nums;
+  font-size: var(--fs-3xl); font-weight: 600; letter-spacing: var(--tracking-display);
+  color: var(--text-primary); font-variant-numeric: tabular-nums lining-nums;
 }
 .orbit-meter {
   height: 8px; border-radius: 3px; overflow: hidden;
@@ -1349,10 +1429,10 @@ html[data-theme="dark"] .orbit-meter > span { background: var(--amber); }
   margin-bottom: var(--space-2);
 }
 
-/* --- Mobile : filtres empilés deux par ligne, libellés lisibles ---------- */
+/* --- Mobile : filtres en pleine largeur, libellés jamais tronqués -------- */
 @media (max-width: 575.98px) {
   .avm-bar .avm-iconbar { gap: 6px; }
-  .avm-bar .avm-select { flex: 1 1 calc(50% - 4px); min-width: 0; }
+  .avm-bar .avm-select { flex: 1 1 100%; min-width: 0; }
   .avm-bar .avm-select select { max-width: 100%; width: 100%; }
   .avm-bar .d-flex.gap-2 > .btn-premium { flex: 1 1 auto; }
 }

@@ -26,27 +26,28 @@
   --danger: #ef5350;
   --info: #4cc3ff;
 
-  /* Mode clair : surfaces blanches posées sur un canevas légèrement bleuté.
-     Le canevas (#F6F8FA) donne de la profondeur aux cartes sans les teinter ;
-     le lavis des creux (#F1F4F8) sépare champs, en-têtes et lignes alternées. */
-  --paper: #F6F8FA;
+  /* Mode clair : surfaces blanches posées sur un canevas bleuté assez profond
+     (#F1F4F8) pour que le blanc des cartes ne éblouisse pas ; l'encre est
+     descendue d'un cran (≈ 9:1 pour le secondaire, ≈ 8:1 pour le tertiaire)
+     pour que la lecture ne demande aucun effort. */
+  --paper: #F1F4F8;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
-  --surface-sunken: #F1F4F8;
+  --surface-sunken: #EAEFF5;
   --overlay: rgba(16, 16, 16, .48);
   --scrim: rgba(16, 16, 16, .62);
 
-  --ink-1: #1B1E21;
-  --ink-2: #454A4F;
-  --ink-3: #565C62;
-  --ink-4: #606870;
+  --ink-1: #14181C;
+  --ink-2: #363C42;
+  --ink-3: #484F56;
+  --ink-4: #565D65;
 
-  --line: #E2E7ED;
-  --line-strong: #CBD5DF;
+  --line: #DFE5EC;
+  --line-strong: #C6D0DB;
 
   --bg-dark: var(--paper);
   --bg-card: var(--surface);
-  --bg-card-hover: #F3F8FB;
+  --bg-card-hover: #EEF3F8;
   /* Lignes de tableau alternées : un lavis bleu-gris (≈5 % d'encre) assez
      marqué pour suivre une ligne d'un œil, assez doux pour rester un fond. */
   --row-alt: #F1F5F9;
@@ -76,12 +77,14 @@
   --font-mono: 'Figtree', system-ui, -apple-system, 'Segoe UI', sans-serif;
 
   /* Échelle typographique (rem) — huit pas, pas de valeurs opportunistes.
-     base 15px · libellés 13 · tableaux 14 · chiffres clés 24 · titre 28 */
+     base 16px · libellés 13 · tableaux 14 · chiffres clés 24 · titre 28.
+     Le corps passe à 16 px : à 15 px, la lecture demandait un effort
+     conscient selon Aziz. */
   --fs-2xs: 0.75rem;
   --fs-xs: 0.8125rem;
   --fs-sm: 0.875rem;
-  --fs-md: 0.9375rem;
-  --fs-lg: 1rem;
+  --fs-md: 1rem;
+  --fs-lg: 1.0625rem;
   --fs-xl: 1.125rem;
   --fs-2xl: 1.5rem;
   --fs-3xl: 1.75rem;

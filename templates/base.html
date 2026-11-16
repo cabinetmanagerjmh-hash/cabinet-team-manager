@@ -12,7 +12,7 @@
     <script src="{{ asset('js/orbit-theme.js') }}"></script>
     <!-- Couleur de toile posée sur <html> seul : le body reste transparent,
          sinon il masque le fond animé (aurora) de la couche NIM. -->
-    <style>html{background:#101010}html[data-theme="light"]{background:#F6F8FA}</style>
+    <style>html{background:#101010}html[data-theme="light"]{background:#F1F4F8}</style>
     <!-- Dépendances front servies localement : l'interface ne dépend d'aucun CDN
          externe. Un réseau qui bloque jsdelivr / Google Fonts ne change plus le rendu. -->
     <link href="{{ asset('vendor/bootstrap/bootstrap.min.css') }}" rel="stylesheet">
@@ -30,7 +30,7 @@
     <link href="{{ asset('css/orbit.css') }}" rel="stylesheet">
     <link href="{{ asset('css/orbit-nim.css') }}" rel="stylesheet">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="{{ '#F6F8FA' if (request.cookies.get('theme') or 'dark') == 'light' else '#101010' }}">
+    <meta name="theme-color" content="{{ '#F1F4F8' if (request.cookies.get('theme') or 'dark') == 'light' else '#101010' }}">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-title" content="JMH Orbit">
     <link rel="icon" type="image/svg+xml" href="{{ asset('img/logo-orbit.svg') }}">

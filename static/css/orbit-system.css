@@ -2127,22 +2127,22 @@ body::before {
    ------------------------------------------------------------------------- */
 :root,
 html[data-theme="light"] {
-  /* Blanc de référence (#FFFFFF) + hairlines neutres : la profondeur vient du
-     trait et de l'ombre, jamais d'un blanc teinté. */
-  --paper: #FFFFFF;
-  --paper-deep: #F7F8F8;
+  /* Valeurs alignées sur orbit.css (couche finale) : encre descendue et
+     canevas bleuté plus profond pour une lecture sans effort en thème clair. */
+  --paper: #F1F4F8;
+  --paper-deep: #EAEFF5;
   --paper-tint: #FFFFFF;
   --surface: #FFFFFF;
   --surface-raised: #FFFFFF;
 
-  --ink: #1C1A17;
-  --ink-2: #4A453F;
-  --ink-3: #5C5650;
-  --ink-4: #66605A;
+  --ink: #14181C;
+  --ink-2: #363C42;
+  --ink-3: #484F56;
+  --ink-4: #565D65;
 
-  --rule: #E4E5E7;
-  --rule-soft: #EDEFF1;
-  --rule-strong: #D6D9DB;
+  --rule: #DFE5EC;
+  --rule-soft: #E7EDF3;
+  --rule-strong: #C6D0DB;
 
   --amber: #1F6A88;
   --amber-deep: #1B5570;
@@ -2179,12 +2179,12 @@ html[data-theme="light"] {
   --bg-dark: var(--paper);
   --bg-darker: var(--paper-deep);
   --bg-card: var(--surface);
-  --bg-card-hover: #F7F8F8;
-  --bg-card-active: #F0F2F3;
+  --bg-card-hover: #EEF3F8;
+  --bg-card-active: #E7EDF3;
   --bg-elevated: var(--surface-raised);
   --bg-sidebar: transparent;
   --bg-sidebar-hover: rgba(23, 26, 31, .045);
-  --bg-hover: rgba(23, 26, 31, .035);
+  --bg-hover: rgba(23, 26, 31, .045);
   --bg-glass: rgba(255, 255, 255, .86);
   --text-primary: var(--ink);
   --text-secondary: var(--ink-2);

@@ -31,9 +31,10 @@ html[data-theme="dark"] {
   --nim-sheen: linear-gradient(180deg, rgba(124, 197, 227, .07), rgba(124, 197, 227, 0) 160px);
   --nim-glow: 0 0 0 1px rgba(124, 197, 227, .28), 0 22px 48px -30px rgba(103, 174, 202, .55);
   --nim-tile-shadow: inset 0 1px 0 rgba(255, 255, 255, .04);
-  --nim-aurora-a: rgba(31, 106, 136, .38);
-  --nim-aurora-b: rgba(103, 174, 202, .22);
-  --nim-aurora-c: rgba(124, 197, 227, .18);
+  /* Halos plus presents : la derivation doit se voir sans regarder l'ecran de travers. */
+  --nim-aurora-a: rgba(31, 106, 136, .46);
+  --nim-aurora-b: rgba(103, 174, 202, .28);
+  --nim-aurora-c: rgba(124, 197, 227, .22);
 }
 
 /* --------------------------------------------------------------------------
@@ -63,19 +64,19 @@ body.app-shell::before { display: none !important; }
   width: 78vmax; height: 78vmax;
   top: -34vmax; left: -22vmax;
   background: radial-gradient(circle at 50% 50%, var(--nim-aurora-a), transparent 62%);
-  animation: orbitAuroraA 38s ease-in-out infinite alternate;
+  animation: orbitAuroraA 18s ease-in-out infinite alternate;
 }
 .orbit-aurora .aurora-b {
   width: 64vmax; height: 64vmax;
   right: -24vmax; bottom: -30vmax;
   background: radial-gradient(circle at 50% 50%, var(--nim-aurora-b), transparent 64%);
-  animation: orbitAuroraB 46s ease-in-out infinite alternate;
+  animation: orbitAuroraB 22s ease-in-out infinite alternate;
 }
 .orbit-aurora .aurora-c {
   width: 52vmax; height: 52vmax;
   top: 42%; left: 46%;
   background: radial-gradient(circle at 50% 50%, var(--nim-aurora-c), transparent 66%);
-  animation: orbitAuroraC 54s ease-in-out infinite alternate;
+  animation: orbitAuroraC 26s ease-in-out infinite alternate;
 }
 html[data-theme="light"] .orbit-aurora { opacity: .95; }
 
@@ -92,15 +93,15 @@ html[data-theme="light"] .orbit-stars { opacity: 1; }
 
 @keyframes orbitAuroraA {
   from { transform: translate3d(0, 0, 0) scale(1); }
-  to   { transform: translate3d(9vmax, 7vmax, 0) scale(1.10); }
+  to   { transform: translate3d(16vmax, 10vmax, 0) scale(1.16); }
 }
 @keyframes orbitAuroraB {
-  from { transform: translate3d(0, 0, 0) scale(1.05); }
-  to   { transform: translate3d(-8vmax, -6vmax, 0) scale(1); }
+  from { transform: translate3d(0, 0, 0) scale(1.08); }
+  to   { transform: translate3d(-14vmax, -9vmax, 0) scale(1); }
 }
 @keyframes orbitAuroraC {
-  from { transform: translate3d(-50%, -50%, 0) scale(.94); opacity: .7; }
-  to   { transform: translate3d(-46%, -54%, 0) scale(1.06); opacity: 1; }
+  from { transform: translate3d(-50%, -50%, 0) scale(.92); opacity: .55; }
+  to   { transform: translate3d(-44%, -56%, 0) scale(1.12); opacity: 1; }
 }
 
 /* --------------------------------------------------------------------------

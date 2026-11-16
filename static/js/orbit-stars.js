@@ -10,8 +10,11 @@
   if (!ctx) { return; }
 
   var PALETTES = {
-    light: { dot: '27,85,112', halo: '78,155,187', min: .12, max: .40, dust: .055, haloScale: .22 },
-    dark: { dot: '166,219,241', halo: '124,197,227', min: .16, max: .78, dust: .085, haloScale: .45 }
+    /* Clair : poussiere quasi invisible (elle lisait comme de la salete sur le
+       canevas blanc) — on garde seulement 2-3 nebuloses azur tres douces. */
+    light: { dot: '27,85,112', halo: '78,155,187', min: .04, max: .12, dust: .04, haloScale: .12, density: .4, spd: .5 },
+    /* Sombre : derivation et scintillement franchement perceptibles. */
+    dark: { dot: '166,219,241', halo: '124,197,227', min: .16, max: .78, dust: .085, haloScale: .45, density: 1, spd: 1 }
   };
 
   var reduced = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
@@ -42,18 +45,18 @@
 
   function seed() {
     var p = palette();
-    var count = Math.max(26, Math.min(120, Math.round((w * h) / 16000)));
+    var count = Math.max(26, Math.min(150, Math.round((w * h) / 16000 * p.density)));
     stars = [];
     for (var i = 0; i < count; i++) {
       stars.push({
         x: Math.random() * w,
         y: Math.random() * h,
         r: 0.5 + Math.random() * 1.2,
-        dx: (Math.random() - 0.5) * 0.09,
-        dy: -0.02 - Math.random() * 0.07,
+        dx: (Math.random() - 0.5) * 0.26 * p.spd,
+        dy: (-0.06 - Math.random() * 0.22) * p.spd,
         a: p.min + Math.random() * (p.max - p.min),
         tw: Math.random() * Math.PI * 2,
-        ts: 0.004 + Math.random() * 0.009
+        ts: 0.008 + Math.random() * 0.016
       });
     }
     motes = [];
@@ -62,8 +65,8 @@
         x: Math.random() * w,
         y: Math.random() * h,
         r: 110 + Math.random() * 190,
-        dx: (Math.random() - 0.5) * 0.05,
-        dy: (Math.random() - 0.5) * 0.04,
+        dx: (Math.random() - 0.5) * 0.12 * p.spd,
+        dy: (Math.random() - 0.5) * 0.09 * p.spd,
         a: p.dust
       });
     }
@@ -89,7 +92,7 @@
       if (s.x < -4) { s.x = w + 4; } else if (s.x > w + 4) { s.x = -4; }
       if (s.y < -4) { s.y = h + 4; } else if (s.y > h + 4) { s.y = -4; }
       s.tw += s.ts * step;
-      var a = s.a * (0.72 + 0.28 * Math.sin(s.tw));
+      var a = s.a * (0.55 + 0.45 * Math.sin(s.tw));
       if (a <= 0.01) { continue; }
       var size = s.r * 2.2;
       ctx.globalAlpha = a * p.haloScale;

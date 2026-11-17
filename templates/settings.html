@@ -273,6 +273,52 @@
 
 <div class="card-premium mb-4 animate-fade-in-up">
     <div class="card-header-premium">
+        <h5 class="mb-0"><i class="bi bi-database me-2" style="color: var(--warning);"></i>Sauvegarde de la base de données</h5>
+    </div>
+    <div class="card-body-premium">
+        <p class="text-tertiary small mb-3">
+            Export des <strong>données</strong> au format .sql (le schéma est recréé automatiquement au démarrage de l'application).
+            En cas de saturation de la base Neon : téléchargez la sauvegarde, créez un nouveau projet Neon,
+            remplacez DATABASE_URL dans Render, puis importez ce fichier ici — tout le travail est conservé.
+        </p>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="d-flex align-items-center mb-2">
+                    <span id="backupResume" class="small text-tertiary me-2">Statistiques…</span>
+                    <button type="button" id="btnBackupStats" class="btn-premium btn-premium-secondary btn-press btn-sm">Actualiser</button>
+                </div>
+                <div id="backupStats" class="small text-tertiary mb-3" aria-live="polite" style="max-height: 180px; overflow-y: auto;"></div>
+                <a href="{{ url_for('backup_export') }}" class="btn-premium btn-premium-primary btn-press w-100 mb-2">
+                    <i class="bi bi-cloud-download me-1"></i>Télécharger la sauvegarde (.sql)
+                </a>
+                <div class="form-text text-tertiary">Fichier lisible (SQL), à conserver hors de l'application : Drive, disque dur…</div>
+            </div>
+            <div class="col-lg-6">
+                <p class="small mb-2" style="color: var(--danger);">
+                    <i class="bi bi-exclamation-triangle me-1"></i><strong>Attention :</strong> l'import remplace TOUT le contenu
+                    actuel de la base par le contenu du fichier. À faire uniquement sur une base neuve ou vide.
+                </p>
+                <form id="backupImportForm">
+                    <div class="mb-2">
+                        <label class="form-label" for="backupFile">Fichier de sauvegarde (.sql)</label>
+                        <input id="backupFile" type="file" name="fichier" accept=".sql,.txt" class="input-premium">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="backupConfirm">Tapez RESTAURER pour confirmer</label>
+                        <input id="backupConfirm" type="text" class="input-premium" autocomplete="off" placeholder="RESTAURER">
+                    </div>
+                    <button type="submit" class="btn-premium btn-premium-danger btn-press w-100">
+                        <i class="bi bi-cloud-upload me-1"></i>Restaurer depuis ce fichier
+                    </button>
+                </form>
+                <div id="backupResult" class="small mt-2" aria-live="polite"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-premium mb-4 animate-fade-in-up">
+    <div class="card-header-premium">
         <h5 class="mb-0"><i class="bi bi-rocket-takeoff me-2" style="color: var(--orange-text);"></i>Suivi nouveaux dossiers — responsables standards &amp; actions automatiques</h5>
     </div>
     <div class="card-body-premium">
@@ -866,5 +912,59 @@ document.getElementById('btnTestMail').addEventListener('click', function() {
             box.textContent = 'Erreur : ' + err.message;
         });
 });
+
+// --- Sauvegarde de la base ---
+(function () {
+    const CSRF = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+    const resume = document.getElementById('backupResume');
+    const liste = document.getElementById('backupStats');
+
+    function chargerBackupStats() {
+        fetch('/api/backup/stats')
+            .then(r => r.json())
+            .then(res => {
+                if (!res.ok) { resume.textContent = 'Statistiques indisponibles.'; return; }
+                resume.textContent = (res.backend === 'postgresql' ? 'Base PostgreSQL' : 'Base ' + res.backend)
+                    + ' — ' + res.total + ' lignes au total';
+                liste.textContent = res.tables.filter(t => t.lignes > 0)
+                    .map(t => t.table + ' : ' + t.lignes).join(' · ') || 'Base vide.';
+            })
+            .catch(() => { resume.textContent = 'Statistiques indisponibles.'; });
+    }
+    document.getElementById('btnBackupStats').addEventListener('click', chargerBackupStats);
+    chargerBackupStats();
+
+    document.getElementById('backupImportForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+        const btn = this.querySelector('button[type="submit"]');
+        const box = document.getElementById('backupResult');
+        const fichier = document.getElementById('backupFile').files[0];
+        const confirmation = (document.getElementById('backupConfirm').value || '').trim();
+        if (!fichier) { showResult(box, 'var(--warning)', 'Choisissez d\'abord un fichier .sql.'); return; }
+        if (confirmation !== 'RESTAURER') { showResult(box, 'var(--warning)', 'Tapez RESTAURER dans le champ de confirmation.'); return; }
+        btn.disabled = true;
+        box.textContent = 'Restauration en cours… ne fermez pas la page.';
+        const fd = new FormData();
+        fd.append('fichier', fichier);
+        fd.append('confirmation', confirmation);
+        fd.append('csrf_token', CSRF);
+        fetch('/api/backup/import', {
+            method: 'POST',
+            headers: {'X-CSRFToken': CSRF},
+            body: fd,
+        }).then(r => r.json()).then(res => {
+            btn.disabled = false;
+            if (res.ok) {
+                showResult(box, 'var(--success)', res.message);
+                chargerBackupStats();
+            } else {
+                showResult(box, 'var(--danger)', res.message || 'Échec de l\'import.');
+            }
+        }).catch(err => {
+            btn.disabled = false;
+            showResult(box, 'var(--danger)', 'Erreur réseau : ' + err.message);
+        });
+    });
+})();
 </script>
 {% endblock %}

@@ -486,3 +486,10 @@ body::before {
   --bg-elevated: rgba(255,255,255,.04);
   --bg-card-hover: rgba(255,255,255,.03);
 }
+
+/* Taches : indicateur de commentaires + tri des colonnes du tableau */
+.task-meta-cmt { color: var(--info); }
+.task-cmt-cell { white-space: nowrap; color: var(--info); }
+.th-tri { cursor: pointer; user-select: none; }
+.th-tri:hover { color: var(--text-primary); }
+.th-tri .tri-ico { font-size: .68rem; opacity: .85; }

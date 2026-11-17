@@ -2,9 +2,10 @@
 from flask import render_template, request, redirect, url_for, flash, session
 from flask_login import login_required, current_user
 from . import app, db
-from .models import User, Equipe, Dossier, Tache, Notification
+from .models import User, Equipe, Dossier, Tache, Notification, CommentaireTache
 from datetime import date, datetime, timedelta
 from .route_common import membres_visibles_query
+from sqlalchemy import func
 
 
 def _perimetre_cible(user, assigne_a, dossier_id):
@@ -242,10 +243,19 @@ def taches():
         from .social_service import est_tache_sociale
         all_taches = [t for t in all_taches if est_tache_sociale(t)]
 
+    # Indicateur « a des commentaires » pour les cartes/lignes (1 requête groupée)
+    taches_ids = [t.id for t in all_taches]
+    nb_commentaires = dict(
+        db.session.query(CommentaireTache.tache_id, func.count(CommentaireTache.id))
+        .filter(CommentaireTache.tache_id.in_(taches_ids))
+        .group_by(CommentaireTache.tache_id).all()
+    ) if taches_ids else {}
+
     return render_template('taches.html', taches=all_taches, membres=membres,
         equipes=Equipe.query.order_by(Equipe.nom).all(), Tache=Tache,
         current_equipe=current_equipe, all_equipes_for_switch=all_equipes_for_switch, db=db,
         dossiers=Dossier.query.order_by(Dossier.numero_dossier).all(),
+        nb_commentaires=nb_commentaires,
         dossier_filtre=request.args.get('dossier', type=int),
         # Pré-filtres transmis par les raccourcis du tableau de bord
         # (?retard=1, ?statut=en_cours, ?membre=4) — voir orbit-prefilter.

@@ -16,6 +16,7 @@ from . import routes_avancement  # noqa: F401 — suivi avancement + taches du j
 from . import routes_tache_actions  # noqa: F401 — changer/terminer statut + photos profil
 from . import routes_notifications  # noqa: F401 — notifications, commentaires, vue tache
 from . import routes_admin  # noqa: F401 — profil, reset admin, photos admin, debug
+from . import routes_backup  # noqa: F401 — sauvegarde/restauration de la base (.sql)
 from . import routes_fiscal  # noqa: F401 — page fiscal + creation dossier + config equipes
 from . import routes_pennylane  # noqa: F401 — integration Pennylane + error handlers
 from . import routes_assistant  # noqa: F401 — assistant IA (bulle, périmètre utilisateur)

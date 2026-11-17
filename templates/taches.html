@@ -214,7 +214,7 @@ function orbitChips() {
     {% set orbit_statut = 'À faire' if t.statut == 'a_faire' else ('En cours' if t.statut == 'en_cours' else 'Terminée') %}
     {% set orbit_assigne = ((t.assigne.prenom ~ ' ' ~ t.assigne.nom) | trim) if t.assigne else 'Non assignée' %}
     {% set orbit_actions = [['Ouvrir la tâche', url_for('vue_tache', tache_id=t.id), 'primary', 'bi-box-arrow-up-right']] %}
-    <div tabindex="0" data-orbit-nav data-orbit-kind="Tâche" data-orbit-id="{{ t.id }}" data-orbit-title="{{ t.titre }}" data-orbit-sub="{{ t.dossier.numero_dossier ~ ' — ' ~ t.dossier.intitule if t.dossier else 'Sans dossier' }}" data-orbit-f-dossier="{{ t.dossier.numero_dossier if t.dossier else '—' }}" data-orbit-f-assigne="{{ orbit_assigne }}" data-orbit-f-priorite="{{ t.priorite | capitalize }}" data-orbit-f-statut="{{ orbit_statut }}" data-orbit-f-echeance="{{ t.date_echeance.strftime('%d/%m/%Y') }}" data-orbit-f-nature="{{ nature_tache | capitalize }}" data-orbit-f-description="{{ t.description[:180] if t.description else '' }}" data-orbit-actions='{{ orbit_actions | tojson }}' class="task-card {{ 'task-overdue' if t.est_en_retard() else '' }}" data-priority="{{ t.priorite }}" data-statut="{{ t.statut }}" data-titre="{{ t.titre|lower }} {{ t.description|lower }}" data-assigne="{{ t.assigne_a }}" data-dossier="{{ t.dossier_id }}" data-echeance="{{ t.date_echeance }}" data-nature="{{ nature_tache }}">
+    <div tabindex="0" data-orbit-nav data-orbit-kind="Tâche" data-orbit-id="{{ t.id }}" data-orbit-title="{{ t.titre }}" data-orbit-sub="{{ t.dossier.numero_dossier ~ ' — ' ~ t.dossier.intitule if t.dossier else 'Sans dossier' }}" data-orbit-f-dossier="{{ t.dossier.numero_dossier if t.dossier else '—' }}" data-orbit-f-assigne="{{ orbit_assigne }}" data-orbit-f-priorite="{{ t.priorite | capitalize }}" data-orbit-f-statut="{{ orbit_statut }}" data-orbit-f-echeance="{{ t.date_echeance.strftime('%d/%m/%Y') }}" data-orbit-f-nature="{{ nature_tache | capitalize }}" data-orbit-f-description="{{ t.description[:180] if t.description else '' }}" data-orbit-actions='{{ orbit_actions | tojson }}' class="task-card {{ 'task-overdue' if t.est_en_retard() else '' }}" data-priority="{{ t.priorite }}" data-statut="{{ t.statut }}" data-titre="{{ t.titre|lower }} {{ t.description|lower }}" data-assigne="{{ t.assigne_a }}" data-dossier="{{ t.dossier_id }}" data-echeance="{{ t.date_echeance }}" data-nature="{{ nature_tache }}" data-commentaires="{{ (nb_commentaires or {}).get(t.id, 0) }}">
         <div class="task-card-header">
             <span class="task-priority priority-{{ t.priorite }}">{{ t.priorite|capitalize }}</span>
             <span class="task-status status-{{ t.statut }}">{% if t.statut == 'a_faire' %}À faire{% elif t.statut == 'en_cours' %}En cours{% else %}Terminée{% endif %}</span>
@@ -231,6 +231,9 @@ function orbitChips() {
                 {% endif %}
                 <span class="task-meta-item"><i class="bi bi-calendar3"></i>{{ t.date_echeance.strftime('%d/%m/%Y') }}</span>
                 <span class="task-meta-item"><i class="bi bi-person"></i>{{ t.assigne.prenom }} {{ t.assigne.nom }}</span>
+                {% if (nb_commentaires or {}).get(t.id, 0) %}
+                <span class="task-meta-item task-meta-cmt" title="{{ (nb_commentaires or {}).get(t.id) }} commentaire{{ 's' if (nb_commentaires or {}).get(t.id) > 1 }}"><i class="bi bi-chat-left-text"></i>{{ (nb_commentaires or {}).get(t.id) }}</span>
+                {% endif %}
             </div>
         </div>
         <div class="task-card-footer">
@@ -292,11 +295,12 @@ function orbitChips() {
         <table class="table-premium" id="tachesTable">
             <thead>
                 <tr>
-                    <th>Tâche</th>
-                    <th>Statut</th>
-                    <th>Priorité</th>
-                    <th>Échéance</th>
-                    <th>Assigné</th>
+                    <th class="th-tri" data-tri-type="texte" title="Trier par tâche">Tâche</th>
+                    <th class="th-tri" data-tri-type="num" title="Trier par statut">Statut</th>
+                    <th class="th-tri" data-tri-type="num" title="Trier par priorité">Priorité</th>
+                    <th class="th-tri" data-tri-type="texte" title="Trier par échéance">Échéance</th>
+                    <th class="th-tri" data-tri-type="texte" title="Trier par assigné">Assigné</th>
+                    <th class="th-tri" data-tri-type="num" title="Trier par nombre de commentaires">Comm.</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -915,6 +919,10 @@ document.addEventListener('click', function(ev) {
     var tablePane = document.querySelector('[data-view-pane="table"]');
     if (!scope || !tbody || !tablePane) { return; }
 
+    var RANG_STATUT = { a_faire: 0, en_cours: 1, terminee: 2 };
+    var RANG_PRIO = { basse: 0, moyenne: 1, haute: 2 };
+    var triIdx = -1, triSens = 1;
+
     function buildRow(card) {
         var tr = document.createElement('tr');
         if (card.classList.contains('task-overdue')) { tr.classList.add('task-overdue'); }
@@ -932,26 +940,40 @@ document.addEventListener('click', function(ev) {
         sub.className = 'text-tertiary small';
         sub.textContent = card.getAttribute('data-orbit-sub') || '';
         tdTitre.appendChild(sub);
+        tdTitre.setAttribute('data-tri', (card.getAttribute('data-orbit-title') || '').toLowerCase());
         tr.appendChild(tdTitre);
 
         var tdStatut = document.createElement('td');
         var st = card.querySelector('.task-status');
         if (st) { tdStatut.appendChild(st.cloneNode(true)); }
+        tdStatut.setAttribute('data-tri', String(RANG_STATUT[card.getAttribute('data-statut')] ?? 0));
         tr.appendChild(tdStatut);
 
         var tdPrio = document.createElement('td');
         var pr = card.querySelector('.task-priority');
         if (pr) { tdPrio.appendChild(pr.cloneNode(true)); }
+        tdPrio.setAttribute('data-tri', String(RANG_PRIO[card.getAttribute('data-priority')] ?? 1));
         tr.appendChild(tdPrio);
 
         var tdEch = document.createElement('td');
         tdEch.textContent = card.getAttribute('data-orbit-f-echeance') || '—';
         if (card.classList.contains('task-overdue')) { tdEch.className = 'text-danger fw-semibold'; }
+        tdEch.setAttribute('data-tri', card.getAttribute('data-echeance') || '9999-12-31');
         tr.appendChild(tdEch);
 
         var tdAss = document.createElement('td');
         tdAss.textContent = card.getAttribute('data-orbit-f-assigne') || '—';
+        tdAss.setAttribute('data-tri', tdAss.textContent.toLowerCase());
         tr.appendChild(tdAss);
+
+        var tdCmt = document.createElement('td');
+        var nc = parseInt(card.getAttribute('data-commentaires') || '0', 10);
+        if (nc > 0) {
+            tdCmt.className = 'task-cmt-cell';
+            tdCmt.innerHTML = '<i class="bi bi-chat-left-text"></i> ' + nc;
+        }
+        tdCmt.setAttribute('data-tri', String(nc));
+        tr.appendChild(tdCmt);
 
         var tdAct = document.createElement('td');
         tdAct.className = 'text-end';
@@ -978,6 +1000,45 @@ document.addEventListener('click', function(ev) {
         return tr;
     }
 
+    function appliquerTri() {
+        var ths = document.querySelectorAll('#tachesTable thead th');
+        ths.forEach(function (h, i) {
+            var ic = h.querySelector('.tri-ico');
+            if (ic) { ic.remove(); }
+            if (i === triIdx) {
+                var s = document.createElement('i');
+                s.className = 'bi ' + (triSens === 1 ? 'bi-caret-up-fill' : 'bi-caret-down-fill') + ' tri-ico ms-1';
+                h.appendChild(s);
+            }
+        });
+        if (triIdx < 0) { return; }
+        var lignes = [], vide = null;
+        Array.prototype.forEach.call(tbody.children, function (tr) {
+            if (tr.hasAttribute('data-tri-vide')) { vide = tr; } else { lignes.push(tr); }
+        });
+        var type = (ths[triIdx] && ths[triIdx].getAttribute('data-tri-type')) || 'texte';
+        lignes.sort(function (a, b) {
+            var ta = a.children[triIdx], tb = b.children[triIdx];
+            var va = ta ? ta.getAttribute('data-tri') : '', vb = tb ? tb.getAttribute('data-tri') : '';
+            if (type === 'num') {
+                va = parseFloat(va || '0') || 0;
+                vb = parseFloat(vb || '0') || 0;
+                return (va - vb) * triSens;
+            }
+            return String(va || '').localeCompare(String(vb || ''), 'fr', { numeric: true }) * triSens;
+        });
+        lignes.forEach(function (tr) { tbody.appendChild(tr); });
+        if (vide) { tbody.appendChild(vide); }
+    }
+
+    document.querySelectorAll('#tachesTable thead th.th-tri').forEach(function (th) {
+        var idx = Array.prototype.indexOf.call(th.parentNode.children, th);
+        th.addEventListener('click', function () {
+            if (triIdx === idx) { triSens = -triSens; } else { triIdx = idx; triSens = 1; }
+            appliquerTri();
+        });
+    });
+
     function rebuild() {
         if (tablePane.hidden) { return; }
         tbody.innerHTML = '';
@@ -990,12 +1051,14 @@ document.addEventListener('click', function(ev) {
         if (n === 0) {
             var tr = document.createElement('tr');
             var td = document.createElement('td');
-            td.colSpan = 6;
+            tr.setAttribute('data-tri-vide', '1');
+            td.colSpan = 7;
             td.className = 'text-center text-tertiary py-4';
             td.textContent = 'Aucune tâche ne correspond aux filtres actifs.';
             tr.appendChild(td);
             tbody.appendChild(tr);
         }
+        appliquerTri();
     }
 
     scope.addEventListener('orbit:viewchange', function (ev) {

@@ -144,6 +144,66 @@ def terminer_tache(tache_id):
     flash('Tâche marquée comme terminée.', 'success')
     return redirect(url_for('taches'))
 
+@app.route('/planifier_tache/<int:tache_id>', methods=['POST'])
+@login_required
+def planifier_tache(tache_id):
+    """L'assigné fixe la date à laquelle il prévoit de traiter la tâche.
+
+    Différent de l'échéance : c'est un engagement de traitement. La personne qui
+    a assigné la tâche reçoit une notification (et un email) l'informant de la
+    date planifiée. Une date vide retire la planification.
+    """
+    tache = Tache.query.get_or_404(tache_id)
+    if not _tache_accessible(tache, current_user):
+        flash('Accès refusé : cette tâche ne fait pas partie de votre périmètre.', 'danger')
+        return redirect(url_for('taches'))
+    # Seul l'assigné (ou un manager/admin du périmètre) planifie le traitement.
+    if current_user.id != tache.assigne_a and current_user.role not in ('admin', 'manager'):
+        flash("Seul l'assigné peut planifier le traitement de cette tâche.", 'danger')
+        return redirect(url_for('taches'))
+
+    brut = (request.form.get('date_planifiee') or '').strip()
+    nouvelle_date = None
+    if brut:
+        try:
+            nouvelle_date = datetime.strptime(brut, '%Y-%m-%d').date()
+        except ValueError:
+            flash('Date de planification invalide.', 'warning')
+            return redirect(url_for('taches'))
+    tache.date_planifiee = nouvelle_date
+    db.session.commit()
+
+    vers_vue = request.form.get('redirect_to') == 'vue'
+    cible = url_for('vue_tache', tache_id=tache.id) if vers_vue else url_for('taches')
+
+    if not nouvelle_date:
+        flash('Planification retirée.', 'info')
+        return redirect(cible)
+
+    date_fr = nouvelle_date.strftime('%d/%m/%Y')
+    assigne_nom = f'{current_user.prenom} {current_user.nom}'
+    # Destinataire : la personne qui a assigné la tâche (créateur), à défaut le
+    # manager de l'équipe du dossier. Jamais soi-même.
+    cree_par_id = tache.cree_par
+    if not cree_par_id and tache.dossier and tache.dossier.equipe and tache.dossier.equipe.manager:
+        cree_par_id = tache.dossier.equipe.manager.id
+    if cree_par_id and cree_par_id != current_user.id:
+        db.session.add(Notification(
+            user_id=cree_par_id, tache_id=tache.id,
+            message=f'{assigne_nom} a planifié de traiter "{tache.titre}" le {date_fr}',
+            type_notification='planification'))
+        db.session.commit()
+        dest_user = User.query.get(cree_par_id)
+        if dest_user and dest_user.email:
+            try:
+                from app.integrations.brevo import send_tache_planifiee_email_brevo
+                send_tache_planifiee_email_brevo(tache, dest_user, assigne_nom, date_fr)
+            except Exception as e:
+                app.logger.warning(f"Email planification error: {e}")
+
+    flash(f'Traitement planifié le {date_fr}.', 'success')
+    return redirect(cible)
+
 def _reduire_photo(donnees, mimetype, max_px=256, qualite=82):
     """Réduit une photo de profil avant stockage en base (best effort).
 

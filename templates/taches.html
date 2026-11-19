@@ -79,6 +79,15 @@
                 </select>
                 <i class="bi bi-chevron-down avm-caret"></i>
             </label>
+            {% set createurs = namespace(vus=[]) %}
+            <label class="avm-select" id="icoCreePar" title="Assignée par — tous">
+                <i class="bi bi-person-badge"></i>
+                <select id="filterCreePar" aria-label="Filtrer par origine de tâche" onchange="syncFilterIcons();applyFilter()">
+                    <option value="all">Assignée par — tous</option>
+                    {% for t in taches %}{% if t.cree_par and t.cree_par not in createurs.vus %}{% set createurs.vus = createurs.vus + [t.cree_par] %}<option value="{{ t.cree_par }}">{{ t.createur.prenom }} {{ t.createur.nom }}</option>{% endif %}{% endfor %}
+                </select>
+                <i class="bi bi-chevron-down avm-caret"></i>
+            </label>
             <label class="avm-select" id="icoDossier" title="Dossier — tous">
                 <i class="bi bi-folder"></i>
                 <select id="filterDossier" aria-label="Filtrer par dossier" data-prefiltre="{{ dossier_filtre or '' }}" onchange="syncFilterIcons();applyFilter()">
@@ -191,6 +200,7 @@ function orbitChips() {
     }
     chipFor('filterNature', 'Nature', natures);
     chipFor('filterMembre', 'Membre', null);
+    chipFor('filterCreePar', 'Assignée par', null);
     chipFor('filterDossier', 'Dossier', null);
     return out;
 }
@@ -214,7 +224,7 @@ function orbitChips() {
     {% set orbit_statut = 'À faire' if t.statut == 'a_faire' else ('En cours' if t.statut == 'en_cours' else 'Terminée') %}
     {% set orbit_assigne = ((t.assigne.prenom ~ ' ' ~ t.assigne.nom) | trim) if t.assigne else 'Non assignée' %}
     {% set orbit_actions = [['Ouvrir la tâche', url_for('vue_tache', tache_id=t.id), 'primary', 'bi-box-arrow-up-right']] %}
-    <div tabindex="0" data-orbit-nav data-orbit-kind="Tâche" data-orbit-id="{{ t.id }}" data-orbit-title="{{ t.titre }}" data-orbit-sub="{{ t.dossier.numero_dossier ~ ' — ' ~ t.dossier.intitule if t.dossier else 'Sans dossier' }}" data-orbit-f-dossier="{{ t.dossier.numero_dossier if t.dossier else '—' }}" data-orbit-f-assigne="{{ orbit_assigne }}" data-orbit-f-priorite="{{ t.priorite | capitalize }}" data-orbit-f-statut="{{ orbit_statut }}" data-orbit-f-echeance="{{ t.date_echeance.strftime('%d/%m/%Y') }}" data-orbit-f-nature="{{ nature_tache | capitalize }}" data-orbit-f-description="{{ t.description[:180] if t.description else '' }}" data-orbit-actions='{{ orbit_actions | tojson }}' class="task-card {{ 'task-overdue' if t.est_en_retard() else '' }}" data-priority="{{ t.priorite }}" data-statut="{{ t.statut }}" data-titre="{{ t.titre|lower }} {{ t.description|lower }}" data-assigne="{{ t.assigne_a }}" data-dossier="{{ t.dossier_id }}" data-echeance="{{ t.date_echeance }}" data-nature="{{ nature_tache }}" data-commentaires="{{ (nb_commentaires or {}).get(t.id, 0) }}">
+    <div tabindex="0" data-orbit-nav data-orbit-kind="Tâche" data-orbit-id="{{ t.id }}" data-orbit-title="{{ t.titre }}" data-orbit-sub="{{ t.dossier.numero_dossier ~ ' — ' ~ t.dossier.intitule if t.dossier else 'Sans dossier' }}" data-orbit-f-dossier="{{ t.dossier.numero_dossier if t.dossier else '—' }}" data-orbit-f-assigne="{{ orbit_assigne }}" data-orbit-f-priorite="{{ t.priorite | capitalize }}" data-orbit-f-statut="{{ orbit_statut }}" data-orbit-f-echeance="{{ t.date_echeance.strftime('%d/%m/%Y') }}" data-orbit-f-nature="{{ nature_tache | capitalize }}" data-orbit-f-description="{{ t.description[:180] if t.description else '' }}" data-orbit-actions='{{ orbit_actions | tojson }}' class="task-card {{ 'task-overdue' if t.est_en_retard() else '' }}" data-priority="{{ t.priorite }}" data-statut="{{ t.statut }}" data-titre="{{ t.titre|lower }} {{ t.description|lower }}" data-assigne="{{ t.assigne_a }}" data-cree-par="{{ t.cree_par or '' }}" data-dossier="{{ t.dossier_id }}" data-echeance="{{ t.date_echeance }}" data-nature="{{ nature_tache }}" data-commentaires="{{ (nb_commentaires or {}).get(t.id, 0) }}">
         <div class="task-card-header">
             <span class="task-priority priority-{{ t.priorite }}">{{ t.priorite|capitalize }}</span>
             <span class="task-status status-{{ t.statut }}">{% if t.statut == 'a_faire' %}À faire{% elif t.statut == 'en_cours' %}En cours{% else %}Terminée{% endif %}</span>
@@ -231,6 +241,12 @@ function orbitChips() {
                 {% endif %}
                 <span class="task-meta-item"><i class="bi bi-calendar3"></i>{{ t.date_echeance.strftime('%d/%m/%Y') }}</span>
                 <span class="task-meta-item"><i class="bi bi-person"></i>{{ t.assigne.prenom }} {{ t.assigne.nom }}</span>
+                {% if t.createur and t.cree_par != t.assigne_a %}
+                <span class="task-meta-item task-meta-origine" title="Assignée par {{ t.createur.prenom }} {{ t.createur.nom }}"><i class="bi bi-person-badge"></i>par {{ t.createur.prenom }} {{ t.createur.nom }}</span>
+                {% endif %}
+                {% if t.date_planifiee %}
+                <span class="task-meta-item task-meta-plan" title="Date de traitement planifiée"><i class="bi bi-calendar2-check"></i>planifié {{ t.date_planifiee.strftime('%d/%m') }}</span>
+                {% endif %}
                 {% if (nb_commentaires or {}).get(t.id, 0) %}
                 <span class="task-meta-item task-meta-cmt" title="{{ (nb_commentaires or {}).get(t.id) }} commentaire{{ 's' if (nb_commentaires or {}).get(t.id) > 1 }}"><i class="bi bi-chat-left-text"></i>{{ (nb_commentaires or {}).get(t.id) }}</span>
                 {% endif %}
@@ -269,6 +285,14 @@ function orbitChips() {
                 <form method="POST" action="{{ url_for('supprimer_tache', tache_id=t.id) }}" class="d-inline" onsubmit="return confirm('Supprimer cette tâche ?');">
                     <button type="submit" class="btn-task btn-task-sm btn-task-danger" title="Supprimer"><i class="bi bi-trash"></i></button>
                 </form>
+                {% endif %}
+                {% if (current_user.id == t.assigne_a or current_user.role in ('admin', 'manager')) and t.statut != 'terminee' %}
+                <button type="button" class="btn-task btn-task-sm {{ 'btn-task-primary' if t.date_planifiee else 'btn-task-inactive' }} btn-planifier"
+                        data-plan-action="{{ url_for('planifier_tache', tache_id=t.id) }}"
+                        data-plan-titre="{{ t.titre }}"
+                        data-plan-date="{{ t.date_planifiee.strftime('%Y-%m-%d') if t.date_planifiee else '' }}"
+                        data-plan-echeance="{{ t.date_echeance.strftime('%d/%m/%Y') }}"
+                        title="{{ 'Planifié le ' ~ t.date_planifiee.strftime('%d/%m/%Y') if t.date_planifiee else 'Planifier le traitement' }}"><i class="bi bi-calendar2-check"></i></button>
                 {% endif %}
                 <a href="{{ url_for('vue_tache', tache_id=t.id) }}" class="btn-task btn-task-sm btn-task-inactive" title="Voir"><i class="bi bi-chat-dots"></i></a>
             </div>
@@ -436,6 +460,34 @@ function orbitChips() {
         </div>
     </div>
 </div>
+
+<!-- Modal Planifier le traitement -->
+<div class="modal fade" id="modalPlanifier" tabindex="-1" data-bs-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content-premium">
+            <form method="POST" action="" id="formPlanifier">
+                <input type="hidden" name="redirect_to" value="">
+                <div class="modal-header-premium">
+                    <h5 class="mb-0"><i class="bi bi-calendar2-check me-2" style="color: var(--orange-text)"></i>Planifier le traitement</h5>
+                    <button type="button" class="btn-premium btn-premium-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+                </div>
+                <div class="modal-body-premium">
+                    <p class="text-tertiary small mb-2" id="planTitre"></p>
+                    <p class="text-tertiary small mb-3"><i class="bi bi-calendar3 me-1"></i>Échéance : <span id="planEcheance"></span></p>
+                    <div class="mb-2">
+                        <label class="form-label-premium">Je traiterai cette tâche le</label>
+                        <input type="date" name="date_planifiee" id="planDate" class="input-premium">
+                    </div>
+                    <p class="text-tertiary small mb-0">La personne qui vous a assigné la tâche sera informée de cette date.</p>
+                </div>
+                <div class="modal-footer-premium">
+                    <button type="button" class="btn-premium btn-premium-secondary" id="planRetirer">Retirer la date</button>
+                    <button type="submit" class="btn-premium btn-premium-primary"><i class="bi bi-check2 me-1"></i>Planifier</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -572,6 +624,7 @@ function saveFilters(typeFilter) {
             typeFilter: typeFilter || document.querySelector('.filter-btn.active')?.dataset?.filter || 'all',
             statuts: taskStatutSelected,
             membre: document.getElementById('filterMembre')?.value || 'all',
+            creePar: document.getElementById('filterCreePar')?.value || 'all',
             dossier: document.getElementById('filterDossier')?.value || 'all',
             nature: document.getElementById('filterNature')?.value || 'all',
             dateDebut: document.getElementById('filterDateDebut')?.value || '',
@@ -588,6 +641,7 @@ function restoreFilters() {
         if (!saved) return null;
         if (saved.statuts && Array.isArray(saved.statuts) && saved.statuts.length > 0) taskStatutSelected = saved.statuts;
         if (saved.membre) document.getElementById('filterMembre').value = saved.membre;
+        if (saved.creePar) { var cp = document.getElementById('filterCreePar'); if (cp) cp.value = saved.creePar; }
         // Le pré-filtre dossier (?dossier=) prime sur le filtre sauvegardé
         var dossierPrefiltre = document.getElementById('filterDossier').getAttribute('data-prefiltre');
         if (dossierPrefiltre && dossierPrefiltre !== '') {
@@ -631,6 +685,12 @@ function syncFilterIcons() {
     if (mb && mbIco) {
         mbIco.classList.toggle('on', mb.value !== 'all');
         mbIco.title = 'Membre — ' + (mb.options[mb.selectedIndex] || {}).text;
+    }
+    var cp = document.getElementById('filterCreePar');
+    var cpIco = document.getElementById('icoCreePar');
+    if (cp && cpIco) {
+        cpIco.classList.toggle('on', cp.value !== 'all' && cp.value !== '');
+        cpIco.title = 'Assignée par — ' + ((cp.options[cp.selectedIndex] || {}).text || 'tous');
     }
     var dos = document.getElementById('filterDossier');
     var dosIco = document.getElementById('icoDossier');
@@ -714,6 +774,7 @@ function toggleTaskStatut(value) {
 function resetFilters() {
     taskStatutSelected = ['a_faire'];
     document.getElementById('filterMembre').value = 'all';
+    var cpReset = document.getElementById('filterCreePar'); if (cpReset) cpReset.value = 'all';
     document.getElementById('filterDossier').value = 'all';
     document.getElementById('filterNature').value = 'all';
     document.getElementById('filterDateDebut').value = '';
@@ -731,6 +792,7 @@ function resetFilters() {
 function applyFilter(typeFilter) {
     if (!typeFilter) typeFilter = document.querySelector('.filter-btn.active')?.dataset?.filter || 'all';
     var membre = document.getElementById('filterMembre')?.value || 'all';
+    var creePar = document.getElementById('filterCreePar')?.value || 'all';
     var dossier = document.getElementById('filterDossier')?.value || 'all';
     var nature = document.getElementById('filterNature')?.value || 'all';
     var dateDebut = document.getElementById('filterDateDebut')?.value || '';
@@ -760,6 +822,9 @@ function applyFilter(typeFilter) {
         }
         if (show && membre !== 'all') {
             show = card.dataset.assigne === membre;
+        }
+        if (show && creePar !== 'all' && creePar !== '') {
+            show = card.dataset.creePar === creePar;
         }
         if (show && dossier !== 'all') {
             show = card.dataset.dossier === dossier;
@@ -816,7 +881,7 @@ function orbitTodayISO() {
 /* V5 : reinit standard des filtres (bouton barre standard) */
 function orbitResetFilters() {
     if (typeof resetFilters === 'function') { resetFilters(); return; }
-    ['filterMembre','filterDossier','filterNature'].forEach(function(id) {
+    ['filterMembre','filterCreePar','filterDossier','filterNature'].forEach(function(id) {
         var el = document.getElementById(id); if (el) el.value = 'all';
     });
     ['filterDateDebut','filterDateFin','filterSearch'].forEach(function(id) {
@@ -908,6 +973,26 @@ document.addEventListener('click', function(ev) {
         editMembre.innerHTML = '<option value="">Erreur</option>';
         editDossier.innerHTML = '<option value="">Erreur</option>';
     });
+});
+
+// Bouton calendrier : ouvre le modal de planification pré-rempli.
+document.addEventListener('click', function(ev) {
+    var btn = ev.target.closest('.btn-planifier');
+    if (!btn) return;
+    var form = document.getElementById('formPlanifier');
+    if (!form) return;
+    form.action = btn.getAttribute('data-plan-action') || '';
+    document.getElementById('planTitre').textContent = btn.getAttribute('data-plan-titre') || '';
+    document.getElementById('planEcheance').textContent = btn.getAttribute('data-plan-echeance') || '—';
+    document.getElementById('planDate').value = btn.getAttribute('data-plan-date') || '';
+    if (window.bootstrap && bootstrap.Modal) {
+        bootstrap.Modal.getOrCreateInstance(document.getElementById('modalPlanifier')).show();
+    }
+});
+// « Retirer la date » : vide le champ puis soumet (le serveur retire la planification).
+document.getElementById('planRetirer')?.addEventListener('click', function() {
+    document.getElementById('planDate').value = '';
+    document.getElementById('formPlanifier').submit();
 });
 </script>
 <script>

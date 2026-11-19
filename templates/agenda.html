@@ -1,0 +1,317 @@
+{% extends "base.html" %}
+{% block title %}Agenda{% endblock %}
+{% block body_class %}page-agenda{% endblock %}
+{% block content %}
+<div class="page-head animate-fade-in-up">
+    <div class="page-head-main">
+        <span class="page-head-icon"><i class="bi bi-calendar2-week"></i></span>
+        <div class="page-head-titles">
+            <h2>Agenda</h2>
+            <p class="page-head-sub" id="agendaSub">Vos tâches et rappels</p>
+        </div>
+    </div>
+    <div class="page-head-actions">
+        <div class="orbit-view-toggle" role="group" aria-label="Vue de l'agenda">
+            <button type="button" data-ag-view="month" class="active" aria-pressed="true">Mois</button>
+            <button type="button" data-ag-view="week" aria-pressed="false">Semaine</button>
+            <button type="button" data-ag-view="day" aria-pressed="false">Jour</button>
+        </div>
+    </div>
+</div>
+
+<div class="card-premium mb-3 animate-fade-in-up">
+    <div class="card-body-premium py-2">
+        <div class="ag-toolbar">
+            <div class="ag-nav">
+                <button type="button" class="btn-premium btn-premium-secondary btn-sm" id="agPrev" title="Précédent" aria-label="Période précédente"><i class="bi bi-chevron-left"></i></button>
+                <button type="button" class="btn-premium btn-premium-outline btn-sm" id="agToday">Aujourd'hui</button>
+                <button type="button" class="btn-premium btn-premium-secondary btn-sm" id="agNext" title="Suivant" aria-label="Période suivante"><i class="bi bi-chevron-right"></i></button>
+            </div>
+            <h3 class="ag-period" id="agPeriod"></h3>
+            <div class="ag-legend">
+                <span class="ag-leg"><i class="ag-dot ag-dot-echeance"></i>Échéance</span>
+                <span class="ag-leg"><i class="ag-dot ag-dot-planifie"></i>Planifié</span>
+                <span class="ag-leg"><i class="ag-dot ag-dot-rappel"></i>Rappel</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card-premium animate-fade-in-up">
+    <div class="card-body-premium">
+        <div id="agCalendar" class="ag-calendar" aria-live="polite"></div>
+    </div>
+</div>
+
+<!-- Panneau détail du jour -->
+<div class="modal fade" id="agDayModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content-premium">
+            <div class="modal-header-premium">
+                <h5 class="mb-0" id="agDayTitle"><i class="bi bi-calendar2-day me-2" style="color: var(--orange-text)"></i></h5>
+                <button type="button" class="btn-premium btn-premium-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="modal-body-premium" id="agDayBody"></div>
+        </div>
+    </div>
+</div>
+
+<style>
+.ag-toolbar { display:flex; flex-wrap:wrap; align-items:center; gap:12px; }
+.ag-nav { display:flex; align-items:center; gap:6px; }
+.ag-period { margin:0; font-size:1.05rem; font-weight:600; color:var(--text-primary); text-transform:capitalize; }
+.ag-legend { display:flex; gap:14px; margin-left:auto; flex-wrap:wrap; }
+.ag-leg { display:inline-flex; align-items:center; gap:6px; font-size:.78rem; color:var(--text-tertiary); }
+.ag-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+.ag-dot-echeance { background:var(--warning); }
+.ag-dot-planifie { background:var(--info); }
+.ag-dot-rappel { background:var(--orange-text); }
+
+.ag-calendar { width:100%; }
+.ag-weekdays { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-bottom:4px; }
+.ag-weekdays span { text-align:center; font-size:.72rem; font-weight:600; color:var(--text-tertiary); padding:4px 0; text-transform:capitalize; }
+.ag-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.ag-cell { min-height:104px; border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-card); padding:6px; cursor:pointer; display:flex; flex-direction:column; gap:3px; transition:border-color .15s, background .15s; }
+.ag-cell:hover { border-color:var(--info); background:var(--bg-card-hover); }
+.ag-cell.ag-out { opacity:.45; }
+.ag-cell.ag-today { border-color:var(--info); box-shadow:inset 0 0 0 1px var(--info); }
+.ag-daynum { font-size:.78rem; font-weight:600; color:var(--text-secondary); font-variant-numeric:tabular-nums; }
+.ag-cell.ag-today .ag-daynum { color:var(--info); }
+.ag-chip { display:flex; align-items:center; gap:5px; font-size:.7rem; line-height:1.25; padding:2px 5px; border-radius:var(--radius-sm); background:var(--bg-card-hover); border-left:3px solid var(--text-tertiary); color:var(--text-secondary); overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.ag-chip:hover { filter:brightness(1.06); }
+.ag-chip.ag-k-echeance { border-left-color:var(--warning); }
+.ag-chip.ag-k-planifie { border-left-color:var(--info); }
+.ag-chip.ag-k-rappel { border-left-color:var(--orange-text); }
+.ag-chip.ag-p-haute { border-left-color:var(--danger); }
+.ag-chip.ag-done { opacity:.55; text-decoration:line-through; }
+.ag-chip.ag-late { color:var(--danger); }
+.ag-more { font-size:.68rem; color:var(--text-tertiary); padding-left:5px; }
+
+/* Semaine / jour : colonnes plus hautes, événements en liste */
+.ag-grid.ag-cols { grid-template-columns:repeat(7,1fr); }
+.ag-grid.ag-cols.ag-single { grid-template-columns:1fr; }
+.ag-col { border:1px solid var(--border-color); border-radius:var(--radius-md); background:var(--bg-card); min-height:340px; display:flex; flex-direction:column; }
+.ag-col.ag-today { border-color:var(--info); box-shadow:inset 0 0 0 1px var(--info); }
+.ag-col-head { padding:8px; border-bottom:1px solid var(--border-color); text-align:center; }
+.ag-col-head .ag-dow { font-size:.72rem; color:var(--text-tertiary); text-transform:capitalize; }
+.ag-col-head .ag-dnum { font-size:1.1rem; font-weight:600; color:var(--text-primary); font-variant-numeric:tabular-nums; }
+.ag-col.ag-today .ag-dnum { color:var(--info); }
+.ag-col-body { padding:6px; display:flex; flex-direction:column; gap:5px; overflow-y:auto; }
+.ag-event { display:block; text-decoration:none; border:1px solid var(--border-color); border-left:3px solid var(--text-tertiary); border-radius:var(--radius-sm); padding:6px 8px; background:var(--bg-card-hover); color:var(--text-secondary); }
+.ag-event:hover { border-color:var(--info); color:var(--text-primary); }
+.ag-event.ag-k-echeance { border-left-color:var(--warning); }
+.ag-event.ag-k-planifie { border-left-color:var(--info); }
+.ag-event.ag-k-rappel { border-left-color:var(--orange-text); }
+.ag-event.ag-p-haute { border-left-color:var(--danger); }
+.ag-event.ag-done { opacity:.6; }
+.ag-event-title { font-size:.8rem; font-weight:500; color:inherit; }
+.ag-event.ag-done .ag-event-title { text-decoration:line-through; }
+.ag-event-meta { font-size:.68rem; color:var(--text-tertiary); margin-top:2px; display:flex; flex-wrap:wrap; gap:6px; }
+.ag-empty { text-align:center; color:var(--text-tertiary); padding:40px 0; }
+.ag-tag { font-size:.62rem; padding:1px 6px; border-radius:var(--radius-pill); background:var(--bg-card); border:1px solid var(--border-color); color:var(--text-tertiary); text-transform:capitalize; }
+
+/* Panneau jour */
+.ag-day-item { display:flex; gap:10px; align-items:flex-start; padding:10px; border:1px solid var(--border-color); border-left:3px solid var(--text-tertiary); border-radius:var(--radius-md); margin-bottom:8px; background:var(--bg-card-hover); }
+.ag-day-item.ag-k-echeance { border-left-color:var(--warning); }
+.ag-day-item.ag-k-planifie { border-left-color:var(--info); }
+.ag-day-item.ag-k-rappel { border-left-color:var(--orange-text); }
+.ag-day-item.ag-p-haute { border-left-color:var(--danger); }
+.ag-day-item a { color:var(--text-primary); text-decoration:none; font-weight:500; }
+.ag-day-item a:hover { color:var(--info); }
+
+@media (max-width: 768px) {
+    .ag-cell { min-height:72px; padding:4px; }
+    .ag-chip { font-size:.62rem; padding:1px 3px; }
+    .ag-legend { margin-left:0; width:100%; }
+    .ag-grid.ag-cols { grid-template-columns:1fr; }
+    .ag-col { min-height:auto; }
+}
+</style>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+(function () {
+    var MOIS = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+    var JOURS = ['lundi','mardi','mercredi','jeudi','vendredi','samedi','dimanche'];
+    var JOURS_COURTS = ['lun','mar','mer','jeu','ven','sam','dim'];
+    var view = 'month';
+    var cursor = new Date(); cursor.setHours(0,0,0,0);
+    var events = [];
+    var cal = document.getElementById('agCalendar');
+
+    function iso(d) {
+        return d.getFullYear() + '-' + ('0'+(d.getMonth()+1)).slice(-2) + '-' + ('0'+d.getDate()).slice(-2);
+    }
+    function fromISO(s) { var p=s.split('-'); return new Date(+p[0], +p[1]-1, +p[2]); }
+    function addDays(d,n) { var x=new Date(d); x.setDate(x.getDate()+n); return x; }
+    function mondayOf(d) { var x=new Date(d); var wd=(x.getDay()+6)%7; return addDays(x,-wd); }
+    function sameDay(a,b) { return a.getFullYear()===b.getFullYear() && a.getMonth()===b.getMonth() && a.getDate()===b.getDate(); }
+    function esc(s) { return String(s==null?'':s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+    function frDate(d) { return d.getDate() + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear(); }
+
+    function range() {
+        if (view === 'month') {
+            var first = new Date(cursor.getFullYear(), cursor.getMonth(), 1);
+            var last = new Date(cursor.getFullYear(), cursor.getMonth()+1, 0);
+            return { start: mondayOf(first), end: addDays(mondayOf(last), 6) };
+        }
+        if (view === 'week') { var m = mondayOf(cursor); return { start:m, end:addDays(m,6) }; }
+        return { start:new Date(cursor), end:new Date(cursor) };
+    }
+
+    function periodLabel() {
+        if (view === 'month') return MOIS[cursor.getMonth()] + ' ' + cursor.getFullYear();
+        if (view === 'week') { var r=range(); return 'Semaine du ' + frDate(r.start); }
+        return frDate(cursor);
+    }
+
+    function chipClass(e) {
+        var c = 'ag-chip ag-k-' + e.kind;
+        if (e.kind === 'echeance' && e.priority === 'haute') c += ' ag-p-haute';
+        if (e.statut === 'terminee') c += ' ag-done';
+        if (e.retard) c += ' ag-late';
+        return c;
+    }
+    function eventClass(e) {
+        var c = 'ag-event ag-k-' + e.kind;
+        if (e.kind === 'echeance' && e.priority === 'haute') c += ' ag-p-haute';
+        if (e.statut === 'terminee') c += ' ag-done';
+        return c;
+    }
+    function kindLabel(e) {
+        if (e.kind === 'planifie') return 'Planifié';
+        if (e.kind === 'rappel') return 'Rappel';
+        return 'Échéance';
+    }
+    function eventsOn(d) {
+        var s = iso(d);
+        return events.filter(function(e){ return e.date === s; });
+    }
+
+    function render() {
+        document.getElementById('agPeriod').textContent = periodLabel();
+        var r = range();
+        fetch('/api/agenda?start=' + iso(r.start) + '&end=' + iso(r.end), {credentials:'same-origin'})
+            .then(function(x){ return x.json(); })
+            .then(function(data){ events = (data && data.events) || []; draw(r); })
+            .catch(function(){ events = []; draw(r); });
+    }
+
+    function draw(r) {
+        if (view === 'month') drawMonth(r);
+        else drawCols(r);
+        var n = events.length;
+        document.getElementById('agendaSub').textContent = n + ' événement' + (n>1?'s':'') + ' sur la période';
+    }
+
+    function drawMonth(r) {
+        var today = new Date(); today.setHours(0,0,0,0);
+        var html = '<div class="ag-weekdays">' + JOURS_COURTS.map(function(j){ return '<span>'+j+'</span>'; }).join('') + '</div>';
+        html += '<div class="ag-grid">';
+        var d = new Date(r.start);
+        while (d <= r.end) {
+            var out = d.getMonth() !== cursor.getMonth();
+            var cls = 'ag-cell' + (out?' ag-out':'') + (sameDay(d,today)?' ag-today':'');
+            var dayEvents = eventsOn(d);
+            html += '<div class="'+cls+'" data-day="'+iso(d)+'">';
+            html += '<span class="ag-daynum">'+d.getDate()+'</span>';
+            dayEvents.slice(0,3).forEach(function(e){
+                html += '<span class="'+chipClass(e)+'" data-url="'+esc(e.url)+'" title="'+esc(e.title)+'">'+esc(e.title)+'</span>';
+            });
+            if (dayEvents.length > 3) html += '<span class="ag-more">+'+(dayEvents.length-3)+' autre'+(dayEvents.length-3>1?'s':'')+'</span>';
+            html += '</div>';
+            d = addDays(d,1);
+        }
+        html += '</div>';
+        cal.innerHTML = html;
+        cal.querySelectorAll('.ag-cell').forEach(function(cell){
+            cell.addEventListener('click', function(ev){
+                var chip = ev.target.closest('.ag-chip');
+                if (chip && chip.dataset.url) { window.location.href = chip.dataset.url; return; }
+                openDay(fromISO(cell.dataset.day));
+            });
+        });
+    }
+
+    function drawCols(r) {
+        var today = new Date(); today.setHours(0,0,0,0);
+        var single = view === 'day';
+        var html = '<div class="ag-grid ag-cols'+(single?' ag-single':'')+'">';
+        var d = new Date(r.start);
+        while (d <= r.end) {
+            var cls = 'ag-col' + (sameDay(d,today)?' ag-today':'');
+            html += '<div class="'+cls+'">';
+            html += '<div class="ag-col-head"><div class="ag-dow">'+JOURS[(d.getDay()+6)%7]+'</div><div class="ag-dnum">'+d.getDate()+'</div></div>';
+            html += '<div class="ag-col-body">';
+            var dayEvents = eventsOn(d);
+            if (!dayEvents.length) html += '<div class="ag-empty" style="padding:16px 0;font-size:.75rem;">Rien</div>';
+            dayEvents.forEach(function(e){ html += eventCard(e); });
+            html += '</div></div>';
+            d = addDays(d,1);
+        }
+        html += '</div>';
+        cal.innerHTML = html;
+    }
+
+    function eventCard(e) {
+        var meta = '<span class="ag-tag">'+kindLabel(e)+'</span>';
+        if (e.priority) meta += '<span class="ag-tag">'+esc(e.priority)+'</span>';
+        if (e.statut) meta += '<span class="ag-tag">'+esc(e.statut.replace('_',' '))+'</span>';
+        if (e.assigne) meta += '<span><i class="bi bi-person"></i> '+esc(e.assigne)+'</span>';
+        if (e.createur && e.kind === 'echeance') meta += '<span><i class="bi bi-person-badge"></i> par '+esc(e.createur)+'</span>';
+        var href = e.url || '#';
+        return '<a class="'+eventClass(e)+'" href="'+esc(href)+'">'
+            + '<div class="ag-event-title">'+esc(e.title)+'</div>'
+            + '<div class="ag-event-meta">'+meta+'</div></a>';
+    }
+
+    function openDay(d) {
+        var dayEvents = eventsOn(d);
+        document.getElementById('agDayTitle').innerHTML = '<i class="bi bi-calendar2-day me-2" style="color: var(--orange-text)"></i>' + frDate(d);
+        var body = document.getElementById('agDayBody');
+        if (!dayEvents.length) {
+            body.innerHTML = '<p class="ag-empty">Aucun événement ce jour.</p>';
+        } else {
+            body.innerHTML = dayEvents.map(function(e){
+                var meta = '<span class="ag-tag">'+kindLabel(e)+'</span>';
+                if (e.priority) meta += ' <span class="ag-tag">'+esc(e.priority)+'</span>';
+                if (e.statut) meta += ' <span class="ag-tag">'+esc(e.statut.replace('_',' '))+'</span>';
+                if (e.assigne) meta += ' <span class="text-tertiary small"><i class="bi bi-person"></i> '+esc(e.assigne)+'</span>';
+                if (e.createur) meta += ' <span class="text-tertiary small"><i class="bi bi-person-badge"></i> par '+esc(e.createur)+'</span>';
+                if (e.dossier) meta += ' <span class="text-tertiary small"><i class="bi bi-folder"></i> '+esc(e.dossier)+'</span>';
+                var link = e.url ? '<a href="'+esc(e.url)+'">'+esc(e.title)+' <i class="bi bi-box-arrow-up-right small"></i></a>' : '<strong>'+esc(e.title)+'</strong>';
+                var msg = e.message ? '<div class="text-tertiary small mt-1">'+esc(e.message)+'</div>' : '';
+                return '<div class="ag-day-item ag-k-'+e.kind+(e.priority==='haute'?' ag-p-haute':'')+'"><div class="flex-grow-1">'+link+'<div class="mt-1">'+meta+'</div>'+msg+'</div></div>';
+            }).join('');
+        }
+        if (window.bootstrap && bootstrap.Modal) bootstrap.Modal.getOrCreateInstance(document.getElementById('agDayModal')).show();
+    }
+
+    function shift(n) {
+        if (view === 'month') cursor = new Date(cursor.getFullYear(), cursor.getMonth()+n, 1);
+        else if (view === 'week') cursor = addDays(cursor, 7*n);
+        else cursor = addDays(cursor, n);
+        render();
+    }
+
+    document.getElementById('agPrev').addEventListener('click', function(){ shift(-1); });
+    document.getElementById('agNext').addEventListener('click', function(){ shift(1); });
+    document.getElementById('agToday').addEventListener('click', function(){ cursor = new Date(); cursor.setHours(0,0,0,0); render(); });
+    document.querySelectorAll('[data-ag-view]').forEach(function(b){
+        b.addEventListener('click', function(){
+            view = b.dataset.agView;
+            document.querySelectorAll('[data-ag-view]').forEach(function(x){
+                var on = x === b;
+                x.setAttribute('aria-pressed', on ? 'true' : 'false');
+                x.classList.toggle('active', on);
+            });
+            render();
+        });
+    });
+
+    render();
+})();
+</script>
+{% endblock %}

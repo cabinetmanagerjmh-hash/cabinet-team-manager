@@ -33,6 +33,7 @@
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="assignation">Assignations</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="prise_en_charge">Prises en charge</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="completion">Terminées</button>
+            <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="planification">Planifications</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="systeme">Commentaires</button>
         </div>
     </div>
@@ -68,8 +69,8 @@ function updateCounts() {
     document.getElementById('readCount').textContent = allNotifs.filter(n => n.lu).length;
 }
 
-function getIcon(t) { return {assignation:'bi-envelope-paper',prise_en_charge:'bi-gear-wide',completion:'bi-check-circle',systeme:'bi-chat-dots'}[t]||'bi-bell'; }
-function getBadge(t) { return {assignation:'badge-primary',prise_en_charge:'badge-success',completion:'badge-info',systeme:'badge-secondary'}[t]||'badge-secondary'; }
+function getIcon(t) { return {assignation:'bi-envelope-paper',prise_en_charge:'bi-gear-wide',completion:'bi-check-circle',systeme:'bi-chat-dots',planification:'bi-calendar2-check'}[t]||'bi-bell'; }
+function getBadge(t) { return {assignation:'badge-primary',prise_en_charge:'badge-success',completion:'badge-info',systeme:'badge-secondary',planification:'badge-warning'}[t]||'badge-secondary'; }
 
 function renderNotifs() {
     const list = document.getElementById('notificationsList');

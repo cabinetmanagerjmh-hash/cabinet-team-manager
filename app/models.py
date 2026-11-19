@@ -181,6 +181,8 @@ class Tache(db.Model):
     date_creation = db.Column(db.DateTime, default=datetime.utcnow)
     date_prise_en_charge = db.Column(db.DateTime)
     date_completion = db.Column(db.DateTime)
+    # Date à laquelle l'assigné prévoit de traiter la tâche (≠ échéance).
+    date_planifiee = db.Column(db.Date, nullable=True)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

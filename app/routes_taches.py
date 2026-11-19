@@ -150,8 +150,12 @@ def taches():
             # dediee plus bas (pas de doublon).
             assigne_est_manager = bool(manager_equipe and manager_equipe.manager_id == t.assigne_a)
             if not assigne_est_manager:
-                # Créer notification in-app
-                notif_msg = f"Nouvelle tâche assignée : {t.titre}"
+                # Créer notification in-app — mentionne qui a assigné la tâche
+                createur_nom = f'{current_user.prenom} {current_user.nom}'
+                if t.cree_par and t.cree_par != t.assigne_a:
+                    notif_msg = f"Nouvelle tâche assignée par {createur_nom} : {t.titre}"
+                else:
+                    notif_msg = f"Nouvelle tâche : {t.titre}"
                 notif = Notification(user_id=t.assigne_a, tache_id=t.id, message=notif_msg, type_notification='assignation')
                 db.session.add(notif)
                 db.session.commit()
@@ -311,8 +315,9 @@ def modifier_tache(tache_id):
     if assigne_a != ancien_assigne and t.assigne_a and t.assigne_a != current_user.id:
         assigne_est_manager = bool(manager_equipe and manager_equipe.manager_id == t.assigne_a)
         if not assigne_est_manager:
+            assigneur_nom = f'{current_user.prenom} {current_user.nom}'
             db.session.add(Notification(user_id=t.assigne_a, tache_id=t.id,
-                                        message=f"Nouvelle tâche assignée : {t.titre}",
+                                        message=f"Nouvelle tâche assignée par {assigneur_nom} : {t.titre}",
                                         type_notification='assignation'))
             db.session.commit()
             if t.priorite == 'haute':

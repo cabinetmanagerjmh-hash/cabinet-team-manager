@@ -196,6 +196,7 @@ from app import routes  # noqa: F401
 from app import social_routes  # noqa: F401  (pole social : suivi DSN & écritures de paie)
 from app import routes_onboarding  # noqa: F401  (suivi nouveaux dossiers / dossiers partis)
 from app import routes_annuaire  # noqa: F401  (contacts hors cabinet : clients, notaires…)
+from app import routes_agenda  # noqa: F401  (agenda personnel par compte : tâches + rappels)
 from app.models import User, AppSetting, SuggestionTache, Equipe, Notification  # noqa: F401
 
 # ===== CSRF global : tous les POST authentifiés exigent un token. =====

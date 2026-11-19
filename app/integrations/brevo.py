@@ -136,17 +136,22 @@ def send_task_assigned_email_brevo(tache, assignee_id: int) -> bool:
     if not user or not user.email:
         return False
 
-    subject = f"Nouvelle tâche assignée : {tache.titre}"
+    createur = tache.createur if tache.cree_par else None
+    createur_nom = createur.nom_complet() if createur else None
+    par_qui = f' par {createur_nom}' if createur_nom and tache.cree_par != assignee_id else ''
+
+    subject = f"Nouvelle tâche assignée{par_qui} : {tache.titre}"
 
     template = _email_layout(
         header_title="Nouvelle tâche assignée",
         header_emoji="📋",
         intro_html=(
             f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{user.prenom} {user.nom}</strong>,</p>'
-            f'<p style="color:#9a9a9a;font-size:13px;margin:0;">Une nouvelle tâche vous a été assignée :</p>'
+            f'<p style="color:#9a9a9a;font-size:13px;margin:0;">Une nouvelle tâche vous a été assignée{par_qui} :</p>'
         ),
         rows=[
             ('Tâche', tache.titre),
+            ('Assignée par', createur_nom or '—'),
             ('Description', tache.description or '(aucune)'),
             ('Priorité', f'<span style="color:#67AECA;font-weight:bold;">{tache.priorite.capitalize()}</span>'),
             ('Échéance', tache.date_echeance.strftime('%d/%m/%Y') if tache.date_echeance else '—'),
@@ -159,7 +164,7 @@ def send_task_assigned_email_brevo(tache, assignee_id: int) -> bool:
     return send_email_via_brevo_api(
         to_email=user.email,
         subject=subject,
-        body=f"Bonjour {user.prenom} {user.nom}, nouvelle tâche : {tache.titre}. Consultez vos tâches sur {APP_URL}/taches",
+        body=f"Bonjour {user.prenom} {user.nom}, nouvelle tâche{par_qui} : {tache.titre}. Consultez vos tâches sur {APP_URL}/taches",
         html_content=template,
     )
 
@@ -204,6 +209,38 @@ def send_tache_creee_manager_email_brevo(tache, manager_id: int, auteur: str) ->
         subject=subject,
         body=f"Bonjour {manager.prenom}, {auteur} a créé une tâche urgente : {tache.titre}. "
              f"Suivi sur {APP_URL}/taches",
+        html_content=template,
+    )
+
+
+def send_tache_planifiee_email_brevo(tache, dest_user, assigne_nom: str, date_fr: str) -> bool:
+    """Email à l'assigneur quand l'assigné planifie une date de traitement."""
+    if not dest_user or not dest_user.email:
+        return False
+
+    subject = f"Traitement planifié le {date_fr} : {tache.titre}"
+    template = _email_layout(
+        header_title="Traitement planifié",
+        header_emoji="🗓️",
+        intro_html=(
+            f'<p style="color:#e0e0e0;font-size:15px;margin:0 0 4px 0;">Bonjour <strong style="color:#67AECA;">{dest_user.prenom} {dest_user.nom}</strong>,</p>'
+            f'<p style="color:#9a9a9a;font-size:13px;margin:0;"><strong style="color:#67AECA;">{assigne_nom}</strong> a planifié de traiter la tâche que vous lui avez assignée :</p>'
+        ),
+        rows=[
+            ('Tâche', tache.titre),
+            ('Date planifiée', f'<span style="color:#67AECA;font-weight:bold;">{date_fr}</span>'),
+            ('Échéance', tache.date_echeance.strftime('%d/%m/%Y') if tache.date_echeance else '—'),
+        ],
+        cta_url=f'{APP_URL}/vue_tache/{tache.id}',
+        cta_text='Voir la tâche',
+        footer_note="La date planifiée est un engagement de traitement, distinct de l'échéance.",
+    )
+
+    return send_email_via_brevo_api(
+        to_email=dest_user.email,
+        subject=subject,
+        body=f"Bonjour {dest_user.prenom}, {assigne_nom} a planifié de traiter \"{tache.titre}\" le {date_fr}. "
+             f"Détail sur {APP_URL}/vue_tache/{tache.id}",
         html_content=template,
     )
 

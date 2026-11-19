@@ -11,7 +11,9 @@
                         <p class="text-tertiary small mb-0">
                             {% if tache.dossier %}<i class="bi bi-folder me-1"></i>{{ tache.dossier.numero_dossier }} • {% endif %}
                             <i class="bi bi-person me-1"></i>{{ tache.assigne.prenom }} {{ tache.assigne.nom }}
+                            {% if tache.createur and tache.cree_par != tache.assigne_a %} • <i class="bi bi-person-badge me-1"></i>Assignée par {{ tache.createur.prenom }} {{ tache.createur.nom }}{% endif %}
                             {% if tache.date_echeance %} • <i class="bi bi-calendar3 me-1"></i>{{ tache.date_echeance.strftime('%d/%m/%Y') }}{% endif %}
+                            {% if tache.date_planifiee %} • <i class="bi bi-calendar2-check me-1"></i>Planifié le {{ tache.date_planifiee.strftime('%d/%m/%Y') }}{% endif %}
                         </p>
                     </div>
                     <div class="d-flex gap-2">
@@ -23,6 +25,20 @@
                 <div class="p-3 rounded mb-3" style="background:var(--bg-card-hover);">
                     <p class="mb-0" style="white-space:pre-wrap;">{{ tache.description }}</p>
                 </div>
+                {% endif %}
+                {% if (current_user.id == tache.assigne_a or current_user.role in ('admin', 'manager')) and tache.statut != 'terminee' %}
+                <form method="POST" action="{{ url_for('planifier_tache', tache_id=tache.id) }}" class="d-flex flex-wrap align-items-end gap-2 p-3 rounded mb-3" style="background:var(--bg-card-hover);">
+                    <input type="hidden" name="redirect_to" value="vue">
+                    <div>
+                        <label class="form-label-premium mb-1"><i class="bi bi-calendar2-check me-1"></i>Je traiterai cette tâche le</label>
+                        <input type="date" name="date_planifiee" class="input-premium" value="{{ tache.date_planifiee.strftime('%Y-%m-%d') if tache.date_planifiee else '' }}">
+                    </div>
+                    <button type="submit" class="btn-premium btn-premium-primary btn-press btn-sm">Planifier</button>
+                    {% if tache.date_planifiee %}
+                    <button type="submit" class="btn-premium btn-premium-outline btn-sm" onclick="this.form.querySelector('[name=date_planifiee]').value='';">Retirer</button>
+                    {% endif %}
+                    <span class="text-tertiary small ms-auto">L'assigneur sera informé de la date.</span>
+                </form>
                 {% endif %}
                 <a href="{{ url_for('taches') }}" class="btn-premium btn-premium-outline btn-sm">&larr; Retour</a>
             </div>

@@ -31,18 +31,9 @@ def upgrade():
     with op.batch_alter_table('app_settings', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_app_settings_cle'), ['cle'], unique=True)
 
-    op.create_table('equipes',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('nom', sa.String(length=120), nullable=False),
-    sa.Column('description', sa.Text(), nullable=True),
-    sa.Column('couleur', sa.String(length=20), nullable=True),
-    sa.Column('icon', sa.String(length=50), nullable=True),
-    sa.Column('manager_id', sa.Integer(), nullable=True),
-    sa.Column('date_creation', sa.DateTime(), nullable=True),
-    sa.Column('equipe_email', sa.String(length=200), nullable=True),
-    sa.ForeignKeyConstraint(['manager_id'], ['users.id'], ),
-    sa.PrimaryKeyConstraint('id')
-    )
+    # Cycle users.equipe_id <-> equipes.manager_id : Postgres refuse une FK
+    # inline vers une table pas encore creee (SQLite tolerait). On cree users
+    # sans sa FK, puis equipes, puis la FK users.equipe_id en dernier.
     op.create_table('users',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=120), nullable=False),
@@ -60,11 +51,25 @@ def upgrade():
     sa.Column('actif', sa.Boolean(), nullable=True),
     sa.Column('date_arrivee', sa.Date(), nullable=True),
     sa.Column('date_creation', sa.DateTime(), nullable=True),
-    sa.ForeignKeyConstraint(['equipe_id'], ['equipes.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.create_index(batch_op.f('ix_users_email'), ['email'], unique=True)
+
+    op.create_table('equipes',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('nom', sa.String(length=120), nullable=False),
+    sa.Column('description', sa.Text(), nullable=True),
+    sa.Column('couleur', sa.String(length=20), nullable=True),
+    sa.Column('icon', sa.String(length=50), nullable=True),
+    sa.Column('manager_id', sa.Integer(), nullable=True),
+    sa.Column('date_creation', sa.DateTime(), nullable=True),
+    sa.Column('equipe_email', sa.String(length=200), nullable=True),
+    sa.ForeignKeyConstraint(['manager_id'], ['users.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
+    with op.batch_alter_table('users', schema=None) as batch_op:
+        batch_op.create_foreign_key('users_equipe_id_fkey', 'equipes', ['equipe_id'], ['id'])
 
     op.create_table('dossiers',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -300,11 +305,11 @@ def downgrade():
         batch_op.drop_index(batch_op.f('ix_dossiers_numero_dossier'))
 
     op.drop_table('dossiers')
+    op.drop_table('equipes')
     with op.batch_alter_table('users', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_users_email'))
 
     op.drop_table('users')
-    op.drop_table('equipes')
     with op.batch_alter_table('app_settings', schema=None) as batch_op:
         batch_op.drop_index(batch_op.f('ix_app_settings_cle'))
 

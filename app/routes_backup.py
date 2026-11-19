@@ -7,8 +7,9 @@ nouveau projet Neon, changer DATABASE_URL sur Render, puis reimporter ici.
 - Export  : dump DATA-ONLY via l'inspector (couvre toutes les tables, y compris
   celles creees en SQL brut). Pas de schema : release_migrate.py le recree au
   demarrage sur la nouvelle base. alembic_version exclu.
-- Import  : troncature de toutes les tables (ordre inverse des FKs) puis
-  reinsertion dans UNE transaction. Confirmation tapee « RESTAURER » exigee.
+- Import  : Postgres -> FK internes retirees puis recreees a l'identique dans la
+  meme transaction (le cycle users/equipes interdit tout ordre DELETE/INSERT) ;
+  SQLite -> suppression en ordre inverse des FKs. Confirmation « RESTAURER ».
 - Limite d'upload : relevee le temps de la requete d'import (le dump contient
   les photos en binaire et peut depasser MAX_CONTENT_LENGTH global de 16 Mo).
 """
@@ -194,9 +195,28 @@ def _executer_import(contenu_sql):
     stmts = _splitter_statements(contenu_sql)
     lignes_inseres = 0
     with db.engine.begin() as conn:
-        # Troncature : ordre inverse des FKs (les tables qui referencent d'abord).
-        for t in reversed(ordre):
-            conn.execute(db.text(f'DELETE FROM "{t}"'))
+        fk_defs = []
+        if dialect == 'postgresql':
+            # Le schema contient un cycle (users.equipe_id <-> equipes.manager_id)
+            # et une auto-FK (taches.template_id) : aucun ordre DELETE/INSERT ne
+            # satisfait les FK immediates de Postgres, et le dump peut inserer
+            # equipes avant users. On retire toutes les FK internes le temps de
+            # l'import puis on les recree a l'identique — dans LA MEME transaction :
+            # le moindre echec restaure aussi les contraintes (rollback).
+            insp = db.inspect(db.engine)
+            for t in tables:
+                for fk in insp.get_foreign_keys(t):
+                    rt = fk.get('referred_table')
+                    if rt and rt in tables and fk.get('name'):
+                        fk_defs.append((t, fk))
+            for t, fk in fk_defs:
+                conn.execute(db.text(f'ALTER TABLE "{t}" DROP CONSTRAINT "{fk["name"]}"'))
+            for t in tables:
+                conn.execute(db.text(f'DELETE FROM "{t}"'))
+        else:
+            # SQLite : FK non appliquees par defaut, l'ordre inverse suffit.
+            for t in reversed(ordre):
+                conn.execute(db.text(f'DELETE FROM "{t}"'))
         for s in stmts:
             haut = s.lstrip().upper()
             if dialect == 'sqlite' and haut.startswith('SELECT SETVAL'):
@@ -208,8 +228,15 @@ def _executer_import(contenu_sql):
             res = conn.execute(db.text(s))
             if haut.startswith('INSERT') and res.rowcount and res.rowcount > 0:
                 lignes_inseres += res.rowcount
-        # Postgres : resynchronise les sequences sur le MAX reel des donnees.
         if dialect == 'postgresql':
+            for t, fk in fk_defs:
+                cols = ', '.join(f'"{c}"' for c in fk['constrained_columns'])
+                rcols = ', '.join(f'"{c}"' for c in fk['referred_columns'])
+                conn.execute(db.text(
+                    f'ALTER TABLE "{t}" ADD CONSTRAINT "{fk["name"]}" '
+                    f'FOREIGN KEY ({cols}) REFERENCES "{fk["referred_table"]}" ({rcols})'
+                ))
+            # Resynchronise les sequences sur le MAX reel des donnees.
             for t in tables:
                 for c in db.inspect(db.engine).get_columns(t):
                     if 'nextval' in str(c.get('default') or '') and isinstance(c['type'], sqltypes.Integer):

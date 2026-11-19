@@ -203,7 +203,7 @@ def _executer_import(contenu_sql):
         url = db.engine.url.render_as_string(hide_password=False)
         if '-pooler.' in url:
             from sqlalchemy import create_engine
-            engine = create_engine(url.replace('-pooler.', '.', 1))
+            engine = create_engine(url.replace('-pooler.', '.', 1), pool_pre_ping=True)
     with engine.begin() as conn:
         fk_defs = []
         if dialect == 'postgresql':
@@ -227,6 +227,13 @@ def _executer_import(contenu_sql):
             # SQLite : FK non appliquees par defaut, l'ordre inverse suffit.
             for t in reversed(ordre):
                 conn.execute(db.text(f'DELETE FROM "{t}"'))
+        # Curseur DBAPI brut : db.text() interpreterait les « :mot » presentes
+        # dans les valeurs (horodatages « 12:34:56 », ids « :1791735244 ») comme
+        # des parametres lies, et exec_driver_sql transmet un dict vide que
+        # psycopg2 rejette. Le curseur natif execute l'instruction telle quelle,
+        # sans parsing ni parametres, sur LA MEME connexion/transaction.
+        raw = conn.connection.dbapi_connection
+        cur = raw.cursor()
         for s in stmts:
             haut = s.lstrip().upper()
             if dialect == 'sqlite' and haut.startswith('SELECT SETVAL'):
@@ -235,9 +242,10 @@ def _executer_import(contenu_sql):
                 s = re.sub(r"decode\('([0-9A-Fa-f]*)','hex'\)", r"X'\1'", s)
             elif dialect == 'postgresql':
                 s = re.sub(r"X'([0-9A-Fa-f]*)'", r"decode('\1','hex')", s)
-            res = conn.execute(db.text(s))
-            if haut.startswith('INSERT') and res.rowcount and res.rowcount > 0:
-                lignes_inseres += res.rowcount
+            cur.execute(s)
+            if haut.startswith('INSERT') and cur.rowcount and cur.rowcount > 0:
+                lignes_inseres += cur.rowcount
+        cur.close()
         if dialect == 'postgresql':
             for t, fk in fk_defs:
                 cols = ', '.join(f'"{c}"' for c in fk['constrained_columns'])
@@ -246,14 +254,19 @@ def _executer_import(contenu_sql):
                     f'ALTER TABLE "{t}" ADD CONSTRAINT "{fk["name"]}" '
                     f'FOREIGN KEY ({cols}) REFERENCES "{fk["referred_table"]}" ({rcols})'
                 ))
-            # Resynchronise les sequences sur le MAX reel des donnees.
+    # Donnees + FK committees. La resynchronisation des sequences est une phase
+    # SEPAREE (transaction courte) : si la connexion SSL tombe pendant les longs
+    # INSERT, les donnees sont deja sauvees et la resync se rejoue seule sans
+    # tout rollback.
+    if dialect == 'postgresql':
+        with engine.begin() as conn2:
             for t in tables:
                 for c in db.inspect(engine).get_columns(t):
                     if 'nextval' in str(c.get('default') or '') and isinstance(c['type'], sqltypes.Integer):
-                        mx = conn.execute(
+                        mx = conn2.execute(
                             db.text(f'SELECT COALESCE(MAX("{c["name"]}"), 0) FROM "{t}"')
                         ).scalar() or 0
-                        conn.execute(
+                        conn2.execute(
                             db.text('SELECT setval(pg_get_serial_sequence(:tbl, :col), :mx, :appel)'),
                             {'tbl': t, 'col': c['name'],
                              'mx': mx if mx else 1, 'appel': bool(mx)},

@@ -194,7 +194,17 @@ def _executer_import(contenu_sql):
     ordre = _ordre_topologique(tables, fks)
     stmts = _splitter_statements(contenu_sql)
     lignes_inseres = 0
-    with db.engine.begin() as conn:
+    engine = db.engine
+    if dialect == 'postgresql':
+        # Le pooler Neon (pgbouncer, mode transaction) coupe les longues
+        # transactions bulk DDL+DML (« SSL connection closed unexpectedly »).
+        # L'import passe par l'endpoint DIRECT (hote sans « -pooler »), prevu
+        # pour les migrations et chargements massifs.
+        url = db.engine.url.render_as_string(hide_password=False)
+        if '-pooler.' in url:
+            from sqlalchemy import create_engine
+            engine = create_engine(url.replace('-pooler.', '.', 1))
+    with engine.begin() as conn:
         fk_defs = []
         if dialect == 'postgresql':
             # Le schema contient un cycle (users.equipe_id <-> equipes.manager_id)
@@ -203,7 +213,7 @@ def _executer_import(contenu_sql):
             # equipes avant users. On retire toutes les FK internes le temps de
             # l'import puis on les recree a l'identique — dans LA MEME transaction :
             # le moindre echec restaure aussi les contraintes (rollback).
-            insp = db.inspect(db.engine)
+            insp = db.inspect(engine)
             for t in tables:
                 for fk in insp.get_foreign_keys(t):
                     rt = fk.get('referred_table')
@@ -238,7 +248,7 @@ def _executer_import(contenu_sql):
                 ))
             # Resynchronise les sequences sur le MAX reel des donnees.
             for t in tables:
-                for c in db.inspect(db.engine).get_columns(t):
+                for c in db.inspect(engine).get_columns(t):
                     if 'nextval' in str(c.get('default') or '') and isinstance(c['type'], sqltypes.Integer):
                         mx = conn.execute(
                             db.text(f'SELECT COALESCE(MAX("{c["name"]}"), 0) FROM "{t}"')
@@ -248,6 +258,8 @@ def _executer_import(contenu_sql):
                             {'tbl': t, 'col': c['name'],
                              'mx': mx if mx else 1, 'appel': bool(mx)},
                         )
+    if engine is not db.engine:
+        engine.dispose()
     return {'tables': len(tables), 'lignes': lignes_inseres}
 
 

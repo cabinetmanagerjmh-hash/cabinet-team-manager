@@ -52,7 +52,8 @@ class LLMProvider(ABC):
         pass
 
     @abstractmethod
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         pass
 
 
@@ -73,12 +74,13 @@ class OpenRouterProvider(LLMProvider):
         from .openrouter import OpenRouterClient
         return OpenRouterClient(api_key=self.api_key).is_configured()
 
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         if not self.is_configured():
             return None
         from .openrouter import OpenRouterClient
         client = OpenRouterClient(api_key=self.api_key, model=model or self.model)
-        return client.chat(messages)
+        return client.chat(messages, timeout=timeout)
 
 
 class NVIDIAProvider(LLMProvider):
@@ -95,7 +97,8 @@ class NVIDIAProvider(LLMProvider):
     def is_configured(self) -> bool:
         return bool(self.api_key)
 
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         if not self.is_configured():
             return None
         headers = {
@@ -109,7 +112,8 @@ class NVIDIAProvider(LLMProvider):
             'temperature': 0.2,
         }
         try:
-            resp = requests.post(self.URL, headers=headers, json=payload, timeout=25)
+            resp = requests.post(self.URL, headers=headers, json=payload,
+                                 timeout=timeout or 25)
         except Exception as exc:
             logger.error('NVIDIA: requête échouée (%s): %s', type(exc).__name__, exc)
             return None
@@ -146,7 +150,8 @@ class GroqProvider(LLMProvider):
     def is_configured(self) -> bool:
         return bool(self.api_key)
 
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         if not self.is_configured():
             return None
         headers = {
@@ -160,7 +165,8 @@ class GroqProvider(LLMProvider):
             'temperature': 0.2,
         }
         try:
-            resp = requests.post(self.URL, headers=headers, json=payload, timeout=25)
+            resp = requests.post(self.URL, headers=headers, json=payload,
+                                 timeout=timeout or 25)
         except Exception as exc:
             logger.error('Groq: requête échouée (%s): %s', type(exc).__name__, exc)
             return None
@@ -196,7 +202,8 @@ class GeminiProvider(LLMProvider):
     def is_configured(self) -> bool:
         return bool(self.api_key)
 
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         if not self.is_configured():
             return None
         url = self.BASE_URL.format(model=model or self.model)
@@ -208,7 +215,8 @@ class GeminiProvider(LLMProvider):
         payload: Dict[str, Any] = {'contents': contents}
         params = {'key': self.api_key}
         try:
-            resp = requests.post(url, params=params, json=payload, timeout=25)
+            resp = requests.post(url, params=params, json=payload,
+                                 timeout=timeout or 25)
         except Exception as exc:
             logger.error('Gemini: requête échouée (%s): %s', type(exc).__name__, exc)
             return None
@@ -292,7 +300,8 @@ class LLMManager:
 
     def chat(self, messages: List[Dict[str, str]],
              model: Optional[str] = None,
-             prefer: Optional[str] = None) -> Optional[str]:
+             prefer: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         """Essaye le provider demandé (ou le primaire), puis OpenRouter en fallback.
         Retourne le texte de réponse ou None si tous les providers échouent."""
         candidates: List[LLMProvider] = []
@@ -308,7 +317,7 @@ class LLMManager:
             if not prov.is_configured():
                 continue
             try:
-                reponse = prov.chat(messages, model=model)
+                reponse = prov.chat(messages, model=model, timeout=timeout)
             except Exception as exc:
                 dernier_erreur = f'{prov.name()}: exception ({type(exc).__name__})'
                 logger.error('LLM %s exception: %s', prov.name(), exc)

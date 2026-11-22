@@ -34,6 +34,7 @@
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="prise_en_charge">Prises en charge</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="completion">Terminées</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="planification">Planifications</button>
+            <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="pennylane">Synchro Pennylane</button>
             <button class="btn-premium btn-premium-secondary btn-sm filter-btn" data-filter="systeme">Commentaires</button>
         </div>
     </div>
@@ -69,8 +70,8 @@ function updateCounts() {
     document.getElementById('readCount').textContent = allNotifs.filter(n => n.lu).length;
 }
 
-function getIcon(t) { return {assignation:'bi-envelope-paper',prise_en_charge:'bi-gear-wide',completion:'bi-check-circle',systeme:'bi-chat-dots',planification:'bi-calendar2-check'}[t]||'bi-bell'; }
-function getBadge(t) { return {assignation:'badge-primary',prise_en_charge:'badge-success',completion:'badge-info',systeme:'badge-secondary',planification:'badge-warning'}[t]||'badge-secondary'; }
+function getIcon(t) { return {assignation:'bi-envelope-paper',prise_en_charge:'bi-gear-wide',completion:'bi-check-circle',systeme:'bi-chat-dots',planification:'bi-calendar2-check',pennylane:'bi-arrow-repeat'}[t]||'bi-bell'; }
+function getBadge(t) { return {assignation:'badge-primary',prise_en_charge:'badge-success',completion:'badge-info',systeme:'badge-secondary',planification:'badge-warning',pennylane:'badge-tertiary'}[t]||'badge-secondary'; }
 
 function renderNotifs() {
     const list = document.getElementById('notificationsList');
@@ -78,20 +79,24 @@ function renderNotifs() {
     let filtered = currentFilter === 'all' ? allNotifs : allNotifs.filter(n => n.type === currentFilter);
     if (filtered.length === 0) { list.style.display = 'none'; empty.style.display = 'block'; return; }
     list.style.display = 'block'; empty.style.display = 'none';
-    list.innerHTML = filtered.map(n => `
+    list.innerHTML = filtered.map(n => {
+        const astro = (n.message || '').indexOf('ASTRO · ') === 0;
+        const texte = astro ? n.message.slice(8) : n.message;
+        const badgeAstro = astro ? '<span class="badge badge-primary me-2">ASTRO</span>' : '';
+        return `
         <div class="card-premium mb-2 notif-item ${n.lu?'':'border-start border-3 border-warning'}" data-id="${n.id}" onclick="${n.lu?'':'fetch(\'/api/notifications/'+n.id+'/read\',{method:\'POST\'}).then(()=>{location.reload()})'}">
             <div class="card-body-premium d-flex align-items-start gap-3 py-2">
                 <div class="flex-shrink-0"><i class="bi ${getIcon(n.type)}" style="font-size:20px;color:${n.lu?'var(--text-tertiary)':'var(--orange-primary)'};"></i></div>
                 <div class="flex-grow-1 min-w-0">
                     <div class="d-flex justify-content-between gap-2">
-                        <div><span class="badge ${getBadge(n.type)} me-2">${n.type.replace('_',' ')}</span><span class="${n.lu?'':'fw-bold'}">${n.message}</span></div>
+                        <div>${badgeAstro}<span class="badge ${getBadge(n.type)} me-2">${n.type.replace('_',' ')}</span><span class="${n.lu?'':'fw-bold'}">${texte}</span></div>
                         <small class="text-tertiary flex-shrink-0">${n.date}</small>
                     </div>
                     ${n.tache_id ? `<a href="/vue_tache/${n.tache_id}" class="small text-tertiary mt-1 d-inline-block">Voir la tâche →</a>` : ''}
                 </div>
             </div>
-        </div>
-    `).join('');
+        </div>`;
+    }).join('');
 }
 
 document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', function() {

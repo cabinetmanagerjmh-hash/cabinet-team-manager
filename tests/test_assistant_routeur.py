@@ -36,7 +36,7 @@ def test_question_libre_passe_par_le_llm(flask_app, seed, monkeypatch):
     appels = []
     monkeypatch.setattr('app.integrations.openrouter.OpenRouterClient.is_configured', lambda self: True)
     monkeypatch.setattr('app.integrations.openrouter.OpenRouterClient.chat',
-                        lambda self, messages: appels.append(messages) or 'Réponse du modèle')
+                        lambda self, messages, model=None, timeout=None: appels.append(messages) or 'Réponse du modèle')
     c = flask_app.test_client()
     email, pwd = seed['membre']
     c.post('/login', data={'email': email, 'password': pwd})

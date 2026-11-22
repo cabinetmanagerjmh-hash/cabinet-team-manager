@@ -423,7 +423,7 @@ def appliquer_statut_assistant(user, data):
     t = db.session.get(Tache, data['tache_id'])
     nouveau = data['statut']
     t.statut = nouveau
-    t.statut_source = 'manuel' if nouveau == 'terminee' else None
+    t.statut_source = 'manuel'
     if nouveau == 'terminee':
         t.date_completion = datetime.utcnow()
         if not t.date_prise_en_charge:

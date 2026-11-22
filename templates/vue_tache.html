@@ -13,12 +13,19 @@
                             <i class="bi bi-person me-1"></i>{{ tache.assigne.prenom }} {{ tache.assigne.nom }}
                             {% if tache.createur and tache.cree_par != tache.assigne_a %} • <i class="bi bi-person-badge me-1"></i>Assignée par {{ tache.createur.prenom }} {{ tache.createur.nom }}{% endif %}
                             {% if tache.date_echeance %} • <i class="bi bi-calendar3 me-1"></i>{{ tache.date_echeance.strftime('%d/%m/%Y') }}{% endif %}
+                            {% if tache.statut in ('terminee', 'terminée') and tache.date_completion %} • <i class="bi bi-check2-circle me-1"></i>Terminée le {{ tache.date_completion.strftime('%d/%m/%Y à %H:%M') }}{% endif %}
                             {% if tache.date_planifiee %} • <i class="bi bi-calendar2-check me-1"></i>Planifié le {{ tache.date_planifiee.strftime('%d/%m/%Y') }}{% endif %}
                         </p>
                     </div>
                     <div class="d-flex gap-2">
                         <span class="task-priority priority-{{ tache.priorite }}">{{ tache.priorite|capitalize }}</span>
                         <span class="task-status status-{{ tache.statut }}">{% if tache.statut == 'a_faire' %}À faire{% elif tache.statut == 'en_cours' %}En cours{% else %}Terminée{% endif %}</span>
+                        {% if tache.statut_source == 'manuel' %}
+                        <span class="badge badge-success" title="Statut modifié manuellement"><i class="bi bi-hand-index-thumb"></i> Manuel</span>
+                        {% elif tache.statut_source in ('auto_checklist', 'auto_pennylane') %}
+                        {% set source_label = 'Checklist' if tache.statut_source == 'auto_checklist' else 'Pennylane' %}
+                        <span class="badge badge-tertiary" title="Statut modifié automatiquement via {{ source_label }}"><i class="bi bi-lightning-charge"></i> {{ source_label }}</span>
+                        {% endif %}
                     </div>
                 </div>
                 {% if tache.description %}

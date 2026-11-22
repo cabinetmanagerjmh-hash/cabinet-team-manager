@@ -104,7 +104,7 @@ def checklist_pl_sync_dossier(dossier_id):
 
     from app.integrations.pennylane_web import (fetch_vat_forms, _vat_taxe_for,
                                                 _extract_period, _save_last_sync,
-                                                FILED_STATUSES)
+                                                FILED_STATUSES, ACCEPTED_STATUSES)
     from app.models import ChecklistEntry, TvaStatutPennylane
     from datetime import date as _date, datetime as _dt
 
@@ -176,14 +176,14 @@ def checklist_pl_sync_dossier(dossier_id):
     db.session.commit()
     msg = (f"{d.numero_dossier} : {statuts} statut(s) Pennylane enregistré(s), "
            f"{synced} case(s) cochée(s), {forces_annules} forçage(s) manuel(s) annulé(s).")
-    # LIAISON Pennylane -> taches : les cases cochees par la synchro terminent
-    # les taches deadline correspondantes (ex. aout declare dans PL -> "Dépôt TVA
-    # mensuel" termine).
+    # LIAISON Pennylane -> taches : déclaration en cours = tâche en cours,
+    # déclaration acceptée = tâche terminée.
     try:
         from .checklist_link import appliquer_case_a_taches as _lk
         n_lk = 0
         for vr in res['vat_returns']:
-            if (vr.get('status') or '').lower() not in FILED_STATUSES:
+            st = (vr.get('status') or '').lower()
+            if st not in FILED_STATUSES:
                 continue
             per = _extract_period(vr)
             if not per:
@@ -191,10 +191,12 @@ def checklist_pl_sync_dossier(dossier_id):
             y, mo = per
             if taxe == 'tva_trimestriel':
                 mo = ((mo - 1) // 3) * 3 + 1
-            n_lk += _lk(d.id, taxe, y, mo, 'depot', True, source='auto_pennylane', email=False)
+            n_lk += _lk(d.id, taxe, y, mo, 'depot', True,
+                        source='auto_pennylane', email=False,
+                        accepte=(st in ACCEPTED_STATUSES))
         if n_lk:
             db.session.commit()
-            msg += f" {n_lk} tâche(s) deadline auto-terminée(s)."
+            msg += f" {n_lk} tâche(s) deadline mise(s) à jour."
     except Exception as _lk_e:
         db.session.rollback()
         app.logger.warning(f"Liaison sync->taches {d.numero_dossier}: {_lk_e}")
@@ -847,7 +849,8 @@ def pennylane_check(dossier_id):
     # --- SYNC TVA du dossier : déclenche checklist + notifications ---
     tva_info = None
     try:
-        from .integrations.pennylane_web import fetch_vat_forms, _vat_taxe_for, _extract_period, FILED_STATUSES
+        from .integrations.pennylane_web import (fetch_vat_forms, _vat_taxe_for, _extract_period,
+                                                  FILED_STATUSES, ACCEPTED_STATUSES)
         from app.models import ChecklistEntry, TvaStatutPennylane
         from datetime import date as _date, datetime as _dt
 
@@ -906,7 +909,9 @@ def pennylane_check(dossier_id):
                     synced += 1
                     try:
                         from .checklist_link import appliquer_case_a_taches as _lk
-                        _lk(dossier.id, taxe, y, mo, 'depot', True, source='auto_pennylane', email=False)
+                        _lk(dossier.id, taxe, y, mo, 'depot', True,
+                            source='auto_pennylane', email=False,
+                            accepte=(st in ACCEPTED_STATUSES))
                     except Exception:
                         pass
                 db.session.commit()
@@ -940,7 +945,7 @@ def pennylane_tva_sync_selected():
         return jsonify({'ok': False, 'message': 'Accès réservé aux admins/managers.'}), 403
     from app.integrations.pennylane_web import (has_web_session, fetch_vat_forms,
                                                 _vat_taxe_for, _extract_period,
-                                                FILED_STATUSES)
+                                                FILED_STATUSES, ACCEPTED_STATUSES)
     from app.models import ChecklistEntry, TvaStatutPennylane, Dossier
     if not has_web_session():
         return jsonify({'ok': False, 'message': 'Session web Pennylane non configurée.'}), 400
@@ -1039,7 +1044,9 @@ def pennylane_tva_sync_selected():
             d_synced += 1
             try:
                 from .checklist_link import appliquer_case_a_taches as _lk
-                _lk(d.id, taxe, y, mo, 'depot', True, source='auto_pennylane', email=False)
+                _lk(d.id, taxe, y, mo, 'depot', True,
+                    source='auto_pennylane', email=False,
+                    accepte=(st in ACCEPTED_STATUSES))
             except Exception:
                 pass
         db.session.commit()

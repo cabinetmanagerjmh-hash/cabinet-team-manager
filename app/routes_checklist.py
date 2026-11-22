@@ -430,8 +430,8 @@ def checklist_toggle():
     e.updated_by_id = current_user.id
     e.date_modif = datetime.utcnow()
     db.session.commit()
-    # LIAISON checklist -> taches : cocher la case termine la tache deadline
-    # de la meme periode, la decocher la remet a faire.
+    # LIAISON checklist -> taches : déclarée = en cours, soldée = terminée,
+    # case vidée = à faire.
     try:
         from .checklist_link import appliquer_case_a_taches
         if appliquer_case_a_taches(dossier_id, taxe, annee, mois, kind, declare or paye, paye,
@@ -452,13 +452,21 @@ def checklist_relink_all():
     Utile apres deploiement de la liaison ou pour resynchroniser manuellement."""
     if current_user.role not in ('admin', 'manager'):
         return jsonify({'ok': False, 'error': 'Accès refusé.'}), 403
-    from .models import ChecklistEntry
+    from .models import ChecklistEntry, TvaStatutPennylane
     from .checklist_link import appliquer_case_a_taches
+    from .integrations.pennylane_web import ACCEPTED_STATUSES
     n = 0
     for e in ChecklistEntry.query.all():
+        accepte = False
+        source = 'auto_checklist'
+        if e.source == 'pennylane' and e.taxe in ('tva_mensuel', 'tva_trimestriel'):
+            source = 'auto_pennylane'
+            st = TvaStatutPennylane.query.filter_by(
+                dossier_id=e.dossier_id, annee=e.annee, mois=e.mois).first()
+            accepte = bool(st and (st.statut or '').lower() in ACCEPTED_STATUSES)
         n += appliquer_case_a_taches(e.dossier_id, e.taxe, e.annee, e.mois, e.kind,
                                      bool(e.declare or e.paye), bool(e.paye),
-                                     email=False)
+                                     source=source, email=False, accepte=accepte)
     db.session.commit()
     app.logger.info(f"checklist_relink_all: {n} tache(s) ajustee(s) par {current_user.email}")
     return jsonify({'ok': True, 'taches_ajustees': n})

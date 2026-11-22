@@ -43,7 +43,7 @@ def llm(monkeypatch):
     """Simule OpenRouter : configuré, réponse et prompts capturés."""
     captured = {'messages': [], 'reply': 'Bonjour.'}
 
-    def fake_chat(self, messages, model=None):
+    def fake_chat(self, messages, model=None, timeout=None):
         captured['messages'].append(messages)
         return captured['reply']
 

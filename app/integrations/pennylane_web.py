@@ -34,11 +34,13 @@ _pl_session_loaded = False
 
 COOKIE_KEY = 'PENNYLANE_WEB_COOKIES'
 
-# Statuts Pennylane considérés comme "déclarée / terminée"
-# NB : 'ongoing' = envoyée mais pas encore acceptée -> la déclaration EST partie.
-FILED_STATUSES = {'filed', 'sent', 'paid', 'partially_paid', 'completed', 'done',
-                  'validated', 'accepted', 'accepted_and_paid', 'transmitted',
-                  'accounted', 'teletedeclaree', 'ongoing'}
+# Déclaration transmise mais pas encore acceptée : la tâche deadline est en cours.
+EN_COURS_STATUSES = {'ongoing', 'in_progress', 'filed', 'sent', 'transmitted',
+                     'teletedeclaree'}
+# Déclaration acceptée (ou soldée) : la tâche deadline est terminée.
+ACCEPTED_STATUSES = {'paid', 'partially_paid', 'completed', 'done', 'validated',
+                     'accepted', 'accepted_and_paid', 'accounted'}
+FILED_STATUSES = EN_COURS_STATUSES | ACCEPTED_STATUSES
 # Statuts "en retard" selon Pennylane
 LATE_STATUSES = {'late', 'late_to_do', 'overdue', 'en_retard', 'retard'}
 # Statut brut -> libellé FR
@@ -728,11 +730,14 @@ def sync_checklist_tva() -> dict:
             e.pl_mode = True
             e.source = 'pennylane'
             synced += 1
-            # LIAISON sync -> taches : la tache deadline de la periode declaree
-            # dans Pennylane est auto-terminee (ex. aout -> "Dépôt TVA mensuel").
+            # LIAISON sync -> taches : déclaration en cours = tâche en cours ;
+            # déclaration acceptée = tâche terminée.
             try:
                 from ..checklist_link import appliquer_case_a_taches
-                t_lk = appliquer_case_a_taches(d.id, taxe, y, mo, 'depot', True, source='auto_pennylane', email=False)
+                t_lk = appliquer_case_a_taches(
+                    d.id, taxe, y, mo, 'depot', True,
+                    source='auto_pennylane', email=False,
+                    accepte=(st in ACCEPTED_STATUSES))
                 if t_lk:
                     taches_liees += t_lk
             except Exception as _lk_e:

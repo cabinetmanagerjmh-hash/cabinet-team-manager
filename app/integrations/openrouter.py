@@ -39,7 +39,8 @@ class OpenRouterClient:
     def is_configured(self) -> bool:
         return bool(self.api_key)
 
-    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None) -> Optional[str]:
+    def chat(self, messages: List[Dict[str, str]], model: Optional[str] = None,
+             timeout: Optional[float] = None) -> Optional[str]:
         if not self.is_configured():
             return None
         headers = {
@@ -52,7 +53,8 @@ class OpenRouterClient:
             "max_tokens": 1500,
         }
         try:
-            resp = requests.post(OPENROUTER_URL, headers=headers, json=payload, timeout=20)
+            resp = requests.post(OPENROUTER_URL, headers=headers, json=payload,
+                                 timeout=timeout or 20)
         except Exception as exc:
             logger.error("OpenRouter: requête échouée (%s): %s", type(exc).__name__, exc)
             return None

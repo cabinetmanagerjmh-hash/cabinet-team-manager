@@ -400,6 +400,7 @@ def prendre_en_charge(tache_id):
         return redirect(url_for('taches'))
     
     tache.statut = 'en_cours'
+    tache.statut_source = 'manuel'
     tache.date_prise_en_charge = datetime.utcnow()
     db.session.commit()
     # LIAISON tache -> checklist : prise en charge -> case videe + trace acteur

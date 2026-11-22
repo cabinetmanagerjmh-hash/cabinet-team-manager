@@ -4,11 +4,11 @@ taches deadline correspondantes (Dépôt TVA, Acompte IS, CFE...).
 
 Sens A/B  — case -> tache : `appliquer_case_a_taches()` appelle quand une case
              devient declare (manuel via /checklist/toggle OU via synchro Pennylane)
-             => la tache deadline de la meme periode est marquee terminee.
-             Si la case est remise a « a faire / venir » => la tache repasse a_faire.
+             => la tache deadline passe en_cours, puis terminee si la declaration
+             est acceptee ou la case soldee. Case videe => tache a_faire.
 Sens C    — tache -> case : `appliquer_tache_a_case()` appelee quand un utilisateur
-             change le statut d'une tache deadline => la case checklist correspondante
-             est declaree (ou effacee si la tache revient a a_faire).
+             change le statut d'une tache deadline => en_cours/terminee coche la case,
+             a_faire la vide.
 
 Mapping periode (aligne sur la logique « seed » de la checklist, routes.py) :
   Dépôt TVA mensuel/trimestriel : periode declaree = mois precedant l'echeance
@@ -81,34 +81,63 @@ _LIBELLE_SOURCE_AUTO = {
 }
 
 
-def notifier_changement_auto(tache, source, nouveau_statut, acteur=None, email=True):
-    """Previent le responsable de la tache qu'elle a change de statut
-    automatiquement (case Checklist / synchro Pennylane).
+def _destinataires_changement_auto(tache, acteur):
+    """Ids des personnes a informer d'un changement de statut automatique.
 
-    Destinataire identique aux changements manuels (routes_tache_actions) :
-    le createur de la tache, sinon le manager de l'equipe du dossier.
-    acteur : User qui a coche/decoche la case (None = synchro systeme).
-    Ne notifie pas si le responsable est lui-meme l'acteur.
-    Notification in-app (+ email si email=True). Ne fait pas de commit :
-    l'appelant commit. Retourne True si une notification a ete ajoutee."""
+    Ordre de priorite (pour l'email) : createur de la tache (souvent le manager
+    assigneur), puis l'assigne, puis le manager de l'equipe du dossier.
+    Doublons supprimes ; l'auteur du changement (acteur) n'est jamais notifie."""
+    ids = []
+
+    def _ajouter(uid):
+        if uid and uid not in ids:
+            ids.append(uid)
+
+    _ajouter(tache.cree_par)
+    _ajouter(tache.assigne_a)
+    equipe = tache.dossier.equipe if tache.dossier else None
+    if equipe and equipe.manager:
+        _ajouter(equipe.manager.id)
+    if acteur is not None and acteur.id in ids:
+        ids.remove(acteur.id)
+    return ids
+
+
+def notifier_changement_auto(tache, source, nouveau_statut, acteur=None, email=True,
+                             ancien_statut=None):
+    """Previent les personnes concernees qu'une tache a change de statut
+    automatiquement (case Checklist ou synchro Pennylane).
+
+    Notification in-app pour le createur de la tache, l'assigne et le manager
+    de l'equipe du dossier (doublons et acteur exclus) : le changement de
+    statut declenche par la synchro doit etre visible par ceux qui suivent la
+    tache, pas seulement par le createur. Le texte est redige par ASTRO quand
+    c'est possible, sinon on garde un message factuel de repli.
+    L'email (si email=True) part uniquement au destinataire principal.
+    Ne fait pas de commit : l'appelant commit. Retourne True si au moins une
+    notification in-app a ete ajoutee."""
     from . import app
-    dest = None
-    dest_id = tache.cree_par
-    if not dest_id and tache.dossier and tache.dossier.equipe and tache.dossier.equipe.manager:
-        dest = tache.dossier.equipe.manager
-        dest_id = dest.id
-    if not dest_id or (acteur is not None and dest_id == acteur.id):
+    dest_ids = _destinataires_changement_auto(tache, acteur)
+    if not dest_ids:
         return False
     origine = _LIBELLE_SOURCE_AUTO.get(source, 'un changement automatique')
     statut_txt = nouveau_statut.replace('_', ' ')
     qui = f" (par {acteur.prenom} {acteur.nom})" if acteur else ''
     message = f"Statut automatique : \"{tache.titre}\" passe a \"{statut_txt}\" via {origine}{qui}"
-    db.session.add(Notification(user_id=dest_id, tache_id=tache.id, message=message,
-                                type_notification='systeme'))
+    try:
+        from .astro_notifications import rediger_notification_statut
+        message = rediger_notification_statut(
+            tache, nouveau_statut, source, acteur, ancien_statut=ancien_statut) or message
+    except Exception as exc:
+        app.logger.warning(f"ASTRO notification: {exc}")
+    # Type dedie : la page Notifications isole la synchro Pennylane du reste.
+    type_notif = 'pennylane' if source == 'auto_pennylane' else 'systeme'
+    for uid in dest_ids:
+        db.session.add(Notification(user_id=uid, tache_id=tache.id, message=message,
+                                    type_notification=type_notif))
     if email:
         try:
-            if dest is None:
-                dest = User.query.get(dest_id)
+            dest = User.query.get(dest_ids[0])
             if dest and dest.email:
                 from app.integrations.brevo import send_email_via_brevo_api
                 corps = f"Bonjour {dest.prenom},\n\n{message}.\n\nCabinet JMH"
@@ -123,31 +152,41 @@ def notifier_changement_auto(tache, source, nouveau_statut, acteur=None, email=T
 
 
 def appliquer_case_a_taches(dossier_id, taxe, annee, mois, kind, declare, paye=False,
-                            source='auto_checklist', acteur=None, email=True):
-    """Case cochee -> taches terminee ; case videe -> taches a_faire.
+                            source='auto_checklist', acteur=None, email=True, accepte=False):
+    """Déclarée -> en_cours ; acceptée/soldée -> terminee ; vidée -> a_faire.
     Retourne le nb de taches mises a jour."""
+    nouveau_statut = 'a_faire'
+    if declare:
+        nouveau_statut = 'terminee' if (accepte or paye) else 'en_cours'
     n = 0
     for t in _taches_pour_case(dossier_id, taxe, annee, mois, kind):
-        if declare and t.statut != 'terminee':
-            t.statut = 'terminee'
-            t.statut_source = source
-            notifier_changement_auto(t, source, 'terminee', acteur, email)
+        if t.statut == nouveau_statut:
+            continue
+        ancien_statut = t.statut
+        t.statut = nouveau_statut
+        t.statut_source = source if nouveau_statut != 'a_faire' else None
+        if nouveau_statut == 'terminee':
+            if not t.date_prise_en_charge:
+                t.date_prise_en_charge = datetime.utcnow()
             if not t.date_completion:
                 t.date_completion = datetime.utcnow()
-            n += 1
-        elif not declare and t.statut == 'terminee':
-            t.statut = 'a_faire'
-            t.statut_source = None
-            notifier_changement_auto(t, source, 'a_faire', acteur, email)
+        elif nouveau_statut == 'en_cours':
+            if not t.date_prise_en_charge:
+                t.date_prise_en_charge = datetime.utcnow()
             t.date_completion = None
-            n += 1
+        else:
+            t.date_prise_en_charge = None
+            t.date_completion = None
+        notifier_changement_auto(t, source, nouveau_statut, acteur, email,
+                                 ancien_statut=ancien_statut)
+        n += 1
     return n
 
 
 def appliquer_tache_a_case(tache, acteur=None):
     """Changement de statut d'une tache deadline -> reflete dans la checklist.
-    terminee -> case declaree (+paye si acompte) ; a_faire / en_cours -> case videe.
-    La ligne est conservee (declare=paye=False) pour garder la trace : source,
+    en_cours/terminee -> case declaree (+paye si acompte termine) ; a_faire -> case videe.
+    La ligne est conservee pour garder la trace : source,
     updated_by_id, date_modif — affichee dans l'infobulle de la grille.
     Retourne nb de cases mises a jour (0/1)."""
     m = case_pour_tache(tache)
@@ -165,6 +204,9 @@ def appliquer_tache_a_case(tache, acteur=None):
     if tache.statut == 'terminee':
         e.declare = True
         e.paye = bool(paye)
+    elif tache.statut == 'en_cours':
+        e.declare = True
+        e.paye = False
     else:
         e.declare = False
         e.paye = False

@@ -73,23 +73,38 @@ def _destinataire_rappel(r):
 
 def envoyer_email_rappel(r, motif):
     """Envoie un email de rappel à l'utilisateur via Brevo (avec fallback SMTP)."""
-    from .integrations.brevo import send_email_via_brevo_api
+    from .integrations.brevo import (send_email_via_brevo_api, _email_layout, _esc, APP_URL)
     u = _destinataire_rappel(r)
     if not u or not u.email:
         return False
-    sujet = f"🔔 Rappel Orbit : {r.titre}"
+    echeance = r.date_echeance.strftime('%d/%m/%Y') if r.date_echeance else '—'
+    sujet = f"Rappel : {r.titre}"
     corps = (
         f"Bonjour {u.prenom},\n\n"
         f"Rappel : {r.titre}\n"
         f"{r.message}\n\n"
-        f"Échéance : {r.date_echeance.strftime('%d/%m/%Y')}\n"
+        f"Échéance : {echeance}\n"
         f"Motif : {motif}\n\n"
-        f"Connectez-vous à Orbit pour marquer ce rappel comme lu (NOTE) et arrêter les relances.\n"
+        f"Connectez-vous à JMH Orbit pour marquer ce rappel comme lu et arrêter les relances.\n"
     )
     return send_email_via_brevo_api(
         to_email=u.email,
         subject=sujet,
         body=corps,
+        html_content=_email_layout(
+            header_title=f"Rappel — {r.titre}",
+            intro_html=(
+                f'<p style="margin:0 0 4px 0;font-size:15px;color:#f2efe8;">Bonjour '
+                f'<strong>{_esc(u.prenom)}</strong>,</p>'
+                f'<p style="margin:0 0 14px 0;font-size:14px;line-height:1.65;color:#c9cfd6;">'
+                f"{_esc(r.message).replace(chr(10), '<br>')}</p>"
+            ),
+            rows=[('Échéance', _esc(echeance)), ('Motif', _esc(motif))],
+            cta_url=f'{APP_URL}/rappels',
+            cta_text='Ouvrir mes rappels',
+            footer_note="Marquez le rappel comme lu dans l'application pour arrêter les relances.",
+            preheader=f"{r.titre} — échéance {echeance}",
+        ),
     )
 
 

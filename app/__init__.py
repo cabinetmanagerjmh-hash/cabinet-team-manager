@@ -39,7 +39,7 @@ if not app.debug and os.environ.get('MAIL_SERVER'):
                       int(os.environ.get('MAIL_PORT', 587))),
             fromaddr=os.environ.get('MAIL_DEFAULT_SENDER', 'no-reply@cabinet-jmh.local'),
             toaddrs=[e.strip() for e in os.environ.get('ADMIN_EMAILS', '').split(',') if e.strip()],
-            subject='🚨 Erreur 500 — Cabinet JMH',
+            subject='Erreur 500 — Cabinet JMH',
             credentials=(os.environ.get('MAIL_USERNAME'), os.environ.get('MAIL_PASSWORD'))
             if os.environ.get('MAIL_USERNAME') else None,
         )

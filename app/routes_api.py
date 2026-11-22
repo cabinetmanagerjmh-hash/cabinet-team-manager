@@ -104,16 +104,29 @@ def api_test_mail():
         return jsonify({'ok': False, 'message': 'Accès refusé.'}), 403
     if not current_user.email:
         return jsonify({'ok': False, 'message': 'Aucun email sur votre compte.'})
-    from app.integrations.brevo import send_email_via_brevo_api, get_brevo_api_key
+    from app.integrations.brevo import (
+        send_email_via_brevo_api, get_brevo_api_key, _email_layout, _esc, _salutation, _suite, APP_URL)
     has_key = bool(get_brevo_api_key())
     ok = send_email_via_brevo_api(
         to_email=current_user.email,
-        subject='✅ Test notification — Cabinet JMH',
-        body=f"Bonjour {current_user.prenom}, ceci est un email de test de l'application de gestion.",
-        html_content='<html><body style="font-family:Inter,sans-serif;background:#0a0a0a;color:#e8e8e8;padding:24px;">'
-                     '<h2 style="color:#1F6A88;">✅ Email de test</h2>'
-                     f'<p>Bonjour {current_user.prenom}, la configuration mail de l\'application fonctionne.</p>'
-                     '</body></html>',
+        subject='Test des notifications — JMH Orbit',
+        body=(f"Bonjour {current_user.prenom}, la configuration mail de JMH Orbit fonctionne.\n\n"
+              f"Destinataire : {current_user.email}\nMode : {'Brevo API' if has_key else 'SMTP de secours'}"),
+        html_content=_email_layout(
+            header_title='Test des notifications',
+            intro_html=(
+                _salutation(current_user)
+                + _suite("La configuration mail de JMH Orbit fonctionne. Voici à quoi ressemblent "
+                         "désormais les emails envoyés par l'application.")
+            ),
+            rows=[
+                ('Destinataire', _esc(current_user.email)),
+                ('Mode', 'Brevo API' if has_key else 'SMTP de secours'),
+            ],
+            cta_url=APP_URL,
+            cta_text='Ouvrir JMH Orbit',
+            footer_note="Email de test envoyé depuis les outils administrateur.",
+        ),
     )
     return jsonify({
         'ok': ok,

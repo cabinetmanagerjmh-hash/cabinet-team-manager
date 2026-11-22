@@ -57,6 +57,7 @@
             b.id = 'authThemeToggle';
             b.type = 'button';
             b.title = 'Changer de thème';
+            b.setAttribute('aria-label', 'Changer de thème');
             b.style.cssText = 'position:fixed;top:16px;right:16px;z-index:50;width:42px;height:42px;border-radius:50%;border:1px solid var(--border-color);background:var(--bg-elevated);color:var(--text-primary);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 10px rgba(16,24,40,.10);transition:background-color .42s ease,border-color .42s ease,color .42s ease;';
             b.addEventListener('click', function() { window.setOrbitTheme(window.ORBIT_THEME === 'light' ? 'dark' : 'light', true); });
             document.body.appendChild(b);
@@ -65,299 +66,501 @@
     })();
     </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cabinet JMH — Sélection d'équipe</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Choix de l'équipe — JMH Orbit</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300..800&display=swap" rel="stylesheet">
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#000000">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: #000;
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            inset: -50%;
-            background: radial-gradient(ellipse at 50% 0%, rgba(31,106,136,0.05) 0%, transparent 50%);
-            animation: bgShift 25s ease-in-out infinite alternate;
-            pointer-events: none;
-        }
-        @keyframes bgShift {
-            0% { transform: translate(0, 0); }
-            100% { transform: translate(-3%, 3%); }
-        }
-        /* Grid overlay */
-        .grid-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-image: 
-                linear-gradient(rgba(255,255,255,0.012) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255,255,255,0.012) 1px, transparent 1px);
-            background-size: 60px 60px;
-            pointer-events: none;
-            z-index: 0;
-        }
-        /* Premium orbs for team_select too */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(100px);
-            pointer-events: none;
-            z-index: 0;
-            opacity: 0.1;
-        }
-        .orb-1 {
-            width: 500px; height: 500px;
-            background: radial-gradient(circle, #1F6A88, transparent);
-            top: -10%; right: -5%;
-            animation: orbFloat1 25s ease-in-out infinite;
-        }
-        .orb-2 {
-            width: 400px; height: 400px;
-            background: radial-gradient(circle, #FF6B00, transparent);
-            bottom: -10%; left: -5%;
-            animation: orbFloat2 30s ease-in-out infinite reverse;
-        }
-        @keyframes orbFloat1 {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(-60px, 60px); }
-        }
-        @keyframes orbFloat2 {
-            0%, 100% { transform: translate(0, 0); }
-            50% { transform: translate(50px, -50px); }
-        }
-        .container-main {
-            position: relative;
-            z-index: 1;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 3rem 1.5rem;
-            animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .header {
-            text-align: center;
-            margin-bottom: 3rem;
-        }
-        .header img {
-            width: 64px; height: 64px;
-            border-radius: 16px;
-            background: #0a0a0a;
-            padding: 4px;
-            border: 1px solid rgba(255,255,255,0.06);
-            margin-bottom: 1rem;
-        }
-        .header h1 { font-weight: 700; font-size: 1.6rem; color: #fff; margin-bottom: 0.3rem; }
-        .header p { color: #666; font-size: 0.9rem; }
-
-        .teams-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.25rem;
-            max-width: 900px;
-            width: 100%;
-        }
-        .team-card {
-            background: rgba(10,10,10,0.9);
-            border: 1px solid rgba(255,255,255,0.06);
-            border-radius: 16px;
-            padding: 1.5rem;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-            animation: cardIn 0.6s ease backwards;
-        }
-        .team-card:nth-child(1) { animation-delay: 0.05s; }
-        .team-card:nth-child(2) { animation-delay: 0.1s; }
-        .team-card:nth-child(3) { animation-delay: 0.15s; }
-        .team-card:nth-child(4) { animation-delay: 0.2s; }
-        .team-card:nth-child(5) { animation-delay: 0.25s; }
-        .team-card:nth-child(6) { animation-delay: 0.3s; }
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(20px) scale(0.97); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-        .team-card:hover {
-            transform: translateY(-4px);
-            border-color: rgba(31,106,136,0.2);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.4);
-        }
-        .team-card-header {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-        .team-avatar {
-            width: 48px; height: 48px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.08);
-            object-fit: cover;
-            background: #08090a;
-                        display: flex
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            color: #fff;
-        }
-        .team-info h3 { font-size: 1.05rem; font-weight: 600; color: #fff; margin-bottom: 0.15rem; }
-        .team-info .meta { font-size: 0.8rem; color: #666; }
-        .team-desc { font-size: 0.85rem; color: #555; margin-bottom: 1rem; line-height: 1.5; }
-        .team-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: 0.8rem;
-            border-top: 1px solid rgba(255,255,255,0.05);
-        }
-        .enter-btn {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #1F6A88;
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            transition: gap 0.3s ease;
-        }
-        .team-card:hover .enter-btn { gap: 0.8rem; }
-        .back-link {
-            margin-top: 2rem;
-            color: #555;
-            text-decoration: none;
-            font-size: 0.8rem;
-            transition: color 0.2s;
-        }
-        .back-link:hover { color: #1F6A88; }
-        @media (max-width: 768px) {
-            .teams-grid { grid-template-columns: 1fr; }
-            .header h1 { font-size: 1.3rem; }
-        }
-    /* ===== Tokens du thème CLAIR (mêmes valeurs que static/css/style.css) =====
-       Ces pages sont autonomes (pas de lien vers style.css) : les tokens du
-       thème clair sont donc déclarés ici. Surfaces en #fafafb, blanc pur
-       réservé aux couches flottantes -> confort visuel sans éblouissement. */
-    html[data-theme="light"] {
-        --bg-dark: #f3f4f6;
-        --bg-darker: #eaecf0;
-        --bg-card: #fafafb;
-        --bg-card-hover: #f1f2f5;
-        --bg-card-active: #e9ebef;
-        --bg-elevated: #ffffff;
-        --bg-glass: rgba(250, 250, 251, 0.86);
-        --text-primary: #22262b;
-        --text-secondary: #434b55;
-        --text-tertiary: #676f7c;
-        --text-muted: #8b93a0;
-        --border-color: #e3e5e9;
-        --border-light: #dcdfe4;
-        --border-strong: #cdd1d7;
-        --orange-subtle: rgba(31, 106, 136, 0.08);
-    }
-
-    /* ===== Transition dégradée du thème (équivalent local de polish.css) ===== */
-    html.orbit-theme-anim, html.orbit-theme-anim *, html.orbit-theme-anim *::before, html.orbit-theme-anim *::after {
-        transition: background-color .42s cubic-bezier(.4,0,.2,1), border-color .42s cubic-bezier(.4,0,.2,1), color .3s cubic-bezier(.4,0,.2,1) !important;
-    }
-    .orbit-theme-veil { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; opacity: 0; }
-    .orbit-theme-veil--out { animation: orbitVeil .42s cubic-bezier(.4,0,.2,1) forwards; }
-    @keyframes orbitVeil { 0% { opacity: 0; } 35% { opacity: .5; } 100% { opacity: 0; } }
-    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .42s; animation-timing-function: cubic-bezier(.4,0,.2,1); }
-    ::view-transition-old(root) { animation-name: orbitVtOut; }
-    ::view-transition-new(root) { animation-name: orbitVtIn; }
-    @keyframes orbitVtOut { to { opacity: 0; } }
-    @keyframes orbitVtIn { from { opacity: 0; } to { opacity: 1; } }
-    #authThemeToggle i { display: inline-block; transition: transform .42s cubic-bezier(.34,1.56,.64,1); }
-    .orbit-theme-anim #authThemeToggle i { transform: rotate(180deg) scale(.9); }
-    @media (prefers-reduced-motion: reduce) {
-        html.orbit-theme-anim, html.orbit-theme-anim * { transition: none !important; }
-        .orbit-theme-veil--out { animation: none !important; }
-        ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
-    }
-    /* ===== Thème CLAIR (refonte JMH Orbit) — tokens, aucun blanc pur en dur ===== */
-    html[data-theme="light"] body { background: var(--bg-dark) !important; }
-    html[data-theme="light"] .orb { opacity: 0.07 !important; }
-    html[data-theme="light"] .grid-overlay { background-image: linear-gradient(rgba(15,17,21,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(15,17,21,0.03) 1px, transparent 1px); }
-    html[data-theme="light"] .header img { background: var(--bg-elevated) !important; border: 1px solid var(--border-color) !important; }
-    html[data-theme="light"] .header h1 { color: var(--text-primary) !important; }
-    html[data-theme="light"] .header p { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .team-card { background: var(--bg-card) !important; border: 1px solid var(--border-color) !important; box-shadow: 0 2px 8px -2px rgba(16,24,40,.08); transition: background-color .42s ease, border-color .2s ease, box-shadow .25s ease, transform .25s ease; }
-    html[data-theme="light"] .team-card:hover { border-color: rgba(31,106,136,.35) !important; box-shadow: 0 12px 30px -8px rgba(16,24,40,.18) !important; }
-    html[data-theme="light"] .team-avatar { background: var(--bg-card-hover) !important; border-color: var(--border-color) !important; color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .team-info h3 { color: var(--text-primary) !important; }
-    html[data-theme="light"] .team-info .meta { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .team-desc { color: var(--text-secondary) !important; }
-    html[data-theme="light"] .team-footer { border-top: 1px solid var(--border-color) !important; }
-    html[data-theme="light"] .team-footer span { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .enter-btn { color: #1F6A88 !important; }
-    html[data-theme="light"] .back-link { color: var(--text-tertiary) !important; }
-    html[data-theme="light"] .back-link:hover { color: #1F6A88 !important; }
-    html[data-theme="light"] .teams-grid .text-center { color: var(--text-tertiary) !important; }
-    </style>
+    <meta name="theme-color" content="#0b0c0e">
     <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital,wght@0,400;0,600;1,400&family=Figtree:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Page autonome : tous les jetons viennent de orbit-elevate.css (chargé
+           en dernier). Aucun hex en dur, aucune couche light en !important —
+           les thèmes clair/sombre basculent par les jetons, comme dans l'app. */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: var(--font-ui);
+            background: var(--paper);
+            color: var(--ink);
+            min-height: 100vh;
+            min-height: 100dvh;
+            overflow-x: hidden;
+            line-height: 1.55;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Filigrane : le logo officiel JMH Orbit, très effacé, derrière le cercle.
+   Seul mouvement de la page : une respiration très lente. */
+        .ts-watermark {
+            position: fixed; left: 50%; top: 50%;
+            width: min(98vmin, 840px); height: auto;
+            transform: translate(-50%, -50%);
+            opacity: .05; filter: blur(2px) grayscale(1);
+            pointer-events: none; user-select: none; z-index: 0;
+            animation: tsBreathe 26s var(--ease-io) infinite;
+        }
+        html[data-theme="light"] .ts-watermark { opacity: .045; filter: blur(1.5px) grayscale(1); }
+        @keyframes tsBreathe {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -51%) scale(1.035); }
+        }
+
+        .ts-main {
+            position: relative; z-index: 1;
+            min-height: 100vh; min-height: 100dvh;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 48px 24px;
+            animation: tsFade .6s var(--ease) both;
+        }
+        @keyframes tsFade { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+
+        .ts-head { text-align: center; margin-bottom: 18px; }
+        .ts-logo {
+            width: 52px; height: 52px; border-radius: var(--r-md);
+            background: var(--surface-raised); padding: 4px;
+            border: 1px solid var(--rule); margin-bottom: 14px;
+            box-shadow: var(--shadow-1);
+        }
+        .ts-eyebrow {
+            font-family: var(--font-mono); font-size: .64rem; font-weight: 500;
+            letter-spacing: .18em; text-transform: uppercase;
+            color: var(--ink-4); margin-bottom: 8px;
+        }
+        .ts-head h1 {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+            letter-spacing: -.012em; line-height: 1.1;
+            color: var(--ink);
+        }
+
+        /* ---------------------------------------------------------------- */
+        /* Sélecteur radial : secteurs FIFA autour d'un moyeu                  */
+        /* ---------------------------------------------------------------- */
+        .ts-wheel {
+            --wheel-size: min(86vmin, 640px, calc(100dvh - 328px));
+            --orbit-r: calc(var(--wheel-size) * 0.405);
+            --fan: rgba(255, 255, 255, .045);
+            --fan-active: rgba(124, 197, 227, .16);
+            position: relative;
+            width: var(--wheel-size);
+            height: var(--wheel-size);
+            border-radius: 50%;
+            animation: tsWheelIn .7s var(--ease) both;
+        }
+        html[data-theme="light"] .ts-wheel {
+            --fan: rgba(255, 255, 255, .74);
+            --fan-active: rgba(31, 106, 136, .10);
+        }
+        @keyframes tsWheelIn { from { opacity: 0; transform: scale(.94); } to { opacity: 1; transform: scale(1); } }
+
+        /* Secteurs dessinés en SVG : chaque secteur est une zone cliquable */
+        .ts-wheel-svg {
+            position: absolute; inset: 0; z-index: 0;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            overflow: visible;
+        }
+        .sector {
+            fill: var(--fan);
+            stroke: var(--rule);
+            stroke-width: .12;
+            cursor: pointer;
+            transition: fill .25s var(--ease);
+        }
+        .sector.is-active { fill: var(--fan-active); }
+
+        /* Cercles extérieur / intérieur — le disque central masque le moyeu */
+        .ts-wheel::before, .ts-wheel::after {
+            content: ''; position: absolute; border-radius: 50%; pointer-events: none;
+        }
+        .ts-wheel::before { inset: 0; border: 1px solid var(--rule); }
+        .ts-wheel::after {
+            inset: 21%; z-index: 1;
+            background: var(--paper);
+            border: 1px solid var(--rule);
+            pointer-events: auto;
+        }
+
+        /* Moyeu central : logo de l'équipe retenue, nom, effectif, entrée */
+        .ts-hub {
+            position: absolute; left: 50%; top: 50%; z-index: 2;
+            width: 54%; transform: translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            text-align: center; gap: 10px;
+            pointer-events: none;
+        }
+        .ts-hub-crest {
+            width: clamp(84px, 18vmin, 112px); height: clamp(84px, 18vmin, 112px);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: clamp(2rem, 5vmin, 2.6rem);
+            color: var(--team-color, var(--ink-3));
+            background: var(--surface-raised);
+            border: 1px solid var(--rule);
+            box-shadow: var(--shadow-2);
+            transition: border-color .25s var(--ease), box-shadow .25s var(--ease),
+                        color .25s var(--ease);
+        }
+        .crest-pop { animation: crestPop .34s var(--ease) both; }
+        @keyframes crestPop {
+            from { transform: scale(.86); opacity: .35; }
+            to { transform: scale(1); opacity: 1; }
+        }
+        html[data-theme="dark"] .ts-hub-crest {
+            background: rgba(255, 255, 255, .05);
+            border-color: rgba(255, 255, 255, .14);
+            box-shadow: 0 18px 40px -24px rgba(0, 0, 0, .9);
+        }
+        .ts-hub.is-neutral .ts-hub-crest {
+            border-style: dashed;
+            color: var(--ink-4);
+            box-shadow: none;
+            background: transparent;
+        }
+        .ts-hub.is-selected .ts-hub-crest {
+            border-color: var(--amber);
+            box-shadow: 0 0 0 6px color-mix(in srgb, var(--amber) 10%, transparent);
+        }
+        .ts-hub-name {
+            font-family: var(--font-display); font-weight: 400;
+            font-size: clamp(1.25rem, 1rem + 1.2vw, 1.85rem);
+            line-height: 1.15; letter-spacing: -.01em; color: var(--ink);
+            overflow-wrap: anywhere;
+        }
+        .ts-hub-members {
+            font-family: var(--font-mono); font-size: .72rem; font-weight: 500;
+            color: var(--ink-3);
+        }
+        .ts-hub.is-neutral .ts-hub-name,
+        .ts-hub.is-neutral .ts-hub-members { display: none; }
+        .ts-hub-hint {
+            font-size: .78rem; color: var(--ink-3);
+            display: flex; align-items: center; gap: 6px;
+        }
+        .ts-hub.is-selected .ts-hub-hint { display: none; }
+        .ts-hub.is-neutral .ts-join { display: none; }
+
+        .ts-join {
+            pointer-events: auto;
+            margin-top: 2px;
+            display: inline-flex; align-items: center; gap: 8px;
+            min-height: 40px; padding: 0 18px;
+            border-radius: var(--r-sm); border: 1px solid transparent;
+            background: var(--amber); color: #fff;
+            font-family: var(--font-ui); font-weight: 600; font-size: .85rem;
+            text-decoration: none; cursor: pointer;
+            transition: background-color .2s var(--ease), color .2s var(--ease),
+                        border-color .2s var(--ease);
+        }
+        html[data-theme="dark"] .ts-join { color: #0b0c0e; }
+        .ts-join:hover { background: var(--amber-deep); }
+        .ts-join:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+        .ts-join[aria-disabled="true"] {
+            background: transparent; border-color: var(--rule);
+            color: var(--ink-4); pointer-events: none;
+        }
+
+        /* Un secteur = un bouton, positionné sur l'anneau */
+        .ts-slot {
+            position: absolute; left: 50%; top: 50%; z-index: 3;
+            transform: rotate(var(--ang)) translateY(calc(-1 * var(--orbit-r))) rotate(calc(-1 * var(--ang))) translate(-50%, -50%);
+            display: flex; flex-direction: column; align-items: center; gap: 8px;
+            width: 136px; padding: 0;
+            background: none; border: 0; color: inherit;
+            outline: none; cursor: pointer;
+            animation: tsSlotIn .5s var(--ease) both;
+            animation-delay: calc(var(--i, 0) * 55ms + 120ms);
+        }
+        @keyframes tsSlotIn { from { opacity: 0; } to { opacity: 1; } }
+        .ts-slot::after { /* zone cliquable élargie, invisible */
+            content: ''; position: absolute; inset: -14px -10px; border-radius: 18px;
+        }
+        .ts-slot:focus-visible { outline: none; }
+        .ts-slot:focus-visible .ts-crest { outline: 2px solid var(--amber); outline-offset: 5px; }
+
+        .ts-crest {
+            width: 64px; height: 64px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.45rem;
+            color: var(--team-color, var(--ink-2));
+            background: var(--surface-raised);
+            border: 1px solid var(--rule);
+            box-shadow: var(--shadow-1);
+            transition: transform .22s var(--ease), border-color .22s var(--ease),
+                        background-color .22s var(--ease), box-shadow .22s var(--ease);
+        }
+        html[data-theme="dark"] .ts-crest {
+            background: rgba(255, 255, 255, .05);
+            border-color: rgba(255, 255, 255, .13);
+            box-shadow: none;
+        }
+        .ts-slot-name {
+            max-width: 136px;
+            font-family: var(--font-mono); font-size: .7rem; font-weight: 500;
+            letter-spacing: .02em;
+            color: var(--ink-2);
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            padding: 2px 0;
+            transition: color .2s var(--ease);
+        }
+
+        .ts-slot:hover .ts-crest,
+        .ts-slot.is-active .ts-crest {
+            transform: scale(1.05);
+            border-color: var(--amber);
+            background: var(--amber-soft);
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--amber) 12%, transparent);
+        }
+        .ts-slot:hover .ts-slot-name,
+        .ts-slot.is-active .ts-slot-name { color: var(--amber-deep); }
+
+        /* État vide : panneau sobre, bouton plein. */
+        .ts-empty {
+            max-width: 520px; text-align: center;
+            background: var(--surface); border: 1px solid var(--rule);
+            border-radius: var(--r-lg); padding: 48px 24px; box-shadow: var(--shadow-1);
+        }
+        .ts-empty > i { font-size: 2.4rem; color: var(--ink-4); }
+        .ts-empty p { color: var(--ink-3); margin: 16px 0 24px; }
+        .ts-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 22px; min-height: 44px;
+            background: var(--amber); color: #fff;
+            border: none; border-radius: var(--r-sm);
+            font-family: var(--font-ui); font-weight: 600; font-size: .9rem;
+            text-decoration: none; cursor: pointer;
+            transition: background-color .2s var(--ease), transform .2s var(--ease);
+        }
+        html[data-theme="dark"] .ts-btn { color: #0b0c0e; }
+        .ts-btn:hover { background: var(--amber-deep); color: #fff; transform: translateY(-1px); }
+        html[data-theme="dark"] .ts-btn:hover { color: #0b0c0e; }
+        .ts-btn:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
+
+        .ts-direct {
+            margin-top: 32px; display: inline-flex; align-items: center; gap: 8px;
+            min-height: 44px; padding: 8px 12px;
+            color: var(--ink-3); text-decoration: none; font-size: .85rem;
+            border-radius: var(--r-sm); transition: color .2s var(--ease);
+        }
+        .ts-direct:hover { color: var(--amber-deep); }
+        .ts-direct:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+
+        @media (max-width: 640px) {
+            .ts-main { padding: 28px 12px; }
+            .ts-wheel { --wheel-size: min(88vmin, 470px, calc(100dvh - 240px)); }
+            .ts-wheel::after { inset: 26%; }
+            .ts-slot { width: 104px; gap: 6px; }
+            .ts-crest { width: 50px; height: 50px; font-size: 1.15rem; }
+            .ts-slot-name { max-width: 96px; font-size: .62rem; }
+            .ts-hub { width: 56%; gap: 8px; }
+            .ts-hub-crest { width: 76px; height: 76px; font-size: 1.8rem; }
+            .ts-hub-name { font-size: 1.15rem; }
+            .ts-join { min-height: 38px; padding: 0 14px; font-size: .8rem; }
+            .ts-head { margin-bottom: 8px; }
+        }
+
+        /* Écrans peu hauts (portables) : en-tête compact pour garder la roue entière */
+        @media (max-height: 820px) and (min-width: 641px) {
+            .ts-main { padding: 24px 20px; }
+            .ts-head { margin-bottom: 10px; }
+            .ts-head .ts-logo { display: none; }
+            .ts-head h1 { font-size: 1.4rem; }
+            .ts-direct { margin-top: 14px; }
+            .ts-wheel { --wheel-size: min(86vmin, 640px, calc(100dvh - 196px)); }
+        }
+
+        /* Transition de thème (équivalent local de polish.css) */
+        html.orbit-theme-anim, html.orbit-theme-anim *, html.orbit-theme-anim *::before, html.orbit-theme-anim *::after {
+            transition: background-color .42s cubic-bezier(.4,0,.2,1), border-color .42s cubic-bezier(.4,0,.2,1), color .3s cubic-bezier(.4,0,.2,1) !important;
+        }
+        .orbit-theme-veil { position: fixed; inset: 0; z-index: 2147483000; pointer-events: none; opacity: 0; }
+        .orbit-theme-veil--out { animation: orbitVeil .42s cubic-bezier(.4,0,.2,1) forwards; }
+        @keyframes orbitVeil { 0% { opacity: 0; } 35% { opacity: .5; } 100% { opacity: 0; } }
+        ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .42s; animation-timing-function: cubic-bezier(.4,0,.2,1); }
+        ::view-transition-old(root) { animation-name: orbitVtOut; }
+        ::view-transition-new(root) { animation-name: orbitVtIn; }
+        @keyframes orbitVtOut { to { opacity: 0; } }
+        @keyframes orbitVtIn { from { opacity: 0; } to { opacity: 1; } }
+        #authThemeToggle i { display: inline-block; transition: transform .42s cubic-bezier(.34,1.56,.64,1); }
+        .orbit-theme-anim #authThemeToggle i { transform: rotate(180deg) scale(.9); }
+
+        @media (prefers-reduced-motion: reduce) {
+            .ts-watermark, .ts-main, .ts-wheel, .ts-slot { animation: none !important; }
+            .ts-crest, .ts-slot-name, .ts-hub-crest, .ts-join, .ts-btn, .ts-direct { transition: none !important; }
+            html.orbit-theme-anim, html.orbit-theme-anim * { transition: none !important; }
+            .orbit-theme-veil--out { animation: none !important; }
+            ::view-transition-old(root), ::view-transition-new(root) { animation: none !important; }
+        }
+    </style>
     <link href="{{ asset('css/orbit-elevate.css') }}" rel="stylesheet">
-    <meta name="theme-color" content="#f5f2ec">
 </head>
 <body>
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="grid-overlay"></div>
-    <div class="container-main">
-        <div class="header">
-            <img src="{{ asset('img/logo-jmh-orbit.png') }}" alt="Cabinet JMH" onerror="this.style.display='none'">
-            <h1>Cabinet JMH</h1>
-            <p>Choisissez votre équipe</p>
-        </div>
+    <img class="ts-watermark" src="{{ asset('img/logo-jmh-orbit.png') }}" alt="" aria-hidden="true" draggable="false">
 
-        <div class="teams-grid">
-            {% for equipe in equipes %}
-            <div class="team-card" onclick="window.location.href='{{ url_for('login', equipe=equipe.id) }}'">
-                <div class="team-card-header">
-                    {% if equipe.manager %}
-                    {% set eq_photo = equipe.manager.photo_display_src() if current_user.is_authenticated else None %}
-                    {% if eq_photo %}
-                    <img src="{{ eq_photo }}" alt="" class="team-avatar">
-                    {% else %}
-                    <div class="team-avatar"><i class="bi bi-person-fill"></i></div>
-                    {% endif %}
-                    {% endif %}
-                    <div class="team-info">
-                        <h3>{{ equipe.nom }}</h3>
-                        <div class="meta">
-                            {% if equipe.manager %}{{ equipe.manager.prenom }} {{ equipe.manager.nom }} · {% endif %}
-                            {{ equipe.nb_membres() }} membre{% if equipe.nb_membres() != 1 %}s{% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% if equipe.description %}
-                <div class="team-desc">{{ equipe.description[:100] }}</div>
-                {% endif %}
-                <div class="team-footer">
-                    <span style="font-size:0.8rem;color:#444;"><i class="bi bi-people me-1"></i>{{ equipe.nb_membres() }}</span>
-                    <span class="enter-btn">Se connecter <i class="bi bi-arrow-right"></i></span>
-                </div>
-            </div>
-            {% else %}
-            <div class="col-12 text-center py-5" style="color:#555;">
-                <i class="bi bi-people" style="font-size:2.5rem;"></i>
-                <p class="mt-3">Aucune équipe créée.</p>
-                <a href="{{ url_for('login') }}" class="btn-login d-inline-block mt-3" style="width:auto;padding:0.7rem 1.5rem;background:linear-gradient(135deg,#1F6A88,#67AECA);border:none;border-radius:10px;color:#000;font-weight:600;cursor:pointer;text-decoration:none;">Connexion admin</a>
-            </div>
-            {% endfor %}
-        </div>
+    <main class="ts-main">
+        <header class="ts-head">
+            <img class="ts-logo" src="{{ asset('img/logo-jmh-orbit.png') }}" alt="JMH Orbit" onerror="this.style.display='none'">
+            <div class="ts-eyebrow">JMH Orbit</div>
+            <h1>Choix de l'équipe</h1>
+        </header>
 
         {% if equipes %}
-        <a href="{{ url_for('login') }}" class="back-link"><i class="bi bi-shield-lock me-1"></i> Connexion directe</a>
+        {% set n = equipes|length %}
+        {% set seg = 360 / n %}
+        {% set pluriel = 's' if n > 1 else '' %}
+        <section class="ts-wheel" id="tsWheel" aria-label="Choix de l'équipe">
+            <svg class="ts-wheel-svg" id="tsWheelSvg" viewBox="0 0 100 100" aria-hidden="true" focusable="false"></svg>
+
+            <div class="ts-hub is-neutral" id="tsHub">
+                <span class="ts-hub-crest" id="tsHubCrest" aria-hidden="true"><i class="bi bi-compass"></i></span>
+                <span class="ts-hub-name" id="tsHubName" aria-live="polite"></span>
+                <span class="ts-hub-members" id="tsHubMembers"></span>
+                <span class="ts-hub-hint" id="tsHubHint"><i class="bi bi-record-circle" aria-hidden="true"></i>{{ n }} équipe{{ pluriel }} disponible{{ pluriel }}</span>
+                <a class="ts-join" id="tsJoin" href="{{ url_for('login') }}" data-login-url="{{ url_for('login') }}" aria-disabled="true">
+                    <i class="bi bi-box-arrow-in-right" aria-hidden="true"></i>Rejoindre l'équipe
+                </a>
+            </div>
+
+            {% for equipe in equipes %}
+            {% set ang = 0 if n == 1 else loop.index0 * seg + seg / 2 %}
+            <a class="ts-slot" style="--ang: {{ ang }}deg; --i: {{ loop.index0 }}; --team-color: {{ equipe.couleur or '#E07A5F' }};"
+               href="{{ url_for('login', equipe=equipe.id) }}"
+               data-i="{{ loop.index0 }}"
+               data-name="{{ equipe.nom }}"
+               data-icon="{{ equipe.icon or 'bi-people' }}"
+               data-color="{{ equipe.couleur or '#E07A5F' }}"
+               data-members="{{ equipe.nb_membres() }}"
+               aria-label="Sélectionner l'équipe {{ equipe.nom }}">
+                <span class="ts-crest" aria-hidden="true"><i class="{{ equipe.icon or 'bi-people' }}"></i></span>
+                <span class="ts-slot-name" title="{{ equipe.nom }}">{{ equipe.nom }}</span>
+            </a>
+            {% endfor %}
+        </section>
+
+        <a href="{{ url_for('login') }}" class="ts-direct"><i class="bi bi-shield-lock" aria-hidden="true"></i> Connexion directe</a>
+        {% else %}
+        <div class="ts-empty">
+            <i class="bi bi-people" aria-hidden="true"></i>
+            <p>Aucune équipe créée pour le moment.</p>
+            <a href="{{ url_for('login') }}" class="ts-btn"><i class="bi bi-shield-lock" aria-hidden="true"></i> Connexion admin</a>
+        </div>
         {% endif %}
-    </div>
+    </main>
+
+    <script>
+    (function() {
+        var wheel = document.getElementById('tsWheel');
+        if (!wheel) { return; }
+        var slots = Array.prototype.slice.call(wheel.querySelectorAll('.ts-slot'));
+        var n = slots.length;
+        if (!n) { return; }
+
+        var svg = document.getElementById('tsWheelSvg');
+        var hub = document.getElementById('tsHub');
+        var hubCrest = document.getElementById('tsHubCrest');
+        var hubName = document.getElementById('tsHubName');
+        var hubMembers = document.getElementById('tsHubMembers');
+        var join = document.getElementById('tsJoin');
+        var loginUrl = join.getAttribute('data-login-url');
+        var neutralCrest = hubCrest.innerHTML;
+        var seg = 360 / n;
+        var sectors = [];
+        var pinned = -1;
+        var shown = -2;
+
+        // Point du cercle a l'angle deg (0 = haut, sens horaire), rayon 0..50.
+        function point(deg, r) {
+            var a = (deg - 90) * Math.PI / 180;
+            return [50 + r * Math.cos(a), 50 + r * Math.sin(a)];
+        }
+
+        // Un secteur SVG par equipe : geometrie calculee sur le nombre reel.
+        // Un leger retrait angulaire separe les secteurs, comme sur la reference.
+        var gap = n > 1 ? Math.min(1.4, seg * .06) : 0;
+        if (svg) {
+            var NS = 'http://www.w3.org/2000/svg';
+            for (var i = 0; i < n; i++) {
+                var shape = document.createElementNS(NS, n > 1 ? 'path' : 'circle');
+                if (n > 1) {
+                    var p0 = point(i * seg + gap / 2, 50), p1 = point((i + 1) * seg - gap / 2, 50);
+                    shape.setAttribute('d', 'M50 50 L' + p0[0].toFixed(3) + ' ' + p0[1].toFixed(3) +
+                        ' A50 50 0 ' + (seg - gap > 180 ? 1 : 0) + ' 1 ' + p1[0].toFixed(3) + ' ' + p1[1].toFixed(3) + ' Z');
+                } else {
+                    shape.setAttribute('cx', '50'); shape.setAttribute('cy', '50'); shape.setAttribute('r', '50');
+                }
+                shape.setAttribute('class', 'sector');
+                shape.setAttribute('data-i', String(i));
+                shape.addEventListener('mouseenter', preview(i));
+                shape.addEventListener('click', commit(i));
+                svg.appendChild(shape);
+                sectors.push(shape);
+            }
+        }
+
+        function preview(i) { return function() { show(i); }; }
+        function commit(i) { return function() { pinned = i; show(i); }; }
+
+        // Met a jour le moyeu et l'etat visuel des secteurs.
+        function show(i) {
+            if (i === shown) { return; }
+            shown = i;
+            slots.forEach(function(s, j) { s.classList.toggle('is-active', j === i); });
+            sectors.forEach(function(s, j) { s.classList.toggle('is-active', j === i); });
+
+            if (i < 0) {
+                hub.classList.add('is-neutral');
+                hub.classList.remove('is-selected');
+                hubName.textContent = '';
+                hubMembers.textContent = '';
+                hubCrest.innerHTML = neutralCrest;
+                hubCrest.style.removeProperty('--team-color');
+                join.setAttribute('aria-disabled', 'true');
+                join.setAttribute('href', loginUrl);
+                return;
+            }
+
+            var slot = slots[i];
+            var nb = parseInt(slot.getAttribute('data-members'), 10) || 0;
+            hub.classList.remove('is-neutral');
+            hub.classList.add('is-selected');
+            hubName.textContent = slot.getAttribute('data-name');
+            hubMembers.textContent = nb + ' membre' + (nb > 1 ? 's' : '');
+            hubCrest.innerHTML = '<i class="' + slot.getAttribute('data-icon') + '" aria-hidden="true"></i>';
+            hubCrest.style.setProperty('--team-color', slot.getAttribute('data-color'));
+            join.removeAttribute('aria-disabled');
+            join.setAttribute('href', slot.getAttribute('href'));
+            hubCrest.classList.remove('crest-pop');
+            void hubCrest.offsetWidth;
+            hubCrest.classList.add('crest-pop');
+        }
+
+        slots.forEach(function(slot, i) {
+            slot.addEventListener('mouseenter', preview(i));
+            slot.addEventListener('focus', preview(i));
+            // Le lien reste fonctionnel sans JS : ici on selectionne d'abord.
+            slot.addEventListener('click', function(e) { e.preventDefault(); pinned = i; show(i); });
+            slot.addEventListener('keydown', function(e) {
+                var next = null;
+                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { next = (i + 1) % n; }
+                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { next = (i - 1 + n) % n; }
+                else if (e.key === 'Escape') { pinned = -1; show(-1); }
+                if (next !== null) { e.preventDefault(); slots[next].focus(); }
+            });
+        });
+
+        // Sortie de la roue : on revient sur la selection validee.
+        // Le garde-fou du focus ne vaut que pour le clavier (un clic souris
+        // focalise aussi le lien et bloquerait le retour).
+        var kb = false;
+        wheel.addEventListener('keydown', function() { kb = true; }, true);
+        wheel.addEventListener('mousemove', function() { kb = false; }, { passive: true });
+        wheel.addEventListener('mouseleave', function() {
+            if (!kb) { show(pinned); }
+        });
+        wheel.addEventListener('focusout', function(e) {
+            if (!wheel.contains(e.relatedTarget)) { kb = false; show(pinned); }
+        });
+    })();
+    </script>
 </body>
 </html>

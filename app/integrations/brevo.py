@@ -1,5 +1,7 @@
 import html
 import re
+from datetime import datetime
+
 import requests
 import logging
 from app.models import AppSetting
@@ -11,16 +13,17 @@ APP_URL = 'https://cabinet-team-manager.onrender.com'
 # ---------------------------------------------------------------------------
 # Mise en forme des emails — mêmes jetons que l'application (thème sombre)
 # ---------------------------------------------------------------------------
-_BG = '#0b0c0e'
-_CARD = '#14161a'
-_RAISED = '#191c21'
-_BAND = '#0e1013'
-_LINE = '#262a32'
-_INK = '#f2efe8'
-_TEXT = '#c9cfd6'
-_MUTED = '#8b949f'
-_AZURE = '#7CC5E3'
-_AZURE_DEEP = '#1F6A88'
+_BG = '#000000'
+_CARD = '#0a0d11'
+_RAISED = '#0f141a'
+_BAND = '#06080a'
+_LINE = '#1e2731'
+_INK = '#ffffff'
+_TEXT = '#e9eff5'
+_MUTED = '#8095a8'
+_ACCENT = '#3a5a78'
+_ACCENT_DEEP = '#1b3348'
+_ACCENT_TXT = '#9db9cf'
 _UI = "'Segoe UI','Helvetica Neue',Arial,sans-serif"
 _MONO = "Consolas,'Liberation Mono',Menlo,monospace"
 _SERIF = "Georgia,'Times New Roman',serif"
@@ -41,7 +44,7 @@ def _linkify(texte: str) -> str:
         fin = trouve.group(0)[len(url):]
         bouts.append(_esc(texte[position:trouve.start()]))
         bouts.append(
-            f'<a href="{_esc(url)}" style="color:{_AZURE};text-decoration:none;word-break:break-all;">'
+            f'<a href="{_esc(url)}" style="color:{_ACCENT_TXT};text-decoration:none;word-break:break-all;">'
             f'{_esc(url)}</a>'
         )
         bouts.append(_esc(fin))
@@ -81,7 +84,7 @@ def _salutation(user) -> str:
     """Ouverture commune des mails : « Bonjour Prénom Nom, »."""
     return (
         f'<p style="margin:0 0 8px 0;font-size:15px;line-height:1.6;color:{_INK};">Bonjour '
-        f'<strong style="font-weight:600;color:{_AZURE};">{_esc(user.prenom)} {_esc(user.nom)}</strong>,</p>'
+        f'<strong style="font-weight:600;color:{_INK};">{_esc(user.prenom)} {_esc(user.nom)}</strong>,</p>'
     )
 
 
@@ -91,8 +94,8 @@ def _suite(html: str) -> str:
 
 
 def _accent(texte) -> str:
-    """Valeur mise en avant (nom, priorité, date) dans une cellule ou une phrase."""
-    return f'<span style="color:{_AZURE};font-weight:600;">{_esc(texte)}</span>'
+    """Valeur mise en avant (nom, priorité, date) en blanc semi-gras."""
+    return f'<span style="color:{_INK};font-weight:600;">{_esc(texte)}</span>'
 
 
 def get_brevo_api_key() -> str:
@@ -156,8 +159,13 @@ def send_email_via_brevo_api(
 def _email_layout(header_title, intro_html, rows=None, rows_html_override=None,
                   cta_url=None, cta_text=None, footer_note='', preheader='',
                   sent_note="Cet email a été envoyé automatiquement par l'application de gestion."):
-    """Gabarit email unique, en tableaux (Outlook/Gmail/Apple Mail)."""
+    """Gabarit email unique, en tableaux (Outlook/Gmail/Apple Mail).
+
+    Identité : noir profond, filets bleu marine, texte blanc ; titres en serif,
+    étiquettes et méta en mono capitales.
+    """
     titre = _esc(header_title)
+    date_envoi = datetime.now().strftime('%d.%m.%Y')
 
     preheader_html = ''
     if preheader:
@@ -175,16 +183,17 @@ def _email_layout(header_title, intro_html, rows=None, rows_html_override=None,
             bordure = '' if i == 0 else f'border-top:1px solid {_LINE};'
             lignes += (
                 f'<tr>'
-                f'<td style="padding:9px 0;{bordure}font-family:{_MONO};font-size:10px;letter-spacing:.08em;'
+                f'<td style="padding:10px 0;{bordure}font-family:{_MONO};font-size:9px;letter-spacing:.14em;'
                 f'text-transform:uppercase;color:{_MUTED};vertical-align:top;white-space:nowrap;">{label}</td>'
-                f'<td style="padding:9px 0 9px 18px;{bordure}font-size:14px;line-height:1.5;'
+                f'<td style="padding:10px 0 10px 20px;{bordure}font-size:14px;line-height:1.5;'
                 f'color:{_INK};vertical-align:top;word-break:break-word;">{valeur}</td>'
                 f'</tr>'
             )
         content_html += (
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
-            f'style="width:100%;border-collapse:collapse;margin:4px 0 6px 0;">'
-            f'<tr><td style="padding:4px 18px;background:{_RAISED};border:1px solid {_LINE};border-radius:10px;">'
+            f'style="width:100%;border-collapse:collapse;margin:18px 0 4px 0;">'
+            f'<tr><td style="padding:6px 20px;background:{_RAISED};border:1px solid {_LINE};'
+            f'border-left:2px solid {_ACCENT};border-radius:4px;">'
             f'<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
             f'style="width:100%;border-collapse:collapse;">{lignes}</table>'
             f'</td></tr></table>'
@@ -195,23 +204,34 @@ def _email_layout(header_title, intro_html, rows=None, rows_html_override=None,
         lien = _esc(cta_url)
         cta_html = (
             f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" align="center" '
-            f'style="margin:22px auto 0 auto;">'
-            f'<tr><td align="center" style="background:{_AZURE_DEEP};border-radius:8px;">'
-            f'<a href="{lien}" style="display:inline-block;padding:13px 30px;font-family:{_UI};'
-            f'font-size:14px;font-weight:600;color:#ffffff;text-decoration:none;border-radius:8px;">'
-            f'{_esc(cta_text)}</a>'
+            f'style="margin:26px auto 0 auto;">'
+            f'<tr><td align="center" style="background:{_ACCENT_DEEP};border:1px solid {_ACCENT};'
+            f'border-radius:4px;">'
+            f'<a href="{lien}" style="display:inline-block;padding:14px 34px;font-family:{_UI};'
+            f'font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;'
+            f'color:{_INK};text-decoration:none;">{_esc(cta_text)}</a>'
             f'</td></tr></table>'
-            f'<p style="margin:10px 0 0 0;font-size:11px;line-height:1.5;color:{_MUTED};text-align:center;">'
-            f'Lien direct : <a href="{lien}" style="color:{_AZURE};text-decoration:none;word-break:break-all;">'
-            f'{lien}</a></p>'
+            f'<p style="margin:12px 0 0 0;font-family:{_MONO};font-size:10px;line-height:1.6;'
+            f'color:{_MUTED};text-align:center;">'
+            f'Lien direct : <a href="{lien}" style="color:{_ACCENT_TXT};text-decoration:none;'
+            f'word-break:break-all;">{lien}</a></p>'
         )
 
     note_html = ''
     if footer_note:
         note_html = (
-            f'<p style="margin:22px 0 0 0;padding-top:16px;border-top:1px solid {_LINE};'
-            f'font-size:12px;line-height:1.6;color:{_MUTED};">{footer_note}</p>'
+            f'<p style="margin:24px 0 0 0;padding-top:16px;border-top:1px solid {_LINE};'
+            f'font-size:12px;line-height:1.65;color:{_MUTED};">{footer_note}</p>'
         )
+
+    monogramme = (
+        f'<table role="presentation" cellpadding="0" cellspacing="0" border="0" '
+        f'style="border-collapse:collapse;">'
+        f'<tr><td width="40" height="40" align="center" valign="middle" '
+        f'style="width:40px;height:40px;background:{_RAISED};border:1px solid {_ACCENT};'
+        f'font-family:{_MONO};font-size:12px;font-weight:700;letter-spacing:.04em;'
+        f'color:{_INK};">JMH</td></tr></table>'
+    )
 
     return (
         '<!DOCTYPE html>\n<html lang="fr">\n<head>\n'
@@ -228,37 +248,45 @@ def _email_layout(header_title, intro_html, rows=None, rows_html_override=None,
         '<tr><td align="center" style="padding:32px 16px;">'
         f'<table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" '
         f'style="width:100%;max-width:600px;background:{_CARD};border:1px solid {_LINE};'
-        f'border-radius:14px;border-collapse:separate;">'
+        f'border-top:3px solid {_ACCENT};border-collapse:separate;">'
 
-        # Bandeau
-        '<tr><td style="padding:20px 32px;border-bottom:1px solid ' + _LINE + ';">'
-        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="width:100%;">'
-        '<tr>'
-        f'<td style="font-family:{_UI};font-size:12px;font-weight:700;letter-spacing:.16em;'
-        f'text-transform:uppercase;color:{_INK};">JMH Orbit</td>'
-        f'<td align="right" style="font-family:{_MONO};font-size:10px;letter-spacing:.1em;'
-        f'text-transform:uppercase;color:{_MUTED};">Cabinet JMH</td>'
+        # Bandeau : monogramme, produit, date d'envoi
+        '<tr><td style="padding:22px 32px;border-bottom:1px solid ' + _LINE + ';">'
+        '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" '
+        'style="width:100%;border-collapse:collapse;"><tr>'
+        f'<td width="40" style="width:40px;vertical-align:middle;">{monogramme}</td>'
+        '<td style="padding-left:14px;vertical-align:middle;">'
+        f'<div style="font-family:{_UI};font-size:11px;font-weight:600;letter-spacing:.22em;'
+        f'text-transform:uppercase;color:{_INK};">JMH Orbit</div>'
+        f'<div style="margin-top:5px;font-family:{_MONO};font-size:9px;letter-spacing:.14em;'
+        f'text-transform:uppercase;color:{_MUTED};">Cabinet JMH — Expertise comptable</div>'
+        '</td>'
+        f'<td align="right" style="vertical-align:middle;font-family:{_MONO};font-size:11px;'
+        f'letter-spacing:.1em;color:{_MUTED};white-space:nowrap;">{date_envoi}</td>'
         '</tr></table>'
         '</td></tr>'
 
-        # Titre
-        '<tr><td style="padding:26px 32px 0 32px;">'
-        f'<h1 style="margin:0;font-family:{_SERIF};font-weight:400;font-size:23px;line-height:1.28;'
+        # Titre + filet
+        '<tr><td style="padding:28px 32px 0 32px;">'
+        f'<h1 style="margin:0;font-family:{_SERIF};font-weight:400;font-size:24px;line-height:1.3;'
         f'color:{_INK};">{titre}</h1>'
+        f'<div style="width:36px;height:2px;background:{_ACCENT};margin-top:14px;'
+        'font-size:0;line-height:0;">&nbsp;</div>'
         '</td></tr>'
 
         # Corps
         '<tr><td style="padding:14px 32px 30px 32px;'
-        f'font-family:{_UI};font-size:14px;line-height:1.6;color:{_TEXT};">'
+        f'font-family:{_UI};font-size:14px;line-height:1.65;color:{_TEXT};">'
         f'{content_html}{cta_html}{note_html}'
         '</td></tr>'
 
         # Pied
         '<tr><td style="padding:18px 32px;background:' + _BAND + ';border-top:1px solid ' + _LINE + ';">'
-        f'<p style="margin:0;font-family:{_UI};font-size:11px;line-height:1.6;color:{_MUTED};">'
-        'Cabinet JMH — expertise comptable · JMH Orbit</p>'
-        f'<p style="margin:4px 0 0 0;font-family:{_UI};font-size:10px;line-height:1.6;color:{_MUTED};">'
-        f'{_esc(sent_note)}</p>'
+        f'<p style="margin:0;font-family:{_MONO};font-size:9px;letter-spacing:.14em;'
+        f'text-transform:uppercase;line-height:1.7;color:{_MUTED};">'
+        'Cabinet JMH · Expertise comptable · JMH Orbit</p>'
+        f'<p style="margin:6px 0 0 0;font-family:{_UI};font-size:10px;line-height:1.6;'
+        f'color:{_MUTED};">{_esc(sent_note)}</p>'
         '</td></tr>'
 
         '</table>'
@@ -465,7 +493,7 @@ def send_daily_digest_email(user, tasks, date_str=''):
         rows += (
             f'<tr style="border-bottom:1px solid {_LINE};">'
             f'<td style="padding:9px 0;color:{_INK};font-size:13px;">{t.titre}</td>'
-            f'<td style="padding:9px 0 9px 12px;color:{_AZURE};font-family:{_MONO};font-size:11px;white-space:nowrap;">{dossier_nom}</td>'
+            f'<td style="padding:9px 0 9px 12px;color:{_INK};font-family:{_MONO};font-size:11px;white-space:nowrap;">{dossier_nom}</td>'
             f'<td style="padding:9px 0 9px 12px;color:{_MUTED};font-size:11px;white-space:nowrap;">{statut_label}</td>'
             f'</tr>'
         )
